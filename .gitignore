@@ -2,7 +2,66 @@
 /.claude/settings.local.json
 /.report
 
-# Python
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+gradle.properties
+
+# Compiled Files
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE - IntelliJ IDEA
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# IDE - VS Code
+.vscode/
+
+# IDE - NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nbgradle/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+*.log.*
+
+# Local Configuration
+*.local
+
+# Test Reports
+.report/
+
+# Python (기존 항목 유지)
 __pycache__/
 *.py[cod]
 *$py.class

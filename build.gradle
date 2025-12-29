@@ -1,0 +1,74 @@
+plugins {
+	id 'java-library'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'maven-publish'
+}
+
+group = 'kr.suhsaechan'
+version = '0.0.0'
+description = 'SUH-sejong-univ-auth'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+	withSourcesJar()
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+bootJar { enabled = false }
+jar { enabled = true }
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			pom {
+				name = 'sejong-univ-auth'
+				description = '세종대학교 인증 라이브러리'
+				url = 'https://github.com/Cassiiopeia/SUH-sejong-univ-auth/'
+			}
+		}
+	}
+	repositories {
+		mavenLocal()
+		maven {
+			name = 'nexus'
+			url = uri(
+					version.endsWith('SNAPSHOT')
+							? "https://nexus.suhaechan.kr/repository/maven-snapshots/"
+							: "https://nexus.suhaechan.kr/repository/maven-releases/"
+			)
+			allowInsecureProtocol = true
+			credentials {
+				username = project.findProperty('nexusUsername')
+				password = project.findProperty('nexusPassword')
+			}
+		}
+	}
+}
+
