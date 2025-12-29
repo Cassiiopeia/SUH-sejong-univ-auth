@@ -47,6 +47,17 @@ publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
+
+			// Gradle 8.x: Spring Boot BOM에서 관리되는 의존성의 해결된 버전을 사용
+			versionMapping {
+				usage('java-api') {
+					fromResolutionOf('runtimeClasspath')
+				}
+				usage('java-runtime') {
+					fromResolutionResult()
+				}
+			}
+
 			pom {
 				name = 'sejong-univ-auth'
 				description = '세종대학교 인증 라이브러리'
