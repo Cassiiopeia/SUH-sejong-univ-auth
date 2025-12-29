@@ -1,0 +1,71 @@
+title: "📄 [문서] {제목을 작성해주세요}"
+labels:
+  - "문서"
+body:
+  # 안내 문구(마크다운)
+  - type: markdown
+    attributes:
+      value: |
+        <!-- 
+        📚 GitHub Discussions 문서 작성 템플릿
+        아래 항목을 참고하여 문서를 작성해주세요. 필요한 부분을 자유롭게 작성하시면 됩니다.
+        -->
+
+  # 문제 상황
+  - type: textarea
+    id: concept
+    attributes:
+      label: "❌ 문제 상황"
+      description: "해당 기술을 도입하게 된 문제 상황을 작성해주세요"
+    validations:
+      required: false
+
+  # 본문 (필수)
+  - type: textarea
+    id: main
+    attributes:
+      label: "📝 핵심 내용과 방향성"
+      description: "개발 과정에서 구현한 내용이나 기술적인 세부사항을 작성해주세요."
+      placeholder: |
+        - 사전 지식 및 기본적인 개념
+        - 개발 과정에서 구현한 내용 or 기술적인 세부사항
+      value:
+    validations:
+      required: true
+
+  # 트러블 슈팅 및 기대효과 (선택)
+  - type: textarea
+    id: expected
+    attributes:
+      label: "📚 트러블슈팅 및 기대효과"
+      placeholder: |
+        - 구현 과정에서 발생한 문제점과 해결 방법에 대해 작성해주세요
+        - 해당 기능을 사용했을 때의 기대효과에 대해서 적어주세요
+        예: 사용자 인증 프로세스 개선
+    validations:
+      required: false
+
+  # 참고 자료 (선택)
+  - type: textarea
+    id: references
+    attributes:
+      label: "🔗 관련 자료"
+      description: "관련된 문서나 외부 링크를 공유해주세요."
+      placeholder: |
+        - [링크1](http://example.com)
+        - [링크2](http://example.com)
+        - #이슈번호
+    validations:
+      required: false
+
+  # 담당자 지정 (선택)
+  - type: textarea
+    id: assignees
+    attributes:
+      label: "🙋‍ 담당자"
+      value: |
+        - 백엔드: 이름
+        - 프로트엔드: 이름
+        - 디자인: 이름
+    validations:
+      required: false

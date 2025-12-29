@@ -1,0 +1,32 @@
+# ===================================================================
+# 프로젝트 버전 관리 파일
+# ===================================================================
+#
+# 버전 형식: x.y.z (major.minor.patch)
+#
+# [자동] patch(3번째 자리): 워크플로우가 자동으로 증가시킴
+# [자동] version_code: 빌드마다 자동 1씩 증가
+#
+# [수동] major/minor(1,2번째 자리)는 자동으로 올라가지 않습니다!
+#       → 사용자가 이 파일에서 직접 수정해야 합니다
+#       → 예: 1.0.5 → 1.1.0 또는 2.0.0 으로 올리고 싶으면 직접 수정
+#
+# 지원 타입: spring, flutter, next, react, react-native,
+#           react-native-expo, node, python, basic
+#
+# 타입별 동기화 파일:
+# - spring: build.gradle
+# - flutter: pubspec.yaml
+# - next/react/node: package.json
+# - react-native: Info.plist, build.gradle
+# - react-native-expo: app.json
+# - python: pyproject.toml
+# - basic: version.yml만 사용
+# ===================================================================
+
+version: "2.2.19"
+version_code: 88 # app build number
+project_type: "basic" # spring, flutter, next, react, react-native, react-native-expo, node, python, basic
+metadata:
+  last_updated: "2025-12-27 12:37:55"
+  last_updated_by: "Cassiiopeia"

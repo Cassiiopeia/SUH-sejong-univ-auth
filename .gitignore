@@ -1,0 +1,9 @@
+/.idea
+/.claude/settings.local.json
+/.report
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
