@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'kr.suhsaechan'
-version = '0.0.4'
+version = '1.0.0'
 description = 'SUH-sejong-univ-auth'
 
 java {
@@ -55,16 +55,6 @@ publishing {
 		mavenJava(MavenPublication) {
 			from components.java
 
-			// Gradle 8.x: Spring Boot BOM에서 관리되는 의존성의 해결된 버전을 사용
-			versionMapping {
-				usage('java-api') {
-					fromResolutionOf('runtimeClasspath')
-				}
-				usage('java-runtime') {
-					fromResolutionResult()
-				}
-			}
-
 			pom {
 				name = 'sejong-univ-auth'
 				description = '세종대학교 인증 라이브러리'
@@ -78,8 +68,8 @@ publishing {
 			name = 'nexus'
 			url = uri(
 					version.endsWith('SNAPSHOT')
-							? "https://nexus.suhaechan.kr/repository/maven-snapshots/"
-							: "https://nexus.suhaechan.kr/repository/maven-releases/"
+							? "https://nexus.suhsaechan.kr/repository/maven-snapshots/"
+							: "https://nexus.suhsaechan.kr/repository/maven-releases/"
 			)
 			allowInsecureProtocol = true
 			credentials {
