@@ -1,11 +1,34 @@
 {
   "metadata": {
-    "lastUpdated": "2025-12-29T11:36:29Z",
-    "currentVersion": "1.0.0",
+    "lastUpdated": "2025-12-29T11:46:12Z",
+    "currentVersion": "1.0.1",
     "projectType": "spring",
-    "totalReleases": 3
+    "totalReleases": 4
   },
   "releases": [
+    {
+      "version": "1.0.1",
+      "project_type": "spring",
+      "date": "2025-12-29",
+      "pr_number": 6,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **Documentation**\n  * README 전면 개편으로 빠른 시작 가이드, API 레퍼런스, 에러 코드 문서 추가\n  * 실제 사용 예제 및 Gradle/Maven 의존성 선언 예시 제공\n\n* **Chores**\n  * 라이브러리 버전 1.0.1로 업데이트",
+      "parsed_changes": {
+        "documentation": {
+          "title": "Documentation",
+          "items": [
+            "README 전면 개편으로 빠른 시작 가이드, API 레퍼런스, 에러 코드 문서 추가",
+            "실제 사용 예제 및 Gradle/Maven 의존성 선언 예시 제공"
+          ]
+        },
+        "chores": {
+          "title": "Chores",
+          "items": [
+            "라이브러리 버전 1.0.1로 업데이트"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.0.0",
       "project_type": "spring",
