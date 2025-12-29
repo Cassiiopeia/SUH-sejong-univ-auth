@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "lastUpdated": "2025-12-29T09:49:42Z",
+    "currentVersion": "0.0.1",
+    "projectType": "spring",
+    "totalReleases": 1
+  },
+  "releases": [
+    {
+      "version": "0.0.1",
+      "project_type": "spring",
+      "date": "2025-12-29",
+      "pr_number": 2,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **New Features**\n  * Spring Boot 애플리케이션 초기화 완료\n  * Maven 라이브러리 배포 지원 추가\n\n* **Tests**\n  * 애플리케이션 컨텍스트 로드 테스트 추가\n\n* **Chores**\n  * Gradle 빌드 시스템 구성 (Java 17)\n  * 프로젝트 메타데이터 및 의존성 설정\n  * 버전 0.0.1로 업데이트\n  * 개발 환경 구성 파일 추가",
+      "parsed_changes": {
+        "new_features": {
+          "title": "New Features",
+          "items": [
+            "Spring Boot 애플리케이션 초기화 완료",
+            "Maven 라이브러리 배포 지원 추가"
+          ]
+        },
+        "tests": {
+          "title": "Tests",
+          "items": [
+            "애플리케이션 컨텍스트 로드 테스트 추가"
+          ]
+        },
+        "chores": {
+          "title": "Chores",
+          "items": [
+            "Gradle 빌드 시스템 구성 (Java 17)",
+            "프로젝트 메타데이터 및 의존성 설정",
+            "버전 0.0.1로 업데이트",
+            "개발 환경 구성 파일 추가"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    }
+  ]
+}
