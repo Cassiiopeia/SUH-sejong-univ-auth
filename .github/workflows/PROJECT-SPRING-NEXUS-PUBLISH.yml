@@ -1,0 +1,50 @@
+name: PROJECT-SPRING-NEXUS-PUBLISH
+
+on:
+  push:
+    branches: ["deploy"]
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Create gradle.properties from secret
+        run: |
+          echo -e "${{ secrets.GRADLE_PROPERTIES }}" > gradle.properties
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # 태그에서 버전 추출
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            VERSION=${TAG_NAME#v}
+            echo "🏷️ 태그에서 버전 추출: $VERSION"
+          else
+            # deploy 브랜치에서 version.yml로부터 버전 추출
+            chmod +x .github/scripts/version_manager.sh
+            VERSION=$(./.github/scripts/version_manager.sh get | tail -n 1)
+            echo "📄 version.yml에서 버전 추출: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version $VERSION"
+
+      - name: Publish to Nexus
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "🚀 Publishing version $VERSION to Nexus Repository"
+          ./gradlew publish -Pversion=$VERSION
+

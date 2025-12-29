@@ -1,0 +1,307 @@
+name: PROJECT-SPRING-NEXUS-CI
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v2
+      continue-on-error: true
+
+    - name: Create gradle.properties from secret
+      run: |
+        echo -e "${{ secrets.GRADLE_PROPERTIES }}" > gradle.properties
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: wrapper
+
+    - name: Clean Build Directory
+      run: ./gradlew clean
+
+    - name: Compile Sources
+      id: compile
+      run: |
+        set +e
+        ./gradlew compileJava compileTestJava 2>&1 | tee compile_output.txt
+        echo "compile_exit_code=$?" >> $GITHUB_OUTPUT
+        set -e
+      continue-on-error: true
+
+    - name: Run Tests
+      id: test
+      run: |
+        set +e
+        ./gradlew test 2>&1 | tee test_output.txt
+        echo "test_exit_code=$?" >> $GITHUB_OUTPUT
+        set -e
+      continue-on-error: true
+
+    - name: Build JAR
+      id: build
+      run: |
+        set +e
+        ./gradlew build -x test 2>&1 | tee build_output.txt
+        echo "build_exit_code=$?" >> $GITHUB_OUTPUT
+        set -e
+      continue-on-error: true
+
+    - name: Generate Build Report
+      id: report
+      if: always()
+      run: |
+        # 빌드 상태 확인 (exit code 기반)
+        COMPILE_STATUS="✅ 성공"
+        TEST_STATUS="✅ 성공"
+        BUILD_STATUS="✅ 성공"
+        
+        # 컴파일 상태 확인
+        COMPILE_EXIT_CODE="${{ steps.compile.outputs.compile_exit_code }}"
+        if [ "$COMPILE_EXIT_CODE" != "0" ] && [ "$COMPILE_EXIT_CODE" != "" ]; then
+          COMPILE_STATUS="❌ 실패"
+        fi
+        
+        # 테스트 상태 확인  
+        TEST_EXIT_CODE="${{ steps.test.outputs.test_exit_code }}"
+        if [ "$TEST_EXIT_CODE" != "0" ] && [ "$TEST_EXIT_CODE" != "" ]; then
+          TEST_STATUS="❌ 실패"
+        fi
+        
+        # 빌드 상태 확인
+        BUILD_EXIT_CODE="${{ steps.build.outputs.build_exit_code }}"
+        if [ "$BUILD_EXIT_CODE" != "0" ] && [ "$BUILD_EXIT_CODE" != "" ]; then
+          BUILD_STATUS="❌ 실패"
+        fi
+        
+        # 전체 빌드 상태
+        OVERALL_STATUS="✅ 성공"
+        if [ "$COMPILE_EXIT_CODE" != "0" ] || [ "$TEST_EXIT_CODE" != "0" ] || [ "$BUILD_EXIT_CODE" != "0" ]; then
+          OVERALL_STATUS="❌ 실패"
+        fi
+        
+        echo "compile_status=$COMPILE_STATUS" >> $GITHUB_OUTPUT
+        echo "test_status=$TEST_STATUS" >> $GITHUB_OUTPUT
+        echo "build_status=$BUILD_STATUS" >> $GITHUB_OUTPUT
+        echo "overall_status=$OVERALL_STATUS" >> $GITHUB_OUTPUT
+
+    - name: Extract Error Details
+      id: errors
+      if: always()
+      run: |
+        # 컴파일 에러 추출
+        if [ -f compile_output.txt ] && [ "${{ steps.compile.outputs.compile_exit_code }}" != "0" ]; then
+          echo "compile_errors<<EOF" >> $GITHUB_OUTPUT
+          echo "## 🚨 컴파일 에러" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          grep -A 15 -B 15 "error\|Error\|ERROR\|FAILED\|Failed\|failed" compile_output.txt | head -60 >> $GITHUB_OUTPUT || echo "에러 로그를 찾을 수 없습니다." >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+        
+        # 테스트 에러 추출
+        if [ -f test_output.txt ] && [ "${{ steps.test.outputs.test_exit_code }}" != "0" ]; then
+          echo "test_errors<<EOF" >> $GITHUB_OUTPUT
+          echo "## 🧪 테스트 실패" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          grep -A 15 -B 15 "FAILED\|Failed\|failed\|error\|Error\|ERROR" test_output.txt | head -60 >> $GITHUB_OUTPUT || echo "테스트 에러 로그를 찾을 수 없습니다." >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+        
+        # 빌드 에러 추출
+        if [ -f build_output.txt ] && [ "${{ steps.build.outputs.build_exit_code }}" != "0" ]; then
+          echo "build_errors<<EOF" >> $GITHUB_OUTPUT
+          echo "## 📦 빌드 에러" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          grep -A 15 -B 15 "FAILED\|Failed\|failed\|error\|Error\|ERROR" build_output.txt | head -60 >> $GITHUB_OUTPUT || echo "빌드 에러 로그를 찾을 수 없습니다." >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Comment on PR (Success)
+      if: github.event_name == 'pull_request' && steps.report.outputs.overall_status == '✅ 성공'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          // 기존 봇 댓글 찾기
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('🔧 CI Build Check')
+          );
+          
+          const successMessage = `## 🔧 CI Build Check 결과
+          
+          ### ✅ 빌드 성공!
+          
+          | 단계 | 상태 |
+          |------|------|
+          | 컴파일 | ${{ steps.report.outputs.compile_status }} |
+          | 테스트 | ${{ steps.report.outputs.test_status }} |
+          | 빌드 | ${{ steps.report.outputs.build_status }} |
+          
+          **전체 상태**: ${{ steps.report.outputs.overall_status }}
+          
+          ---
+          *🤖 GitHub Actions에 의해 자동 생성됨 - ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}*`;
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: successMessage
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: successMessage
+            });
+          }
+
+    - name: Comment on PR (Failure)
+      if: github.event_name == 'pull_request' && steps.report.outputs.overall_status == '❌ 실패'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          // 기존 봇 댓글 찾기
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('🔧 CI Build Check')
+          );
+          
+          let errorDetails = '';
+          
+          // 컴파일 에러 추가
+          if ('${{ steps.errors.outputs.compile_errors }}') {
+            errorDetails += '${{ steps.errors.outputs.compile_errors }}\n\n';
+          }
+          
+          // 테스트 에러 추가  
+          if ('${{ steps.errors.outputs.test_errors }}') {
+            errorDetails += '${{ steps.errors.outputs.test_errors }}\n\n';
+          }
+          
+          // 빌드 에러 추가
+          if ('${{ steps.errors.outputs.build_errors }}') {
+            errorDetails += '${{ steps.errors.outputs.build_errors }}\n\n';
+          }
+          
+          const failureMessage = `## 🔧 CI Build Check 결과
+          
+          ### ❌ 빌드 실패!
+          
+          | 단계 | 상태 |
+          |------|------|
+          | 컴파일 | ${{ steps.report.outputs.compile_status }} |
+          | 테스트 | ${{ steps.report.outputs.test_status }} |
+          | 빌드 | ${{ steps.report.outputs.build_status }} |
+          
+          **전체 상태**: ${{ steps.report.outputs.overall_status }}
+          
+          ### 📋 에러 상세 정보
+          
+          ${errorDetails}
+          
+          ### 🔧 해결 방법
+          - 로컬에서 \`./gradlew clean build\` 명령어로 빌드를 확인해보세요
+          - 에러 메시지를 참고하여 코드를 수정해주세요
+          - 테스트가 실패한 경우 \`./gradlew test\` 명령어로 테스트를 실행해보세요
+          
+          ---
+          *🤖 GitHub Actions에 의해 자동 생성됨 - ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}*`;
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: failureMessage
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: failureMessage
+            });
+          }
+
+    - name: Create Check Run
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const conclusion = '${{ steps.report.outputs.overall_status }}' === '✅ 성공' ? 'success' : 'failure';
+          const summary = `빌드 검증이 ${conclusion === 'success' ? '성공' : '실패'}했습니다.`;
+          
+          await github.rest.checks.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'Build Verification',
+            head_sha: context.sha,
+            status: 'completed',
+            conclusion: conclusion,
+            output: {
+              title: '🔧 CI Build Check',
+              summary: summary,
+              text: `
+              컴파일: ${{ steps.report.outputs.compile_status }}
+              테스트: ${{ steps.report.outputs.test_status }}  
+              빌드: ${{ steps.report.outputs.build_status }}
+              `
+            }
+          });
+
+    - name: Fail Job on Build Failure
+      if: steps.report.outputs.overall_status == '❌ 실패'
+      run: |
+        echo "❌ 빌드가 실패했습니다. 위의 에러 메시지를 확인해주세요."
+        exit 1
