@@ -1,11 +1,43 @@
 {
   "metadata": {
-    "lastUpdated": "2025-12-29T10:06:49Z",
-    "currentVersion": "0.0.2",
+    "lastUpdated": "2025-12-29T11:36:29Z",
+    "currentVersion": "1.0.0",
     "projectType": "spring",
-    "totalReleases": 2
+    "totalReleases": 3
   },
   "releases": [
+    {
+      "version": "1.0.0",
+      "project_type": "spring",
+      "date": "2025-12-29",
+      "pr_number": 5,
+      "raw_summary": "## Summary by CodeRabbit\n\n# 릴리스 노트\n\n* **새로운 기능**\n  * 세종대학교 포털 인증 시스템 추가 - 학생 기본 정보 및 고전읽기 인증 데이터 조회 지원\n  * 세 가지 인증 방식 제공 (전체 정보, 기본 정보만, 원본 HTML 포함)\n  * 구성 가능한 SSL, 타임아웃, 재시도 옵션 추가\n\n* **설명서**\n  * Spring Boot 테스트 생성 도구 설명서 추가\n  * 설정 및 API 사용 가이드 업데이트\n\n* **Chores**\n  * 버전 업그레이드 (v0.0.2 → v1.0.0)\n  * 의존성 추가 (OkHttp, Jsoup)",
+      "parsed_changes": {
+        "새로운_기능": {
+          "title": "새로운 기능",
+          "items": [
+            "세종대학교 포털 인증 시스템 추가 - 학생 기본 정보 및 고전읽기 인증 데이터 조회 지원",
+            "세 가지 인증 방식 제공 (전체 정보, 기본 정보만, 원본 HTML 포함)",
+            "구성 가능한 SSL, 타임아웃, 재시도 옵션 추가"
+          ]
+        },
+        "설명서": {
+          "title": "설명서",
+          "items": [
+            "Spring Boot 테스트 생성 도구 설명서 추가",
+            "설정 및 API 사용 가이드 업데이트"
+          ]
+        },
+        "chores": {
+          "title": "Chores",
+          "items": [
+            "버전 업그레이드 (v0.0.2 → v1.0.0)",
+            "의존성 추가 (OkHttp, Jsoup)"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "0.0.2",
       "project_type": "spring",
