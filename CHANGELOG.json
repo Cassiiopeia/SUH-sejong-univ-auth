@@ -1,11 +1,28 @@
 {
   "metadata": {
-    "lastUpdated": "2025-12-29T09:49:42Z",
-    "currentVersion": "0.0.1",
+    "lastUpdated": "2025-12-29T10:06:49Z",
+    "currentVersion": "0.0.2",
     "projectType": "spring",
-    "totalReleases": 1
+    "totalReleases": 2
   },
   "releases": [
+    {
+      "version": "0.0.2",
+      "project_type": "spring",
+      "date": "2025-12-29",
+      "pr_number": 3,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 변경 사항\n\n* **Chores**\n  * 버전을 0.0.2로 업데이트\n  * 자동화된 빌드 검증 및 배포 워크플로우 추가",
+      "parsed_changes": {
+        "chores": {
+          "title": "Chores",
+          "items": [
+            "버전을 0.0.2로 업데이트",
+            "자동화된 빌드 검증 및 배포 워크플로우 추가"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "0.0.1",
       "project_type": "spring",
