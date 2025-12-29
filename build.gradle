@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'kr.suhsaechan'
-version = '0.0.2'
+version = '0.0.3'
 description = 'SUH-sejong-univ-auth'
 
 java {
@@ -23,7 +23,14 @@ repositories {
 dependencies {
 	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// HTTP Client (OkHttp)
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.12.0'
+
+	// HTML Parser (Jsoup)
+	implementation 'org.jsoup:jsoup:1.17.2'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

@@ -2,3 +2,10 @@ spring:
   application:
     name: sejong-univ-auth
 
+# 세종대학교 인증 설정 (기본값 예시)
+sejong:
+  auth:
+    ssl-verification: false    # SSL 인증서 검증 비활성화 (세종대 포털 인증서 이슈 대응)
+    timeout-seconds: 10        # HTTP 요청 타임아웃 (초)
+    max-retry: 3               # 요청 실패 시 최대 재시도 횟수
+
