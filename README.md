@@ -7,6 +7,7 @@
 <!-- 수정하지마세요 자동으로 동기화 됩니다 -->
 ## 최신 버전 : v1.0.0 (2025-12-29)
 
+[![Nexus](https://img.shields.io/badge/Nexus-버전_목록-4E9BCD?style=flat-square&logo=sonatype&logoColor=white)](https://nexus.suhsaechan.kr/#browse/browse:maven-releases:kr%2Fsuhsaechan%2Fsejong-univ-auth)
 [![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
@@ -17,7 +18,7 @@
 
 ---
 
-## ✨ 왜 이 라이브러리인가?
+## ✨ 왜 SUH-SEJONG-UNIV-AUTH 라이브러리인가?
 
 세종대학교 포털 인증을 직접 구현하려면 **SSO 처리, 쿠키 관리, HTML 파싱**까지 복잡한 작업이 필요합니다.
 이 라이브러리는 모든 복잡함을 숨기고, **단 3줄의 코드**로 학생 인증을 완료합니다.
@@ -46,7 +47,7 @@ String major = result.getStudentInfo().getMajor();     // "컴퓨터공학과"
 **Gradle**
 ```groovy
 dependencies {
-    implementation 'kr.suhsaechan:sejong-univ-auth:0.0.4'
+    implementation 'kr.suhsaechan:sejong-univ-auth:X.X.X' # 최신 버전으로 수정
 }
 ```
 
@@ -55,7 +56,7 @@ dependencies {
 <dependency>
     <groupId>kr.suhsaechan</groupId>
     <artifactId>sejong-univ-auth</artifactId>
-    <version>0.0.4</version>
+    <version>X.X.X</version> <!-- 최신 버전으로 수정 -->
 </dependency>
 ```
 
