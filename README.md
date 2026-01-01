@@ -12,6 +12,8 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
+### [🔗바로 테스트해보기](https://lab.suhsaechan.kr/sejong-auth)
+
 [빠른 시작](#-빠른-시작) • [주요 기능](#-주요-기능) • [API 문서](#-api-레퍼런스) • [설정](#%EF%B8%8F-설정)
 
 </div>
@@ -42,12 +44,44 @@ String major = result.getMajor();     // "컴퓨터공학과"
 
 ## 🚀 빠른 시작
 
-### 1. 의존성 추가
+### 1. 저장소 추가
+
+> ⚠️ **중요**: 이 라이브러리는 Maven Central이 아닌 **SUH Nexus 저장소**에서 제공됩니다.
+
+**Gradle (build.gradle)**
+```groovy
+repositories {
+    mavenCentral()
+
+    // SUH Nexus 저장소 (필수)
+    maven {
+        name = 'SUH-NEXUS'
+        url "https://nexus.suhsaechan.kr/repository/maven-releases/"
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+}
+```
+
+**Maven (pom.xml)**
+```xml
+<repositories>
+    <repository>
+        <id>suh-nexus</id>
+        <name>SUH Nexus Repository</name>
+        <url>https://nexus.suhsaechan.kr/repository/maven-releases/</url>
+    </repository>
+</repositories>
+```
+
+### 2. 의존성 추가
 
 **Gradle**
 ```groovy
 dependencies {
-    implementation 'kr.suhsaechan:sejong-univ-auth:X.X.X' # 최신 버전으로 수정
+    implementation 'kr.suhsaechan:sejong-univ-auth:1.2.0' // 최신 버전 확인: Nexus 버전 목록
 }
 ```
 
@@ -56,11 +90,11 @@ dependencies {
 <dependency>
     <groupId>kr.suhsaechan</groupId>
     <artifactId>sejong-univ-auth</artifactId>
-    <version>X.X.X</version> <!-- 최신 버전으로 수정 -->
+    <version>1.2.0</version> <!-- 최신 버전 확인: Nexus 버전 목록 -->
 </dependency>
 ```
 
-### 2. 바로 사용
+### 3. 바로 사용
 
 ```java
 @RestController
