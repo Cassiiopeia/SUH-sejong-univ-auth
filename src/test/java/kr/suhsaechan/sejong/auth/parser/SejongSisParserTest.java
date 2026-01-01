@@ -1,7 +1,6 @@
 package kr.suhsaechan.sejong.auth.parser;
 
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,15 +44,16 @@ class SejongSisParserTest {
         """;
 
     // When
-    SejongStudentInfo result = parser.parseStudentInfo(json);
+    String studentId = parser.parseStudentId(json);
+    String name = parser.parseName(json);
+    String major = parser.parseMajor(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("20171234", result.getStudentId());
-    assertEquals("홍길동", result.getName());
-    assertEquals("컴퓨터공학과", result.getMajor());
+    assertEquals("20171234", studentId);
+    assertEquals("홍길동", name);
+    assertEquals("컴퓨터공학과", major);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: studentId={}, name={}, major={}", studentId, name, major);
   }
 
   @Test
@@ -95,8 +95,8 @@ class SejongSisParserTest {
   }
 
   @Test
-  void 학생정보_파싱_dm_UserInfo_없음() {
-    log.info("============ 학생정보 파싱 실패 - dm_UserInfo 없음 ============");
+  void 학번_파싱_dm_UserInfo_없음() {
+    log.info("============ 학번 파싱 실패 - dm_UserInfo 없음 ============");
 
     // Given
     String json = """
@@ -109,22 +109,22 @@ class SejongSisParserTest {
 
     // When & Then
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      parser.parseStudentInfo(json);
+      parser.parseStudentId(json);
     });
 
     log.info("예외 발생 확인: {}", exception.getMessage());
   }
 
   @Test
-  void 학생정보_파싱_빈_JSON() {
-    log.info("============ 학생정보 파싱 실패 - 빈 JSON ============");
+  void 학번_파싱_빈_JSON() {
+    log.info("============ 학번 파싱 실패 - 빈 JSON ============");
 
     // Given
     String json = "{}";
 
     // When & Then
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      parser.parseStudentInfo(json);
+      parser.parseStudentId(json);
     });
 
     log.info("예외 발생 확인: {}", exception.getMessage());
@@ -139,7 +139,7 @@ class SejongSisParserTest {
 
     // When & Then
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      parser.parseStudentInfo(invalidJson);
+      parser.parseStudentId(invalidJson);
     });
 
     log.info("예외 발생 확인: {}", exception.getMessage());
@@ -204,8 +204,8 @@ class SejongSisParserTest {
   }
 
   @Test
-  void 학생정보_파싱_학과_dm_UserInfoSch에서_가져오기() {
-    log.info("============ 학생정보 파싱 - 학과명 백업 소스 ============");
+  void 학과_파싱_dm_UserInfoSch에서_가져오기() {
+    log.info("============ 학과 파싱 - 학과명 백업 소스 ============");
 
     // Given - dm_UserInfoGam에 DEPT_NM 없음, dm_UserInfoSch.DEPT_NM 사용
     String json = """
@@ -224,13 +224,12 @@ class SejongSisParserTest {
         """;
 
     // When
-    SejongStudentInfo result = parser.parseStudentInfo(json);
+    String major = parser.parseMajor(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("소프트웨어학과", result.getMajor());
+    assertEquals("소프트웨어학과", major);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: major={}", major);
   }
 
   @Test

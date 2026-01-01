@@ -9,7 +9,6 @@ import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongClassicReading;
 import kr.suhsaechan.sejong.auth.model.SejongDhcAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongSisAuthResult;
-import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import kr.suhsaechan.sejong.auth.parser.SejongClassicReadingParser;
 import kr.suhsaechan.sejong.auth.parser.SejongSisParser;
 import kr.suhsaechan.sejong.auth.parser.SejongStudentInfoParser;
@@ -58,7 +57,11 @@ public class SuhSejongAuthEngine {
 
     // 1. DHC에서 정보 가져오기
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
-    SejongStudentInfo dhcStudentInfo = studentInfoParser.parse(html);
+    String major = studentInfoParser.parseMajor(html);
+    String parsedStudentId = studentInfoParser.parseStudentId(html);
+    String name = studentInfoParser.parseName(html);
+    String grade = studentInfoParser.parseGrade(html);
+    String status = studentInfoParser.parseStatus(html);
     SejongClassicReading classicReading = classicReadingParser.parse(html);
 
     // 2. SIS에서 연락처 정보 가져오기
@@ -78,7 +81,11 @@ public class SuhSejongAuthEngine {
     // 3. 결과 반환
     SejongAuthResult result = SejongAuthResult.builder()
         .success(true)
-        .studentInfo(dhcStudentInfo)
+        .major(major)
+        .studentId(parsedStudentId)
+        .name(name)
+        .grade(grade)
+        .status(status)
         .classicReading(classicReading)
         .email(email)
         .phoneNumber(phoneNumber)
@@ -86,7 +93,7 @@ public class SuhSejongAuthEngine {
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 통합 인증 완료: studentId={}, name={}", studentId, dhcStudentInfo.getName());
+    log.info("세종대학교 통합 인증 완료: studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -108,7 +115,11 @@ public class SuhSejongAuthEngine {
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
 
     // 2. 학생 기본정보 파싱
-    SejongStudentInfo studentInfo = studentInfoParser.parse(html);
+    String major = studentInfoParser.parseMajor(html);
+    String parsedStudentId = studentInfoParser.parseStudentId(html);
+    String name = studentInfoParser.parseName(html);
+    String grade = studentInfoParser.parseGrade(html);
+    String status = studentInfoParser.parseStatus(html);
 
     // 3. 고전독서 정보 파싱
     SejongClassicReading classicReading = classicReadingParser.parse(html);
@@ -116,12 +127,16 @@ public class SuhSejongAuthEngine {
     // 4. 결과 반환
     SejongDhcAuthResult result = SejongDhcAuthResult.builder()
         .success(true)
-        .studentInfo(studentInfo)
+        .major(major)
+        .studentId(parsedStudentId)
+        .name(name)
+        .grade(grade)
+        .status(status)
         .classicReading(classicReading)
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 DHC 인증 완료: studentId={}, name={}", studentId, studentInfo.getName());
+    log.info("세종대학교 DHC 인증 완료: studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -143,7 +158,9 @@ public class SuhSejongAuthEngine {
     String json = sisClient.authenticateAndFetchJson(studentId, password);
 
     // 2. 학생 기본정보 파싱
-    SejongStudentInfo studentInfo = sisParser.parseStudentInfo(json);
+    String major = sisParser.parseMajor(json);
+    String parsedStudentId = sisParser.parseStudentId(json);
+    String name = sisParser.parseName(json);
 
     // 3. 연락처 정보 파싱
     String email = sisParser.parseEmail(json);
@@ -153,14 +170,18 @@ public class SuhSejongAuthEngine {
     // 4. 결과 반환
     SejongSisAuthResult result = SejongSisAuthResult.builder()
         .success(true)
-        .studentInfo(studentInfo)
+        .major(major)
+        .studentId(parsedStudentId)
+        .name(name)
+        .grade("")  // SIS에서는 제공하지 않음
+        .status("") // SIS에서는 제공하지 않음
         .email(email)
         .phoneNumber(phoneNumber)
         .englishName(englishName)
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 SIS 인증 완료: studentId={}, name={}", studentId, studentInfo.getName());
+    log.info("세종대학교 SIS 인증 완료: studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -181,7 +202,11 @@ public class SuhSejongAuthEngine {
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
 
     // 2. 학생 기본정보 파싱
-    SejongStudentInfo studentInfo = studentInfoParser.parse(html);
+    String major = studentInfoParser.parseMajor(html);
+    String parsedStudentId = studentInfoParser.parseStudentId(html);
+    String name = studentInfoParser.parseName(html);
+    String grade = studentInfoParser.parseGrade(html);
+    String status = studentInfoParser.parseStatus(html);
 
     // 3. 고전독서 정보 파싱
     SejongClassicReading classicReading = classicReadingParser.parse(html);
@@ -189,13 +214,17 @@ public class SuhSejongAuthEngine {
     // 4. 결과 반환 (원본 HTML 포함)
     SejongDhcAuthResult result = SejongDhcAuthResult.builder()
         .success(true)
-        .studentInfo(studentInfo)
+        .major(major)
+        .studentId(parsedStudentId)
+        .name(name)
+        .grade(grade)
+        .status(status)
         .classicReading(classicReading)
         .authenticatedAt(LocalDateTime.now())
         .rawHtml(html)
         .build();
 
-    log.info("세종대학교 DHC 인증 완료 (원본 HTML 포함): studentId={}, name={}", studentId, studentInfo.getName());
+    log.info("세종대학교 DHC 인증 완료 (원본 HTML 포함): studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -216,7 +245,9 @@ public class SuhSejongAuthEngine {
     String json = sisClient.authenticateAndFetchJson(studentId, password);
 
     // 2. 학생 기본정보 파싱
-    SejongStudentInfo studentInfo = sisParser.parseStudentInfo(json);
+    String major = sisParser.parseMajor(json);
+    String parsedStudentId = sisParser.parseStudentId(json);
+    String name = sisParser.parseName(json);
 
     // 3. 연락처 정보 파싱
     String email = sisParser.parseEmail(json);
@@ -226,7 +257,11 @@ public class SuhSejongAuthEngine {
     // 4. 결과 반환 (원본 JSON 포함)
     SejongSisAuthResult result = SejongSisAuthResult.builder()
         .success(true)
-        .studentInfo(studentInfo)
+        .major(major)
+        .studentId(parsedStudentId)
+        .name(name)
+        .grade("")  // SIS에서는 제공하지 않음
+        .status("") // SIS에서는 제공하지 않음
         .email(email)
         .phoneNumber(phoneNumber)
         .englishName(englishName)
@@ -234,7 +269,7 @@ public class SuhSejongAuthEngine {
         .rawJson(json)
         .build();
 
-    log.info("세종대학교 SIS 인증 완료 (원본 JSON 포함): studentId={}, name={}", studentId, studentInfo.getName());
+    log.info("세종대학교 SIS 인증 완료 (원본 JSON 포함): studentId={}, name={}", studentId, name);
     return result;
   }
 

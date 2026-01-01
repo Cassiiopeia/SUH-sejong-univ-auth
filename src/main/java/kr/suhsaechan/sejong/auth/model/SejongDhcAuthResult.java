@@ -16,8 +16,20 @@ public class SejongDhcAuthResult {
   /** 인증 성공 여부 */
   private final boolean success;
 
-  /** 기본 학생 정보 */
-  private final SejongStudentInfo studentInfo;
+  /** 학과명 (예: 컴퓨터공학과) */
+  private final String major;
+
+  /** 학번 (예: 20171234) */
+  private final String studentId;
+
+  /** 이름 (예: 홍길동) */
+  private final String name;
+
+  /** 학년 (예: 4학년) */
+  private final String grade;
+
+  /** 재학 상태 (예: 재학, 휴학, 졸업) */
+  private final String status;
 
   /** 고전독서 인증 정보 */
   private final SejongClassicReading classicReading;
@@ -30,7 +42,7 @@ public class SejongDhcAuthResult {
 
   @Override
   public String toString() {
-    return String.format("SejongDhcAuthResult{success=%s, studentInfo=%s, classicReading=%s, authenticatedAt=%s}",
-        success, studentInfo, classicReading, authenticatedAt);
+    return String.format("SejongDhcAuthResult{success=%s, major='%s', studentId='%s', name='%s', grade='%s', status='%s', classicReading=%s, authenticatedAt=%s}",
+        success, major, studentId, name, grade, status, classicReading, authenticatedAt);
   }
 }

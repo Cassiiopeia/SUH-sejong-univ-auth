@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import kr.suhsaechan.sejong.auth.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,60 +17,68 @@ public class SejongSisParser {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   /**
-   * JSON에서 학생 기본정보 파싱
+   * JSON에서 학과명 파싱
    *
    * @param json initUserInfo.do API 응답 JSON
-   * @return 학생 기본정보
+   * @return 학과명
    * @throws SejongAuthException 파싱 실패 시
    */
-  public SejongStudentInfo parseStudentInfo(String json) {
+  public String parseMajor(String json) {
     try {
       JsonNode root = objectMapper.readTree(json);
-
-      // dm_UserInfo에서 기본 정보 추출
-      JsonNode dmUserInfo = root.path("dm_UserInfo");
-      // dm_UserInfoGam에서 학과 정보 추출
       JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
-      // dm_UserInfoSch에서 추가 정보 추출
       JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
+
+      String major = getTextValue(dmUserInfoGam, "DEPT_NM");
+      if (CommonUtil.isBlank(major)) {
+        major = getTextValue(dmUserInfoSch, "DEPT_NM");
+      }
+      return CommonUtil.defaultIfBlank(major, "");
+    } catch (Exception e) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    }
+  }
+
+  /**
+   * JSON에서 학번 파싱
+   *
+   * @param json initUserInfo.do API 응답 JSON
+   * @return 학번
+   * @throws SejongAuthException 파싱 실패 시
+   */
+  public String parseStudentId(String json) {
+    try {
+      JsonNode root = objectMapper.readTree(json);
+      JsonNode dmUserInfo = root.path("dm_UserInfo");
 
       if (dmUserInfo.isMissingNode()) {
         throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
             "dm_UserInfo 필드를 찾을 수 없습니다.");
       }
 
-      // 학번: dm_UserInfo.INTG_USR_NO
       String studentId = getTextValue(dmUserInfo, "INTG_USR_NO");
-
-      // 이름: dm_UserInfo.INTG_USR_NM
-      String name = getTextValue(dmUserInfo, "INTG_USR_NM");
-
-      // 학과: dm_UserInfoGam.DEPT_NM (우선) 또는 dm_UserInfoSch.DEPT_NM
-      String major = getTextValue(dmUserInfoGam, "DEPT_NM");
-      if (CommonUtil.isBlank(major)) {
-        major = getTextValue(dmUserInfoSch, "DEPT_NM");
-      }
-
-      // 학년: SIS에서는 직접 제공하지 않음, 빈 값
-      String grade = "";
-
-      // 재학 상태: dm_UserInfoGam.STATUS_DIV_CD를 해석하거나 빈 값
-      // COA008001 = 재학, COA008002 = 휴학 등 (정확한 매핑은 추후 확인 필요)
-      String status = "";
-
-      SejongStudentInfo studentInfo = SejongStudentInfo.builder()
-          .studentId(CommonUtil.defaultIfBlank(studentId, ""))
-          .name(CommonUtil.defaultIfBlank(name, ""))
-          .major(CommonUtil.defaultIfBlank(major, ""))
-          .grade(grade)
-          .status(status)
-          .build();
-
-      log.debug("SIS 학생 정보 파싱 완료: {}", studentInfo);
-      return studentInfo;
-
+      return CommonUtil.defaultIfBlank(studentId, "");
     } catch (SejongAuthException e) {
       throw e;
+    } catch (Exception e) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    }
+  }
+
+  /**
+   * JSON에서 이름 파싱
+   *
+   * @param json initUserInfo.do API 응답 JSON
+   * @return 이름
+   * @throws SejongAuthException 파싱 실패 시
+   */
+  public String parseName(String json) {
+    try {
+      JsonNode root = objectMapper.readTree(json);
+      JsonNode dmUserInfo = root.path("dm_UserInfo");
+
+      String name = getTextValue(dmUserInfo, "INTG_USR_NM");
+      return CommonUtil.defaultIfBlank(name, "");
     } catch (Exception e) {
       throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
     }

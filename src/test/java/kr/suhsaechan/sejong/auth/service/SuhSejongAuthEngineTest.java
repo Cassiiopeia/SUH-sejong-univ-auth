@@ -7,7 +7,6 @@ import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
 import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongDhcAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongSisAuthResult;
-import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -102,17 +101,18 @@ class SuhSejongAuthEngineTest {
     SejongAuthResult result = suhSejongAuthEngine.authenticate(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
-    assertNotNull(result.getStudentInfo());
+    assertNotNull(result.getMajor());
+    assertNotNull(result.getStudentId());
+    assertNotNull(result.getName());
     assertNotNull(result.getClassicReading());
     assertNotNull(result.getAuthenticatedAt());
 
-    SejongStudentInfo info = result.getStudentInfo();
     log.info("=== 인증 결과 ===");
-    log.info("학과: {}", info.getMajor());
-    log.info("학번: {}", info.getStudentId());
-    log.info("이름: {}", info.getName());
-    log.info("학년: {}", info.getGrade());
-    log.info("상태: {}", info.getStatus());
+    log.info("학과: {}", result.getMajor());
+    log.info("학번: {}", result.getStudentId());
+    log.info("이름: {}", result.getName());
+    log.info("학년: {}", result.getGrade());
+    log.info("상태: {}", result.getStatus());
   }
 
   // 참고: authenticateBasic 메서드는 제거됨 - authenticateWithDHC로 대체
@@ -204,17 +204,18 @@ class SuhSejongAuthEngineTest {
     SejongDhcAuthResult result = suhSejongAuthEngine.authenticateWithDHC(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
-    assertNotNull(result.getStudentInfo());
+    assertNotNull(result.getMajor());
+    assertNotNull(result.getStudentId());
+    assertNotNull(result.getName());
     assertNotNull(result.getClassicReading());
     assertNotNull(result.getAuthenticatedAt());
 
-    SejongStudentInfo info = result.getStudentInfo();
     log.info("=== DHC 인증 결과 ===");
-    log.info("학과: {}", info.getMajor());
-    log.info("학번: {}", info.getStudentId());
-    log.info("이름: {}", info.getName());
-    log.info("학년: {}", info.getGrade());
-    log.info("상태: {}", info.getStatus());
+    log.info("학과: {}", result.getMajor());
+    log.info("학번: {}", result.getStudentId());
+    log.info("이름: {}", result.getName());
+    log.info("학년: {}", result.getGrade());
+    log.info("상태: {}", result.getStatus());
     log.info("고전독서: {}", result.getClassicReading());
   }
 
@@ -232,15 +233,15 @@ class SuhSejongAuthEngineTest {
     SejongSisAuthResult result = suhSejongAuthEngine.authenticateWithSIS(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
-    assertNotNull(result.getStudentInfo());
+    assertNotNull(result.getMajor());
+    assertNotNull(result.getStudentId());
+    assertNotNull(result.getName());
     assertNotNull(result.getAuthenticatedAt());
 
-    SejongStudentInfo info = result.getStudentInfo();
-
     log.info("=== SIS 인증 결과 ===");
-    log.info("학과: {}", info.getMajor());
-    log.info("학번: {}", info.getStudentId());
-    log.info("이름: {}", info.getName());
+    log.info("학과: {}", result.getMajor());
+    log.info("학번: {}", result.getStudentId());
+    log.info("이름: {}", result.getName());
     log.info("영어이름: {}", result.getEnglishName());
     log.info("이메일: {}", result.getEmail());
     log.info("전화번호: {}", result.getPhoneNumber());
@@ -260,19 +261,19 @@ class SuhSejongAuthEngineTest {
     SejongAuthResult result = suhSejongAuthEngine.authenticate(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
-    assertNotNull(result.getStudentInfo());
+    assertNotNull(result.getMajor());
+    assertNotNull(result.getStudentId());
+    assertNotNull(result.getName());
     assertNotNull(result.getClassicReading());
-    // contactInfo는 SIS 실패 시 null일 수 있음
+    // email, phoneNumber, englishName은 SIS 실패 시 null일 수 있음
     assertNotNull(result.getAuthenticatedAt());
 
-    SejongStudentInfo info = result.getStudentInfo();
-
     log.info("=== 통합 인증 결과 ===");
-    log.info("학과: {}", info.getMajor());
-    log.info("학번: {}", info.getStudentId());
-    log.info("이름: {}", info.getName());
-    log.info("학년: {}", info.getGrade());
-    log.info("상태: {}", info.getStatus());
+    log.info("학과: {}", result.getMajor());
+    log.info("학번: {}", result.getStudentId());
+    log.info("이름: {}", result.getName());
+    log.info("학년: {}", result.getGrade());
+    log.info("상태: {}", result.getStatus());
     log.info("고전독서: {}", result.getClassicReading());
     log.info("영어이름: {}", result.getEnglishName());
     log.info("이메일: {}", result.getEmail());

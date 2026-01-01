@@ -16,8 +16,20 @@ public class SejongSisAuthResult {
   /** 인증 성공 여부 */
   private final boolean success;
 
-  /** 기본 학생 정보 */
-  private final SejongStudentInfo studentInfo;
+  /** 학과명 (예: 컴퓨터공학과) */
+  private final String major;
+
+  /** 학번 (예: 20171234) */
+  private final String studentId;
+
+  /** 이름 (예: 홍길동) */
+  private final String name;
+
+  /** 학년 (SIS에서는 제공하지 않음) */
+  private final String grade;
+
+  /** 재학 상태 (SIS에서는 제공하지 않음) */
+  private final String status;
 
   /** 이메일 주소 */
   private final String email;
@@ -36,7 +48,7 @@ public class SejongSisAuthResult {
 
   @Override
   public String toString() {
-    return String.format("SejongSisAuthResult{success=%s, studentInfo=%s, email='%s', phoneNumber='%s', englishName='%s', authenticatedAt=%s}",
-        success, studentInfo, email, phoneNumber, englishName, authenticatedAt);
+    return String.format("SejongSisAuthResult{success=%s, major='%s', studentId='%s', name='%s', email='%s', phoneNumber='%s', englishName='%s', authenticatedAt=%s}",
+        success, major, studentId, name, email, phoneNumber, englishName, authenticatedAt);
   }
 }

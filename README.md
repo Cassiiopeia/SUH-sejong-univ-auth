@@ -34,8 +34,8 @@
 ```java
 // 3줄이면 끝!
 SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
-String name = result.getStudentInfo().getName();       // "홍길동"
-String major = result.getStudentInfo().getMajor();     // "컴퓨터공학과"
+String name = result.getName();       // "홍길동"
+String major = result.getMajor();     // "컴퓨터공학과"
 ```
 
 ---
@@ -102,12 +102,11 @@ public class AuthController {
 // 통합 인증 (DHC + SIS 모두 조회)
 SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
 
-SejongStudentInfo info = result.getStudentInfo();
-info.getMajor();     // "바이오융합공학전공"
-info.getStudentId(); // "18010561"
-info.getName();      // "홍길동"
-info.getGrade();     // "4"
-info.getStatus();    // "재학" / "휴학" / "졸업"
+result.getMajor();     // "바이오융합공학전공"
+result.getStudentId(); // "18010561"
+result.getName();      // "홍길동"
+result.getGrade();     // "4"
+result.getStatus();    // "재학" / "휴학" / "졸업"
 ```
 
 ### 📚 고전독서 인증 조회 (DHC)
@@ -156,7 +155,11 @@ result.getEnglishName();  // "Hong Gildong"
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `success` | boolean | 인증 성공 여부 |
-| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `major` | String | 학과명 |
+| `studentId` | String | 학번 |
+| `name` | String | 이름 |
+| `grade` | String | 학년 |
+| `status` | String | 상태 (재학/휴학/졸업) |
 | `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
 | `email` | String | 이메일 주소 (SIS 실패 시 null) |
 | `phoneNumber` | String | 전화번호 (SIS 실패 시 null) |
@@ -167,7 +170,11 @@ result.getEnglishName();  // "Hong Gildong"
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `success` | boolean | 인증 성공 여부 |
-| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `major` | String | 학과명 |
+| `studentId` | String | 학번 |
+| `name` | String | 이름 |
+| `grade` | String | 학년 |
+| `status` | String | 상태 (재학/휴학/졸업) |
 | `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
 | `authenticatedAt` | LocalDateTime | 인증 시간 |
 | `rawHtml` | String | 원본 HTML (Raw 메서드 사용 시) |
@@ -176,21 +183,16 @@ result.getEnglishName();  // "Hong Gildong"
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `success` | boolean | 인증 성공 여부 |
-| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `major` | String | 학과명 |
+| `studentId` | String | 학번 |
+| `name` | String | 이름 |
+| `grade` | String | 학년 (SIS에서는 제공하지 않음) |
+| `status` | String | 상태 (SIS에서는 제공하지 않음) |
 | `email` | String | 이메일 주소 |
 | `phoneNumber` | String | 전화번호 (010-1234-5678 형식) |
 | `englishName` | String | 영어 이름 |
 | `authenticatedAt` | LocalDateTime | 인증 시간 |
 | `rawJson` | String | 원본 JSON (Raw 메서드 사용 시) |
-
-**SejongStudentInfo** (학생 기본 정보)
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `major` | String | 학과명 |
-| `studentId` | String | 학번 |
-| `name` | String | 이름 |
-| `grade` | String | 학년 |
-| `status` | String | 상태 (재학/휴학/졸업) |
 
 ### 예외 처리
 

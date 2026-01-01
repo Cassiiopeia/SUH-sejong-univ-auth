@@ -233,33 +233,31 @@ HTTP/1.1 401 Unauthorized
 **우선순위 기반 데이터 추출**
 
 ```java
-// 학생정보 파싱
-public SejongStudentInfo parseStudentInfo(String json) {
+// 학번 파싱
+public String parseStudentId(String json) {
     JsonNode root = objectMapper.readTree(json);
-
     JsonNode dmUserInfo = root.path("dm_UserInfo");
+    return getTextValue(dmUserInfo, "INTG_USR_NO");
+}
+
+// 이름 파싱
+public String parseName(String json) {
+    JsonNode root = objectMapper.readTree(json);
+    JsonNode dmUserInfo = root.path("dm_UserInfo");
+    return getTextValue(dmUserInfo, "INTG_USR_NM");
+}
+
+// 학과 파싱 - dm_UserInfoGam.DEPT_NM (우선) → dm_UserInfoSch.DEPT_NM (백업)
+public String parseMajor(String json) {
+    JsonNode root = objectMapper.readTree(json);
     JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
     JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
 
-    // 학번: dm_UserInfo.INTG_USR_NO (필수)
-    String studentId = getTextValue(dmUserInfo, "INTG_USR_NO");
-
-    // 이름: dm_UserInfo.INTG_USR_NM (필수)
-    String name = getTextValue(dmUserInfo, "INTG_USR_NM");
-
-    // 학과: dm_UserInfoGam.DEPT_NM (우선) → dm_UserInfoSch.DEPT_NM (백업)
     String major = getTextValue(dmUserInfoGam, "DEPT_NM");
     if (isBlank(major)) {
         major = getTextValue(dmUserInfoSch, "DEPT_NM");
     }
-
-    return SejongStudentInfo.builder()
-        .studentId(studentId)
-        .name(name)
-        .major(major)
-        .grade("")  // SIS에서 제공하지 않음
-        .status("") // SIS에서 직접 제공하지 않음
-        .build();
+    return major;
 }
 ```
 
