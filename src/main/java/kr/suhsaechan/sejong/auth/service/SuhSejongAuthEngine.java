@@ -5,7 +5,6 @@ import kr.suhsaechan.sejong.auth.client.SejongPortalClient;
 import kr.suhsaechan.sejong.auth.client.SejongSisClient;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.ContactInfo;
 import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongClassicReading;
 import kr.suhsaechan.sejong.auth.model.SejongDhcAuthResult;
@@ -63,10 +62,14 @@ public class SuhSejongAuthEngine {
     SejongClassicReading classicReading = classicReadingParser.parse(html);
 
     // 2. SIS에서 연락처 정보 가져오기
-    ContactInfo contactInfo = null;
+    String email = null;
+    String phoneNumber = null;
+    String englishName = null;
     try {
       String json = sisClient.authenticateAndFetchJson(studentId, password);
-      contactInfo = sisParser.parseContactInfo(json);
+      email = sisParser.parseEmail(json);
+      phoneNumber = sisParser.parsePhoneNumber(json);
+      englishName = sisParser.parseEnglishName(json);
     } catch (Exception e) {
       log.warn("SIS 연락처 정보 조회 실패 (무시됨): {}", e.getMessage());
       // SIS 실패 시에도 DHC 정보만으로 결과 반환
@@ -77,7 +80,9 @@ public class SuhSejongAuthEngine {
         .success(true)
         .studentInfo(dhcStudentInfo)
         .classicReading(classicReading)
-        .contactInfo(contactInfo)
+        .email(email)
+        .phoneNumber(phoneNumber)
+        .englishName(englishName)
         .authenticatedAt(LocalDateTime.now())
         .build();
 
@@ -141,13 +146,17 @@ public class SuhSejongAuthEngine {
     SejongStudentInfo studentInfo = sisParser.parseStudentInfo(json);
 
     // 3. 연락처 정보 파싱
-    ContactInfo contactInfo = sisParser.parseContactInfo(json);
+    String email = sisParser.parseEmail(json);
+    String phoneNumber = sisParser.parsePhoneNumber(json);
+    String englishName = sisParser.parseEnglishName(json);
 
     // 4. 결과 반환
     SejongSisAuthResult result = SejongSisAuthResult.builder()
         .success(true)
         .studentInfo(studentInfo)
-        .contactInfo(contactInfo)
+        .email(email)
+        .phoneNumber(phoneNumber)
+        .englishName(englishName)
         .authenticatedAt(LocalDateTime.now())
         .build();
 
@@ -210,13 +219,17 @@ public class SuhSejongAuthEngine {
     SejongStudentInfo studentInfo = sisParser.parseStudentInfo(json);
 
     // 3. 연락처 정보 파싱
-    ContactInfo contactInfo = sisParser.parseContactInfo(json);
+    String email = sisParser.parseEmail(json);
+    String phoneNumber = sisParser.parsePhoneNumber(json);
+    String englishName = sisParser.parseEnglishName(json);
 
     // 4. 결과 반환 (원본 JSON 포함)
     SejongSisAuthResult result = SejongSisAuthResult.builder()
         .success(true)
         .studentInfo(studentInfo)
-        .contactInfo(contactInfo)
+        .email(email)
+        .phoneNumber(phoneNumber)
+        .englishName(englishName)
         .authenticatedAt(LocalDateTime.now())
         .rawJson(json)
         .build();

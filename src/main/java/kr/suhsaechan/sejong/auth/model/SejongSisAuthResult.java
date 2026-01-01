@@ -19,8 +19,14 @@ public class SejongSisAuthResult {
   /** 기본 학생 정보 */
   private final SejongStudentInfo studentInfo;
 
-  /** 연락처 정보 */
-  private final ContactInfo contactInfo;
+  /** 이메일 주소 */
+  private final String email;
+
+  /** 전화번호 */
+  private final String phoneNumber;
+
+  /** 영어 이름 */
+  private final String englishName;
 
   /** 인증 시간 */
   private final LocalDateTime authenticatedAt;
@@ -30,7 +36,7 @@ public class SejongSisAuthResult {
 
   @Override
   public String toString() {
-    return String.format("SejongSisAuthResult{success=%s, studentInfo=%s, contactInfo=%s, authenticatedAt=%s}",
-        success, studentInfo, contactInfo, authenticatedAt);
+    return String.format("SejongSisAuthResult{success=%s, studentInfo=%s, email='%s', phoneNumber='%s', englishName='%s', authenticatedAt=%s}",
+        success, studentInfo, email, phoneNumber, englishName, authenticatedAt);
   }
 }

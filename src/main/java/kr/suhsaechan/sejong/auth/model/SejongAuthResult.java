@@ -21,8 +21,14 @@ public class SejongAuthResult {
   /** 고전독서 인증 정보 (DHC에서 획득) */
   private final SejongClassicReading classicReading;
 
-  /** 연락처 정보 (SIS에서 획득) */
-  private final ContactInfo contactInfo;
+  /** 이메일 주소 (SIS에서 획득) */
+  private final String email;
+
+  /** 전화번호 (SIS에서 획득) */
+  private final String phoneNumber;
+
+  /** 영어 이름 (SIS에서 획득) */
+  private final String englishName;
 
   /** 인증 시간 */
   private final LocalDateTime authenticatedAt;
@@ -32,7 +38,7 @@ public class SejongAuthResult {
 
   @Override
   public String toString() {
-    return String.format("SejongAuthResult{success=%s, studentInfo=%s, classicReading=%s, contactInfo=%s, authenticatedAt=%s}",
-        success, studentInfo, classicReading, contactInfo, authenticatedAt);
+    return String.format("SejongAuthResult{success=%s, studentInfo=%s, classicReading=%s, email='%s', phoneNumber='%s', englishName='%s', authenticatedAt=%s}",
+        success, studentInfo, classicReading, email, phoneNumber, englishName, authenticatedAt);
   }
 }

@@ -266,12 +266,24 @@ public SejongStudentInfo parseStudentInfo(String json) {
 **연락처 정보 파싱**
 
 ```java
-// 연락처 정보 파싱
-public ContactInfo parseContactInfo(String json) {
+// 이메일 파싱
+public String parseEmail(String json) {
     JsonNode root = objectMapper.readTree(json);
-
-    JsonNode dmUserInfo = root.path("dm_UserInfo");
     JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+    return getTextValue(dmUserInfoGam, "USER_EMAIL");
+}
+
+// 전화번호 파싱
+public String parsePhoneNumber(String json) {
+    JsonNode root = objectMapper.readTree(json);
+    JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+    return buildPhoneNumber(dmUserInfoGam); // "010-1234-5678"
+}
+
+// 영어 이름 파싱
+public String parseEnglishName(String json) {
+    JsonNode root = objectMapper.readTree(json);
+    JsonNode dmUserInfo = root.path("dm_UserInfo");
     JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
 
     // 영어이름: dm_UserInfo.INTG_ENG_NM (우선) → dm_UserInfoSch.NM_ENG (백업)
@@ -279,18 +291,7 @@ public ContactInfo parseContactInfo(String json) {
     if (isBlank(englishName)) {
         englishName = getTextValue(dmUserInfoSch, "NM_ENG");
     }
-
-    // 이메일: dm_UserInfoGam.USER_EMAIL
-    String email = getTextValue(dmUserInfoGam, "USER_EMAIL");
-
-    // 전화번호: dm_UserInfoGam.USER_PHONE_NO1 + NO2 + NO3 조합
-    String phoneNumber = buildPhoneNumber(dmUserInfoGam);
-
-    return ContactInfo.builder()
-        .englishName(englishName)
-        .email(email)
-        .phoneNumber(phoneNumber)
-        .build();
+    return englishName;
 }
 
 // 전화번호 조합 (NO1-NO2-NO3)
@@ -359,7 +360,6 @@ try {
 | `SejongSisClient` | HTTP 요청 처리 | `client/SejongSisClient.java` |
 | `SejongSisParser` | JSON 파싱 | `parser/SejongSisParser.java` |
 | `SejongSisAuthResult` | SIS 인증 결과 모델 | `model/SejongSisAuthResult.java` |
-| `ContactInfo` | 연락처 정보 모델 | `model/ContactInfo.java` |
 
 ### 주요 URL 상수
 
@@ -436,11 +436,13 @@ sejong:
 ```java
 // SIS만 호출 (더 빠름)
 SejongSisAuthResult result = authEngine.authenticateWithSIS(studentId, password);
-ContactInfo contact = result.getContactInfo();
+String email = result.getEmail();
+String phoneNumber = result.getPhoneNumber();
+String englishName = result.getEnglishName();
 
 // 통합 호출 (DHC + SIS 모두)
 SejongAuthResult result = authEngine.authenticate(studentId, password);
-// SIS 실패 시 contactInfo는 null
+// SIS 실패 시 email, phoneNumber, englishName은 null
 ```
 
 ### 통합 인증에서 SIS 실패 처리
@@ -450,9 +452,9 @@ SejongAuthResult result = authEngine.authenticate(studentId, password);
 ```java
 SejongAuthResult result = authEngine.authenticate(studentId, password);
 
-if (result.getContactInfo() != null) {
+if (result.getEmail() != null) {
     // SIS 성공
-    String email = result.getContactInfo().getEmail();
+    String email = result.getEmail();
 } else {
     // SIS 실패 (DHC 정보만 사용)
     log.warn("SIS 연락처 정보를 가져오지 못했습니다.");

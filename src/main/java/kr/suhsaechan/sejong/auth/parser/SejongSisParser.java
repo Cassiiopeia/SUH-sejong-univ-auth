@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.ContactInfo;
 import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import kr.suhsaechan.sejong.auth.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -79,46 +78,59 @@ public class SejongSisParser {
   }
 
   /**
-   * JSON에서 연락처 정보 파싱
+   * JSON에서 이메일 파싱
    *
    * @param json initUserInfo.do API 응답 JSON
-   * @return 연락처 정보
+   * @return 이메일 주소
    * @throws SejongAuthException 파싱 실패 시
    */
-  public ContactInfo parseContactInfo(String json) {
+  public String parseEmail(String json) {
     try {
       JsonNode root = objectMapper.readTree(json);
-
-      // dm_UserInfo에서 영어이름 추출
-      JsonNode dmUserInfo = root.path("dm_UserInfo");
-      // dm_UserInfoGam에서 이메일, 전화번호 추출
       JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
-      // dm_UserInfoSch에서 영어이름 추출 (백업)
+      String email = getTextValue(dmUserInfoGam, "USER_EMAIL");
+      return CommonUtil.defaultIfBlank(email, "");
+    } catch (Exception e) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    }
+  }
+
+  /**
+   * JSON에서 전화번호 파싱
+   *
+   * @param json initUserInfo.do API 응답 JSON
+   * @return 전화번호 (010-1234-5678 형식)
+   * @throws SejongAuthException 파싱 실패 시
+   */
+  public String parsePhoneNumber(String json) {
+    try {
+      JsonNode root = objectMapper.readTree(json);
+      JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+      String phoneNumber = buildPhoneNumber(dmUserInfoGam);
+      return CommonUtil.defaultIfBlank(phoneNumber, "");
+    } catch (Exception e) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    }
+  }
+
+  /**
+   * JSON에서 영어 이름 파싱
+   *
+   * @param json initUserInfo.do API 응답 JSON
+   * @return 영어 이름
+   * @throws SejongAuthException 파싱 실패 시
+   */
+  public String parseEnglishName(String json) {
+    try {
+      JsonNode root = objectMapper.readTree(json);
+      JsonNode dmUserInfo = root.path("dm_UserInfo");
       JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
 
-      // 영어이름: dm_UserInfo.INTG_ENG_NM (우선) 또는 dm_UserInfoSch.NM_ENG
       String englishName = getTextValue(dmUserInfo, "INTG_ENG_NM");
       if (CommonUtil.isBlank(englishName)) {
         englishName = getTextValue(dmUserInfoSch, "NM_ENG");
       }
-
-      // 이메일: dm_UserInfoGam.USER_EMAIL
-      String email = getTextValue(dmUserInfoGam, "USER_EMAIL");
-
-      // 전화번호: dm_UserInfoGam.USER_PHONE_NO1 + NO2 + NO3 조합
-      String phoneNumber = buildPhoneNumber(dmUserInfoGam);
-
-      ContactInfo contactInfo = ContactInfo.builder()
-          .englishName(CommonUtil.defaultIfBlank(englishName, ""))
-          .email(CommonUtil.defaultIfBlank(email, ""))
-          .phoneNumber(CommonUtil.defaultIfBlank(phoneNumber, ""))
-          .build();
-
-      log.debug("SIS 연락처 정보 파싱 완료: {}", contactInfo);
-      return contactInfo;
-
-    } catch (SejongAuthException e) {
-      throw e;
+      return CommonUtil.defaultIfBlank(englishName, "");
     } catch (Exception e) {
       throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
     }

@@ -4,7 +4,6 @@ import kr.suhsaechan.sejong.auth.TestApplication;
 import kr.suhsaechan.sejong.auth.config.SejongAuthProperties;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.ContactInfo;
 import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongDhcAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongSisAuthResult;
@@ -234,19 +233,17 @@ class SuhSejongAuthEngineTest {
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getStudentInfo());
-    assertNotNull(result.getContactInfo());
     assertNotNull(result.getAuthenticatedAt());
 
     SejongStudentInfo info = result.getStudentInfo();
-    ContactInfo contact = result.getContactInfo();
 
     log.info("=== SIS 인증 결과 ===");
     log.info("학과: {}", info.getMajor());
     log.info("학번: {}", info.getStudentId());
     log.info("이름: {}", info.getName());
-    log.info("영어이름: {}", contact.getEnglishName());
-    log.info("이메일: {}", contact.getEmail());
-    log.info("전화번호: {}", contact.getPhoneNumber());
+    log.info("영어이름: {}", result.getEnglishName());
+    log.info("이메일: {}", result.getEmail());
+    log.info("전화번호: {}", result.getPhoneNumber());
   }
 
   @Test
@@ -269,7 +266,6 @@ class SuhSejongAuthEngineTest {
     assertNotNull(result.getAuthenticatedAt());
 
     SejongStudentInfo info = result.getStudentInfo();
-    ContactInfo contact = result.getContactInfo();
 
     log.info("=== 통합 인증 결과 ===");
     log.info("학과: {}", info.getMajor());
@@ -278,14 +274,9 @@ class SuhSejongAuthEngineTest {
     log.info("학년: {}", info.getGrade());
     log.info("상태: {}", info.getStatus());
     log.info("고전독서: {}", result.getClassicReading());
-
-    if (contact != null) {
-      log.info("영어이름: {}", contact.getEnglishName());
-      log.info("이메일: {}", contact.getEmail());
-      log.info("전화번호: {}", contact.getPhoneNumber());
-    } else {
-      log.info("연락처 정보: (SIS 조회 실패)");
-    }
+    log.info("영어이름: {}", result.getEnglishName());
+    log.info("이메일: {}", result.getEmail());
+    log.info("전화번호: {}", result.getPhoneNumber());
   }
 
   @Test

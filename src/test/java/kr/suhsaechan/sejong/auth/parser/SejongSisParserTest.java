@@ -1,7 +1,6 @@
 package kr.suhsaechan.sejong.auth.parser;
 
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
-import kr.suhsaechan.sejong.auth.model.ContactInfo;
 import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,15 +82,16 @@ class SejongSisParserTest {
         """;
 
     // When
-    ContactInfo result = parser.parseContactInfo(json);
+    String email = parser.parseEmail(json);
+    String phoneNumber = parser.parsePhoneNumber(json);
+    String englishName = parser.parseEnglishName(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("Hong Gildong", result.getEnglishName());
-    assertEquals("test@example.com", result.getEmail());
-    assertEquals("010-1234-5678", result.getPhoneNumber());
+    assertEquals("Hong Gildong", englishName);
+    assertEquals("test@example.com", email);
+    assertEquals("010-1234-5678", phoneNumber);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: email={}, phoneNumber={}, englishName={}", email, phoneNumber, englishName);
   }
 
   @Test
@@ -163,15 +163,16 @@ class SejongSisParserTest {
         """;
 
     // When
-    ContactInfo result = parser.parseContactInfo(json);
+    String email = parser.parseEmail(json);
+    String phoneNumber = parser.parsePhoneNumber(json);
+    String englishName = parser.parseEnglishName(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("Hong Gildong", result.getEnglishName());
-    assertEquals("test@example.com", result.getEmail());
-    assertEquals("010", result.getPhoneNumber());
+    assertEquals("Hong Gildong", englishName);
+    assertEquals("test@example.com", email);
+    assertEquals("010", phoneNumber);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: email={}, phoneNumber={}, englishName={}", email, phoneNumber, englishName);
   }
 
   @Test
@@ -194,13 +195,12 @@ class SejongSisParserTest {
         """;
 
     // When
-    ContactInfo result = parser.parseContactInfo(json);
+    String englishName = parser.parseEnglishName(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("Hong Gildong Backup", result.getEnglishName());
+    assertEquals("Hong Gildong Backup", englishName);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: englishName={}", englishName);
   }
 
   @Test
@@ -247,14 +247,15 @@ class SejongSisParserTest {
         """;
 
     // When
-    ContactInfo result = parser.parseContactInfo(json);
+    String email = parser.parseEmail(json);
+    String phoneNumber = parser.parsePhoneNumber(json);
+    String englishName = parser.parseEnglishName(json);
 
     // Then
-    assertNotNull(result);
-    assertEquals("", result.getEnglishName());
-    assertEquals("", result.getEmail());
-    assertEquals("", result.getPhoneNumber());
+    assertEquals("", englishName);
+    assertEquals("", email);
+    assertEquals("", phoneNumber);
 
-    log.info("파싱 결과: {}", result);
+    log.info("파싱 결과: email={}, phoneNumber={}, englishName={}", email, phoneNumber, englishName);
   }
 }

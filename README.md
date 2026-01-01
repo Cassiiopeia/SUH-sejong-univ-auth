@@ -125,11 +125,10 @@ reading.getContestRecords();  // 공모전 참가 이력
 ```java
 // SIS 전용 인증 (연락처 정보 보장)
 SejongSisAuthResult result = authEngine.authenticateWithSIS("학번", "비밀번호");
-ContactInfo contact = result.getContactInfo();
 
-contact.getEmail();        // "student@example.com"
-contact.getPhoneNumber();  // "010-1234-5678"
-contact.getEnglishName();  // "Hong Gildong"
+result.getEmail();        // "student@example.com"
+result.getPhoneNumber();  // "010-1234-5678"
+result.getEnglishName();  // "Hong Gildong"
 ```
 
 ### ⚡ Spring Boot 자동 설정
@@ -159,7 +158,9 @@ contact.getEnglishName();  // "Hong Gildong"
 | `success` | boolean | 인증 성공 여부 |
 | `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
 | `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
-| `contactInfo` | ContactInfo | 연락처 정보 (SIS 실패 시 null) |
+| `email` | String | 이메일 주소 (SIS 실패 시 null) |
+| `phoneNumber` | String | 전화번호 (SIS 실패 시 null) |
+| `englishName` | String | 영어 이름 (SIS 실패 시 null) |
 | `authenticatedAt` | LocalDateTime | 인증 시간 |
 
 **SejongDhcAuthResult** (DHC 인증 결과)
@@ -176,7 +177,9 @@ contact.getEnglishName();  // "Hong Gildong"
 |------|------|------|
 | `success` | boolean | 인증 성공 여부 |
 | `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
-| `contactInfo` | ContactInfo | 연락처 정보 |
+| `email` | String | 이메일 주소 |
+| `phoneNumber` | String | 전화번호 (010-1234-5678 형식) |
+| `englishName` | String | 영어 이름 |
 | `authenticatedAt` | LocalDateTime | 인증 시간 |
 | `rawJson` | String | 원본 JSON (Raw 메서드 사용 시) |
 
@@ -188,13 +191,6 @@ contact.getEnglishName();  // "Hong Gildong"
 | `name` | String | 이름 |
 | `grade` | String | 학년 |
 | `status` | String | 상태 (재학/휴학/졸업) |
-
-**ContactInfo** (연락처 정보)
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `email` | String | 이메일 주소 |
-| `phoneNumber` | String | 전화번호 (010-1234-5678 형식) |
-| `englishName` | String | 영어 이름 |
 
 ### 예외 처리
 
@@ -271,6 +267,6 @@ MIT License - 자유롭게 사용하세요!
 
 **⭐ 이 프로젝트가 도움이 되었다면 Star를 눌러주세요!**
 
-Made with ❤️ by [SUH-LAB](https://github.com/Cassiiopeia)
+Made by [SUH-LAB](https://github.com/Cassiiopeia)
 
 </div>
