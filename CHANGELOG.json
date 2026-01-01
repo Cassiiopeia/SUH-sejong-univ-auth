@@ -1,11 +1,30 @@
 {
   "metadata": {
-    "lastUpdated": "2026-01-01T06:46:10Z",
-    "currentVersion": "1.1.1",
+    "lastUpdated": "2026-01-01T07:22:02Z",
+    "currentVersion": "1.2.0",
     "projectType": "spring",
-    "totalReleases": 5
+    "totalReleases": 6
   },
   "releases": [
+    {
+      "version": "1.2.0",
+      "project_type": "spring",
+      "date": "2026-01-01",
+      "pr_number": 9,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **리팩토링**\n  * 학생 정보 및 연락처 접근 방식 간소화 - 더욱 직관적인 필드 기반 인터페이스로 개선\n  * API 데이터 구조 최적화\n  * 문서 및 예제 코드 업데이트\n  * 버전 1.2.0 릴리스",
+      "parsed_changes": {
+        "리팩토링": {
+          "title": "리팩토링",
+          "items": [
+            "학생 정보 및 연락처 접근 방식 간소화 - 더욱 직관적인 필드 기반 인터페이스로 개선",
+            "API 데이터 구조 최적화",
+            "문서 및 예제 코드 업데이트",
+            "버전 1.2.0 릴리스"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.1.1",
       "project_type": "spring",
