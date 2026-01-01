@@ -5,12 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * 세종대학교 통합 인증 결과
- * - DHC(대양휴머니티칼리지) + SIS(학사정보시스템) 정보 통합
+ * 대양휴머니티칼리지(DHC) 인증 결과
+ * - classic.sejong.ac.kr에서 획득
+ * - 고전독서 인증 정보 보장
  */
 @Getter
 @Builder
-public class SejongAuthResult {
+public class SejongDhcAuthResult {
 
   /** 인증 성공 여부 */
   private final boolean success;
@@ -18,11 +19,8 @@ public class SejongAuthResult {
   /** 기본 학생 정보 */
   private final SejongStudentInfo studentInfo;
 
-  /** 고전독서 인증 정보 (DHC에서 획득) */
+  /** 고전독서 인증 정보 */
   private final SejongClassicReading classicReading;
-
-  /** 연락처 정보 (SIS에서 획득) */
-  private final ContactInfo contactInfo;
 
   /** 인증 시간 */
   private final LocalDateTime authenticatedAt;
@@ -32,7 +30,7 @@ public class SejongAuthResult {
 
   @Override
   public String toString() {
-    return String.format("SejongAuthResult{success=%s, studentInfo=%s, classicReading=%s, contactInfo=%s, authenticatedAt=%s}",
-        success, studentInfo, classicReading, contactInfo, authenticatedAt);
+    return String.format("SejongDhcAuthResult{success=%s, studentInfo=%s, classicReading=%s, authenticatedAt=%s}",
+        success, studentInfo, classicReading, authenticatedAt);
   }
 }

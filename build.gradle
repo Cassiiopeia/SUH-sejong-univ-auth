@@ -32,6 +32,9 @@ dependencies {
 	// HTML Parser (Jsoup)
 	implementation 'org.jsoup:jsoup:1.17.2'
 
+	// JSON Parser (Jackson)
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
