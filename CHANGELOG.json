@@ -1,11 +1,43 @@
 {
   "metadata": {
-    "lastUpdated": "2025-12-29T11:46:12Z",
-    "currentVersion": "1.0.1",
+    "lastUpdated": "2026-01-01T06:46:10Z",
+    "currentVersion": "1.1.1",
     "projectType": "spring",
-    "totalReleases": 4
+    "totalReleases": 5
   },
   "releases": [
+    {
+      "version": "1.1.1",
+      "project_type": "spring",
+      "date": "2026-01-01",
+      "pr_number": 8,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **새로운 기능**\n  * DHC와 SIS를 통한 별도 인증 경로 추가\n  * 연락처 정보(이메일, 전화번호, 영문명) 조회 기능 추가\n  * 학생 정보 확장 (전공, 학년, 상태 정보 추가)\n  * 통합 인증 결과로 여러 데이터 소스 정보 통합\n\n* **문서화**\n  * DHC 및 SIS 로그인 흐름에 대한 상세 가이드 문서 추가\n\n* **개선사항**\n  * SSL 설정 오류 처리 추가\n  * 버전 업그레이드: 1.0.1 → 1.1.1",
+      "parsed_changes": {
+        "새로운_기능": {
+          "title": "새로운 기능",
+          "items": [
+            "DHC와 SIS를 통한 별도 인증 경로 추가",
+            "연락처 정보(이메일, 전화번호, 영문명) 조회 기능 추가",
+            "학생 정보 확장 (전공, 학년, 상태 정보 추가)",
+            "통합 인증 결과로 여러 데이터 소스 정보 통합"
+          ]
+        },
+        "문서화": {
+          "title": "문서화",
+          "items": [
+            "DHC 및 SIS 로그인 흐름에 대한 상세 가이드 문서 추가"
+          ]
+        },
+        "개선사항": {
+          "title": "개선사항",
+          "items": [
+            "SSL 설정 오류 처리 추가",
+            "버전 업그레이드: 1.0.1 → 1.1.1"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.0.1",
       "project_type": "spring",
