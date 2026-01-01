@@ -12,13 +12,16 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-### [🔗바로 테스트해보기](https://lab.suhsaechan.kr/sejong-auth)
-
 [빠른 시작](#-빠른-시작) • [주요 기능](#-주요-기능) • [API 문서](#-api-레퍼런스) • [설정](#%EF%B8%8F-설정)
 
 </div>
 
 ---
+
+### [🔗바로 테스트해보기 (https://lab.suhsaechan.kr/sejong-auth) ](https://lab.suhsaechan.kr/sejong-auth)
+
+<img width="2781" height="1915" alt="image" src="https://github.com/user-attachments/assets/85288fb1-9343-4ea3-a25c-bfedac550194" />
+
 
 ## ✨ 왜 SUH-SEJONG-UNIV-AUTH 라이브러리인가?
 
