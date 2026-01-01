@@ -5,7 +5,7 @@ import kr.suhsaechan.sejong.auth.client.SejongSisClient;
 import kr.suhsaechan.sejong.auth.parser.SejongClassicReadingParser;
 import kr.suhsaechan.sejong.auth.parser.SejongSisParser;
 import kr.suhsaechan.sejong.auth.parser.SejongStudentInfoParser;
-import kr.suhsaechan.sejong.auth.service.SejongAuthService;
+import kr.suhsaechan.sejong.auth.service.SuhSejongAuthEngine;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 @EnableConfigurationProperties(SejongAuthProperties.class)
-@ConditionalOnClass(SejongAuthService.class)
+@ConditionalOnClass(SuhSejongAuthEngine.class)
 public class SejongAuthAutoConfiguration {
 
   @Bean
@@ -53,12 +53,12 @@ public class SejongAuthAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public SejongAuthService sejongAuthService(
+  public SuhSejongAuthEngine sejongAuthService(
       SejongPortalClient portalClient,
       SejongStudentInfoParser studentInfoParser,
       SejongClassicReadingParser classicReadingParser,
       SejongSisClient sisClient,
       SejongSisParser sisParser) {
-    return new SejongAuthService(portalClient, studentInfoParser, classicReadingParser, sisClient, sisParser);
+    return new SuhSejongAuthEngine(portalClient, studentInfoParser, classicReadingParser, sisClient, sisParser);
   }
 }

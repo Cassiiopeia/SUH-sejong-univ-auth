@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * - DHC(대양휴머니티칼리지) 및 SIS(학사정보시스템) 데이터 소스 지원
  */
 @Slf4j
-public class SejongAuthService {
+public class SuhSejongAuthEngine {
 
   private final SejongPortalClient portalClient;
   private final SejongStudentInfoParser studentInfoParser;
@@ -31,7 +31,7 @@ public class SejongAuthService {
   private final SejongSisClient sisClient;
   private final SejongSisParser sisParser;
 
-  public SejongAuthService(
+  public SuhSejongAuthEngine(
       SejongPortalClient portalClient,
       SejongStudentInfoParser studentInfoParser,
       SejongClassicReadingParser classicReadingParser,

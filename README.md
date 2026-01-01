@@ -5,7 +5,7 @@
 **세종대학교 포털 인증, 단 3줄이면 끝**
 
 <!-- 수정하지마세요 자동으로 동기화 됩니다 -->
-## 최신 버전 : v1.0.1 (2025-12-29)
+## 최신 버전 : v1.0.2 (2025-12-30)
 
 [![Nexus](https://img.shields.io/badge/Nexus-버전_목록-4E9BCD?style=flat-square&logo=sonatype&logoColor=white)](https://nexus.suhsaechan.kr/#browse/browse:maven-releases:kr%2Fsuhsaechan%2Fsejong-univ-auth)
 [![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/)
@@ -20,20 +20,20 @@
 
 ## ✨ 왜 SUH-SEJONG-UNIV-AUTH 라이브러리인가?
 
-세종대학교 포털 인증을 직접 구현하려면 **SSO 처리, 쿠키 관리, HTML 파싱**까지 복잡한 작업이 필요합니다.
+세종대학교 포털 인증을 직접 구현하려면 **SSO 처리, 쿠키 관리, HTML/JSON 파싱**까지 복잡한 작업이 필요합니다.
 이 라이브러리는 모든 복잡함을 숨기고, **단 3줄의 코드**로 학생 인증을 완료합니다.
 
 | 기존 방식 | 이 라이브러리 |
 |----------|--------------|
 | 직접 HTTP 요청 구현 | ✅ 자동화된 SSO 처리 |
 | 쿠키/세션 수동 관리 | ✅ 자동 세션 관리 |
-| HTML 파싱 직접 구현 | ✅ 구조화된 데이터 반환 |
+| HTML/JSON 파싱 직접 구현 | ✅ 구조화된 데이터 반환 |
 | 에러 처리 복잡 | ✅ 명확한 에러 코드 |
 | 로그인 실패 감지 어려움 | ✅ 즉시 실패 감지 |
 
 ```java
 // 3줄이면 끝!
-SejongAuthResult result = authService.authenticate("학번", "비밀번호");
+SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
 String name = result.getStudentInfo().getName();       // "홍길동"
 String major = result.getStudentInfo().getMajor();     // "컴퓨터공학과"
 ```
@@ -67,12 +67,12 @@ dependencies {
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final SejongAuthService sejongAuthService;
+    private final SuhSejongAuthEngine suhSejongAuthEngine;
 
     @PostMapping("/auth/sejong")
-    public SejongStudentInfo authenticate(@RequestParam String studentId,
-                                          @RequestParam String password) {
-        return sejongAuthService.authenticateBasic(studentId, password);
+    public SejongAuthResult authenticate(@RequestParam String studentId,
+                                         @RequestParam String password) {
+        return suhSejongAuthEngine.authenticate(studentId, password);
     }
 }
 ```
@@ -88,10 +88,21 @@ public class AuthController {
 - 복잡한 SSO 리다이렉트 자동 처리
 - **로그인 실패 즉시 감지** (`AUTHENTICATION_FAILED`)
 
+### 📊 데이터 소스
+
+이 라이브러리는 **2개의 데이터 소스**에서 정보를 조회합니다:
+
+| 데이터 소스 | 도메인 | 제공 정보 |
+|------------|--------|----------|
+| **DHC** (대양휴머니티칼리지) | classic.sejong.ac.kr | 학생정보 + 고전독서 인증 |
+| **SIS** (학사정보시스템) | sjpt.sejong.ac.kr | 학생정보 + 연락처 (이메일, 전화번호) |
+
 ### 👤 학생 정보 조회
 ```java
-SejongStudentInfo info = authService.authenticateBasic("학번", "비밀번호");
+// 통합 인증 (DHC + SIS 모두 조회)
+SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
 
+SejongStudentInfo info = result.getStudentInfo();
 info.getMajor();     // "바이오융합공학전공"
 info.getStudentId(); // "18010561"
 info.getName();      // "홍길동"
@@ -99,14 +110,26 @@ info.getGrade();     // "4"
 info.getStatus();    // "재학" / "휴학" / "졸업"
 ```
 
-### 📚 고전독서 인증 조회
+### 📚 고전독서 인증 조회 (DHC)
 ```java
-SejongAuthResult result = authService.authenticate("학번", "비밀번호");
+// DHC 전용 인증 (고전독서 정보 보장)
+SejongDhcAuthResult result = authEngine.authenticateWithDHC("학번", "비밀번호");
 SejongClassicReading reading = result.getClassicReading();
 
 reading.getCertifications();  // 영역별 인증 도서 목록
 reading.getExamRecords();     // 시험 응시 이력
 reading.getContestRecords();  // 공모전 참가 이력
+```
+
+### 📱 연락처 정보 조회 (SIS)
+```java
+// SIS 전용 인증 (연락처 정보 보장)
+SejongSisAuthResult result = authEngine.authenticateWithSIS("학번", "비밀번호");
+ContactInfo contact = result.getContactInfo();
+
+contact.getEmail();        // "student@example.com"
+contact.getPhoneNumber();  // "010-1234-5678"
+contact.getEnglishName();  // "Hong Gildong"
 ```
 
 ### ⚡ Spring Boot 자동 설정
@@ -118,17 +141,46 @@ reading.getContestRecords();  // 공모전 참가 이력
 
 ## 📖 API 레퍼런스
 
-### SejongAuthService
+### SuhSejongAuthEngine
 
 | 메서드 | 설명 | 반환 타입 |
 |--------|------|----------|
-| `authenticate(studentId, password)` | 전체 정보 조회 (학생정보 + 고전독서) | `SejongAuthResult` |
-| `authenticateBasic(studentId, password)` | 기본 정보만 조회 | `SejongStudentInfo` |
-| `authenticateWithRawHtml(studentId, password)` | 원본 HTML 포함 (디버깅용) | `SejongAuthResult` |
+| `authenticate(studentId, password)` | 통합 인증 (DHC + SIS) | `SejongAuthResult` |
+| `authenticateWithDHC(studentId, password)` | DHC 인증 (고전독서 보장) | `SejongDhcAuthResult` |
+| `authenticateWithSIS(studentId, password)` | SIS 인증 (연락처 보장) | `SejongSisAuthResult` |
+| `authenticateWithDHCRaw(studentId, password)` | DHC 인증 + 원본 HTML | `SejongDhcAuthResult` |
+| `authenticateWithSISRaw(studentId, password)` | SIS 인증 + 원본 JSON | `SejongSisAuthResult` |
 
 ### 반환 객체
 
-**SejongStudentInfo**
+**SejongAuthResult** (통합 인증 결과)
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `success` | boolean | 인증 성공 여부 |
+| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
+| `contactInfo` | ContactInfo | 연락처 정보 (SIS 실패 시 null) |
+| `authenticatedAt` | LocalDateTime | 인증 시간 |
+
+**SejongDhcAuthResult** (DHC 인증 결과)
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `success` | boolean | 인증 성공 여부 |
+| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
+| `authenticatedAt` | LocalDateTime | 인증 시간 |
+| `rawHtml` | String | 원본 HTML (Raw 메서드 사용 시) |
+
+**SejongSisAuthResult** (SIS 인증 결과)
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `success` | boolean | 인증 성공 여부 |
+| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
+| `contactInfo` | ContactInfo | 연락처 정보 |
+| `authenticatedAt` | LocalDateTime | 인증 시간 |
+| `rawJson` | String | 원본 JSON (Raw 메서드 사용 시) |
+
+**SejongStudentInfo** (학생 기본 정보)
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `major` | String | 학과명 |
@@ -137,26 +189,25 @@ reading.getContestRecords();  // 공모전 참가 이력
 | `grade` | String | 학년 |
 | `status` | String | 상태 (재학/휴학/졸업) |
 
-**SejongAuthResult**
+**ContactInfo** (연락처 정보)
 | 필드 | 타입 | 설명 |
 |------|------|------|
-| `success` | boolean | 인증 성공 여부 |
-| `studentInfo` | SejongStudentInfo | 학생 기본 정보 |
-| `classicReading` | SejongClassicReading | 고전독서 인증 정보 |
-| `authenticatedAt` | LocalDateTime | 인증 시간 |
+| `email` | String | 이메일 주소 |
+| `phoneNumber` | String | 전화번호 (010-1234-5678 형식) |
+| `englishName` | String | 영어 이름 |
 
 ### 예외 처리
 
 ```java
 try {
-    SejongAuthResult result = authService.authenticate(studentId, password);
+    SejongAuthResult result = authEngine.authenticate(studentId, password);
 } catch (SejongAuthException e) {
     switch (e.getErrorCode()) {
         case AUTHENTICATION_FAILED -> // 학번/비밀번호 불일치
         case INVALID_INPUT -> // 입력값 오류 (빈 값 등)
         case CONNECTION_FAILED -> // 포털 연결 실패
         case CONNECTION_TIMEOUT -> // 연결 시간 초과
-        case PARSE_ERROR -> // HTML 파싱 실패
+        case PARSE_ERROR -> // HTML/JSON 파싱 실패
     }
 }
 ```
@@ -188,8 +239,18 @@ sejong:
 | `CONNECTION_FAILED` | 세종대학교 포털 연결 실패 |
 | `CONNECTION_TIMEOUT` | 연결 시간 초과 |
 | `DATA_FETCH_FAILED` | 학생 정보 조회 실패 |
-| `PARSE_ERROR` | HTML 파싱 오류 |
+| `PARSE_ERROR` | HTML/JSON 파싱 오류 |
 | `SESSION_ERROR` | 세션 처리 오류 |
+| `SSL_CONFIGURATION_ERROR` | SSL 설정 오류 |
+
+---
+
+## 📚 상세 문서
+
+더 자세한 기술 문서는 `/docs` 폴더를 참조하세요:
+
+- [DHC 로그인 플로우](docs/DHC_LOGIN_FLOW.md) - 대양휴머니티칼리지 인증 상세
+- [SIS 로그인 플로우](docs/SIS_LOGIN_FLOW.md) - 학사정보시스템 인증 상세
 
 ---
 

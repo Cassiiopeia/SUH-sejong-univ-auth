@@ -27,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles("dev")
 @Slf4j
-class SejongAuthServiceTest {
+class SuhSejongAuthEngineTest {
 
   @Autowired
-  SejongAuthService sejongAuthService;
+  SuhSejongAuthEngine suhSejongAuthEngine;
 
   @Autowired
   SejongAuthProperties sejongAuthProperties;
@@ -47,7 +47,7 @@ class SejongAuthServiceTest {
   public void sejongAuthService_테스트() {
     // TODO: 테스트 로직 작성
     log.info("테스트 실행중");
-    assertNotNull(sejongAuthService, "SejongAuthService가 정상적으로 주입되어야 합니다.");
+    assertNotNull(suhSejongAuthEngine, "SejongAuthService가 정상적으로 주입되어야 합니다.");
     log.info("SejongAuthService 빈 주입 확인 완료");
   }
 
@@ -56,7 +56,7 @@ class SejongAuthServiceTest {
     log.info("============ 입력값 검증 테스트 - 학번 빈값 ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticate("", "password");
+      suhSejongAuthEngine.authenticate("", "password");
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -68,7 +68,7 @@ class SejongAuthServiceTest {
     log.info("============ 입력값 검증 테스트 - 비밀번호 빈값 ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticate("20012345", "");
+      suhSejongAuthEngine.authenticate("20012345", "");
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -80,7 +80,7 @@ class SejongAuthServiceTest {
     log.info("============ 입력값 검증 테스트 - 학번 null ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticate(null, "password");
+      suhSejongAuthEngine.authenticate(null, "password");
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -100,7 +100,7 @@ class SejongAuthServiceTest {
     assertFalse(testStudentId.isEmpty(), "테스트용 학번이 설정되지 않았습니다.");
     assertFalse(testPassword.isEmpty(), "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongAuthResult result = sejongAuthService.authenticate(testStudentId, testPassword);
+    SejongAuthResult result = suhSejongAuthEngine.authenticate(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getStudentInfo());
@@ -132,7 +132,7 @@ class SejongAuthServiceTest {
     String wrongPassword = "wrongpassword123";
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticate(testStudentId, wrongPassword);
+      suhSejongAuthEngine.authenticate(testStudentId, wrongPassword);
     });
 
     assertEquals(SejongAuthErrorCode.AUTHENTICATION_FAILED, exception.getErrorCode());
@@ -148,7 +148,7 @@ class SejongAuthServiceTest {
     log.info("============ DHC 인증 입력값 검증 - 학번 빈값 ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticateWithDHC("", "password");
+      suhSejongAuthEngine.authenticateWithDHC("", "password");
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -160,7 +160,7 @@ class SejongAuthServiceTest {
     log.info("============ SIS 인증 입력값 검증 - 학번 빈값 ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticateWithSIS("", "password");
+      suhSejongAuthEngine.authenticateWithSIS("", "password");
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -172,7 +172,7 @@ class SejongAuthServiceTest {
     log.info("============ DHC 인증 입력값 검증 - 비밀번호 null ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticateWithDHC("20171234", null);
+      suhSejongAuthEngine.authenticateWithDHC("20171234", null);
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -184,7 +184,7 @@ class SejongAuthServiceTest {
     log.info("============ SIS 인증 입력값 검증 - 비밀번호 null ============");
 
     SejongAuthException exception = assertThrows(SejongAuthException.class, () -> {
-      sejongAuthService.authenticateWithSIS("20171234", null);
+      suhSejongAuthEngine.authenticateWithSIS("20171234", null);
     });
 
     assertEquals(SejongAuthErrorCode.INVALID_INPUT, exception.getErrorCode());
@@ -202,7 +202,7 @@ class SejongAuthServiceTest {
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongDhcAuthResult result = sejongAuthService.authenticateWithDHC(testStudentId, testPassword);
+    SejongDhcAuthResult result = suhSejongAuthEngine.authenticateWithDHC(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getStudentInfo());
@@ -230,7 +230,7 @@ class SejongAuthServiceTest {
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongSisAuthResult result = sejongAuthService.authenticateWithSIS(testStudentId, testPassword);
+    SejongSisAuthResult result = suhSejongAuthEngine.authenticateWithSIS(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getStudentInfo());
@@ -260,7 +260,7 @@ class SejongAuthServiceTest {
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongAuthResult result = sejongAuthService.authenticate(testStudentId, testPassword);
+    SejongAuthResult result = suhSejongAuthEngine.authenticate(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getStudentInfo());
@@ -299,7 +299,7 @@ class SejongAuthServiceTest {
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongDhcAuthResult result = sejongAuthService.authenticateWithDHCRaw(testStudentId, testPassword);
+    SejongDhcAuthResult result = suhSejongAuthEngine.authenticateWithDHCRaw(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getRawHtml());
@@ -320,7 +320,7 @@ class SejongAuthServiceTest {
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
 
-    SejongSisAuthResult result = sejongAuthService.authenticateWithSISRaw(testStudentId, testPassword);
+    SejongSisAuthResult result = suhSejongAuthEngine.authenticateWithSISRaw(testStudentId, testPassword);
 
     assertTrue(result.isSuccess());
     assertNotNull(result.getRawJson());
