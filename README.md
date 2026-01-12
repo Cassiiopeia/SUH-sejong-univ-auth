@@ -18,7 +18,7 @@
 
 ---
 
-## [🔗바로 테스트해보기 (https://lab.suhsaechan.kr/sejong-auth) ](https://lab.suhsaechan.kr/sejong-auth)
+## [🔗바로 테스트해보기 >>> https://lab.suhsaechan.kr/sejong-auth ](https://lab.suhsaechan.kr/sejong-auth)
 
 <img width="2781" height="1915" alt="image" src="https://github.com/user-attachments/assets/85288fb1-9343-4ea3-a25c-bfedac550194" />
 
