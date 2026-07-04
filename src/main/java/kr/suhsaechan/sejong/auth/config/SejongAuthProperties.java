@@ -31,8 +31,8 @@ public class SejongAuthProperties {
   /** 세종포털 로그인 URL */
   private String portalLoginUrl = "https://portal.sejong.ac.kr/jsp/login/login_action.jsp";
 
-  /** SSO 리다이렉트 URL */
-  private String ssoRedirectUrl = "http://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do";
+  /** SSO 리다이렉트 URL (classic.sejong.ac.kr HTTP 평문 서비스 중단으로 https 필수) */
+  private String ssoRedirectUrl = "https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do";
 
   /** 고전독서인증현황 페이지 URL */
   private String classicStatusUrl = "https://classic.sejong.ac.kr/classic/reading/status.do";
