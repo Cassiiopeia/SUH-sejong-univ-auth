@@ -1,10 +1,24 @@
+# ===================================================================
+# PROJECT-COMMON-SYNC-ISSUE-LABELS.yaml
+# Issue Labels 동기화
+# ===================================================================
+#
+# .github/config/issue-labels.yml 파일을 기준으로
+# GitHub 레포지토리의 Labels를 동기화합니다.
+#
+# ===================================================================
+# 트리거:
+# - .github/config/issue-labels.yml 파일 변경 시
+# - 수동 실행 (workflow_dispatch)
+# ===================================================================
+
 name: "PROJECT-SYNC-GITHUB-LABELS"
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - '.github/ISSUE_TEMPLATE/issue-label.yml'
+      - '.github/config/issue-labels.yml'
 
 permissions:
   issues: write
@@ -14,9 +28,9 @@ jobs:
   label-sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Sync labels from config
         uses: crazy-max/ghaction-github-labeler@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          yaml-file: .github/ISSUE_TEMPLATE/issue-label.yml
+          yaml-file: .github/config/issue-labels.yml

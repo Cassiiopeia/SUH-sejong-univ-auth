@@ -1,3 +1,12 @@
+# ===================================================================
+# Spring Nexus 라이브러리 배포 워크플로우
+# ===================================================================
+#
+# 🔑 필수 GitHub Secrets
+# ===================================================================
+# GRADLE_PROPERTIES: gradle.properties 파일 내용 (Nexus 인증 정보 포함)
+# ===================================================================
+
 name: PROJECT-SPRING-NEXUS-PUBLISH
 
 on:
@@ -10,7 +19,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3

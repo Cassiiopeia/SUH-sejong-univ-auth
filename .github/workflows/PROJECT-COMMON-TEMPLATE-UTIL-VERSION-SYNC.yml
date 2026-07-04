@@ -46,7 +46,7 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -109,33 +109,45 @@ jobs:
       run: |
         git diff --quiet || echo "has_changes=true" >> $GITHUB_OUTPUT
 
-    - name: Pull Latest Changes Before Commit
-      if: steps.changes.outputs.has_changes == 'true'
-      run: |
-        echo "🔄 최신 변경사항 가져오는 중..."
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-
-        # 현재 변경사항 임시 저장
-        git stash
-
-        # 최신 main 브랜치 가져오기
-        git fetch origin main
-        git rebase origin/main
-
-        # 임시 저장한 변경사항 복원
-        git stash pop || true
-
-        echo "✅ 최신 상태로 동기화 완료"
-
     - name: Commit and Push Changes
       if: steps.changes.outputs.has_changes == 'true'
       run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
         git add .
         git commit -m "chore: github workflow util module version sync [skip ci]"
-        git push
 
-        echo "✅ 변경사항이 커밋되었습니다."
+        # Race Condition 방지: pull-rebase 후 push (최대 3회 재시도)
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+        PUSH_SUCCESS=false
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          RETRY_COUNT=$((RETRY_COUNT + 1))
+          echo "🔄 Push 시도 $RETRY_COUNT/$MAX_RETRIES..."
+
+          if git push; then
+            PUSH_SUCCESS=true
+            echo "✅ 변경사항이 커밋되었습니다."
+            break
+          else
+            echo "⚠️ Push 실패, remote 변경사항 동기화 중..."
+
+            if git pull --rebase origin ${{ github.ref_name }}; then
+              echo "✅ Rebase 성공, 다시 push 시도..."
+            else
+              echo "❌ Rebase 실패, 충돌 해결 필요"
+              git rebase --abort 2>/dev/null || true
+              exit 1
+            fi
+          fi
+        done
+
+        if [ "$PUSH_SUCCESS" = false ]; then
+          echo "❌ $MAX_RETRIES회 시도 후에도 push 실패"
+          exit 1
+        fi
 
     - name: No Changes
       if: steps.changes.outputs.has_changes != 'true'

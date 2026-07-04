@@ -1,3 +1,12 @@
+# ===================================================================
+# Spring Nexus CI 워크플로우
+# ===================================================================
+#
+# 🔑 필수 GitHub Secrets
+# ===================================================================
+# GRADLE_PROPERTIES: gradle.properties 파일 내용 (Nexus 인증 정보 포함)
+# ===================================================================
+
 name: PROJECT-SPRING-NEXUS-CI
 
 on:
@@ -21,7 +30,7 @@ jobs:
     
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 

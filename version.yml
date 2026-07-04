@@ -2,13 +2,14 @@
 # 프로젝트 버전 관리 파일
 # ===================================================================
 #
-# 이 파일은 다양한 프로젝트 타입에서 버전 정보를 중앙 관리하기 위한 파일
-# GitHub Actions 워크플로우가 이 파일을 읽어 자동으로 버전을 관리
+# 이 파일은 다양한 프로젝트 타입에서 버전 정보를 중앙 관리하기 위한 파일입니다.
+# GitHub Actions 워크플로우가 이 파일을 읽어 자동으로 버전을 관리합니다.
 #
 # 사용법:
 # 1. version: "1.0.0" - 사용자에게 표시되는 버전
 # 2. version_code: 1 - Play Store/App Store 빌드 번호 (1부터 자동 증가)
 # 3. project_type: 프로젝트 타입 지정
+# 4. project_paths: 타입별 프로젝트 폴더 (레포 루트 기준 상대경로, 모노레포용)
 #
 # 자동 버전 업데이트:
 # - patch: 자동으로 세 번째 자리 증가 (x.x.x -> x.x.x+1)
@@ -18,11 +19,16 @@
 # 프로젝트 타입별 동기화 파일:
 # - spring: build.gradle (version = "x.y.z")
 # - flutter: pubspec.yaml (version: x.y.z+i, buildNumber 포함)
-# - react/next/node: package.json ("version": "x.y.z")
+# - react/node: package.json ("version": "x.y.z")
 # - react-native: iOS Info.plist 또는 Android build.gradle
 # - react-native-expo: app.json (expo.version)
 # - python: pyproject.toml (version = "x.y.z")
 # - basic/기타: version.yml 파일만 사용
+#
+# 연관된 워크플로우:
+# - .github/workflows/PROJECT-VERSION-CONTROL.yaml
+# - .github/workflows/PROJECT-README-VERSION-UPDATE.yaml
+# - .github/workflows/PROJECT-AUTO-CHANGELOG-CONTROL.yaml
 #
 # 주의사항:
 # - project_type은 최초 설정 후 변경하지 마세요
@@ -30,9 +36,22 @@
 # ===================================================================
 
 version: "1.2.4"
-version_code: 14 # app build number
-project_type: "spring" # spring, flutter, next, react, react-native, react-native-expo, node, python, basic
+version_code: 14  # app build number
+project_types: ["spring"]   # 멀티타입 배열 — 첫 항목이 primary, 직접 편집 가능
+project_type: "spring"  # project_types[0] 자동 미러 — 직접 수정 금지 (spring, flutter, next, react, react-native, react-native-expo, node, python, basic)
+project_paths:                # 타입별 프로젝트 폴더 (레포 루트 기준 상대경로)
+  spring: "."   # build.gradle
 metadata:
-  last_updated: "2026-01-12 08:10:24"
-  last_updated_by: "Cassiiopeia"
+  last_updated: "2026-07-04 10:10:37"
+  last_updated_by: "template_integrator"
   default_branch: "main"
+  integrated_from: "SUH-DEVOPS-TEMPLATE"
+  integration_date: "2026-07-04"
+  template:
+    source: "SUH-DEVOPS-TEMPLATE"
+    version: "3.0.182"
+    integrated_date: "2026-07-04"
+    last_update_date: "2026-07-04"
+    options:
+      nexus: true
+      secret_backup: false
