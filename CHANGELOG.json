@@ -1,11 +1,45 @@
 {
   "metadata": {
-    "lastUpdated": "2026-01-01T07:22:02Z",
-    "currentVersion": "1.2.0",
+    "lastUpdated": "2026-07-04T10:23:37Z",
+    "currentVersion": "1.2.5",
     "projectType": "spring",
-    "totalReleases": 6
+    "totalReleases": 7,
+    "projectTypes": [
+      "spring"
+    ]
   },
   "releases": [
+    {
+      "version": "1.2.5",
+      "project_type": "spring",
+      "project_types": [
+        "spring"
+      ],
+      "date": "2026-07-04",
+      "pr_number": 11,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **개선**\n  * 대양휴머니티칼리지 학생 정보 조회 방식 개선\n\n* **문서**\n  * 사용 설명서에 테스트 사이트 안내 추가 및 정리\n\n* **기타**\n  * 버전 관리·배포 자동화 구조 최신화",
+      "parsed_changes": {
+        "개선": {
+          "title": "개선",
+          "items": [
+            "대양휴머니티칼리지 학생 정보 조회 방식 개선"
+          ]
+        },
+        "문서": {
+          "title": "문서",
+          "items": [
+            "사용 설명서에 테스트 사이트 안내 추가 및 정리"
+          ]
+        },
+        "기타": {
+          "title": "기타",
+          "items": [
+            "버전 관리·배포 자동화 구조 최신화"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.0",
       "project_type": "spring",
