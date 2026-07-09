@@ -14,6 +14,7 @@ import javax.net.ssl.X509TrustManager;
 import kr.suhsaechan.sejong.auth.config.SejongAuthProperties;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
+import kr.suhsaechan.sejong.auth.util.SejongTlsSupport;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.JavaNetCookieJar;
@@ -191,6 +192,9 @@ public class SejongPortalClient {
    */
   private OkHttpClient buildClient() {
     try {
+      // 세종포털은 레거시 cipher(TLS_RSA_WITH_AES_256_CBC_SHA)만 지원 → JSSE 초기화 전에 재허용 보장
+      SejongTlsSupport.ensureLegacyCipherEnabled();
+
       OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
       // 타임아웃 설정
@@ -206,7 +210,7 @@ public class SejongPortalClient {
 
       // SSL 검증 비활성화 (설정에 따라)
       if (!properties.isSslVerification()) {
-        SSLContext sslContext = SSLContext.getInstance("SSL");
+        SSLContext sslContext = SSLContext.getInstance("TLS");
         X509TrustManager trustManager = createTrustAllManager();
         sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
         SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
