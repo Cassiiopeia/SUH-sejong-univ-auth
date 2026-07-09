@@ -1,14 +1,33 @@
 {
   "metadata": {
-    "lastUpdated": "2026-07-04T10:28:44Z",
-    "currentVersion": "1.2.6",
+    "lastUpdated": "2026-07-09T10:00:32Z",
+    "currentVersion": "1.2.7",
     "projectType": "spring",
-    "totalReleases": 8,
+    "totalReleases": 9,
     "projectTypes": [
       "spring"
     ]
   },
   "releases": [
+    {
+      "version": "1.2.7",
+      "project_type": "spring",
+      "project_types": [
+        "spring"
+      ],
+      "date": "2026-07-09",
+      "pr_number": 15,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **버그 수정**\n  * 특정 서버 환경에서 세종대학교 로그인 인증이 되지 않던 문제 해결",
+      "parsed_changes": {
+        "버그_수정": {
+          "title": "버그 수정",
+          "items": [
+            "특정 서버 환경에서 세종대학교 로그인 인증이 되지 않던 문제 해결"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.6",
       "project_type": "spring",
