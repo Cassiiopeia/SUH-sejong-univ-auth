@@ -82,7 +82,7 @@ jobs:
             } >> "$GITHUB_ENV"
           else
             echo "API call failed with status ${STATUS}"
-          echo "COMMENT_BODY=API 호출에 실패했습니다. 레포지토리가 허용 목록에 있는지 확인하세요. 해당 레포는 반드시 lab.suhsaechan.me 사이트 내부 모듈에서 기능을 한 번이라도 이용한 적이 있어야 합니다." >> "$GITHUB_ENV"
+          echo "COMMENT_BODY=API 호출에 실패했습니다. 레포지토리가 허용 목록에 있는지 확인하세요. 해당 레포는 반드시 lab.suhsaechan.kr 사이트 내부 모듈에서 기능을 한 번이라도 이용한 적이 있어야 합니다." >> "$GITHUB_ENV"
           fi
 
       - name: Add comment to Issue
