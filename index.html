@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUH Sejong Univ Auth | 세종대학교 포털 인증을 3줄로 끝내는 Java 라이브러리</title>
+<meta name="description" content="세종대학교 포털 인증을 SSO 처리, 쿠키 관리, 파싱 없이 단 3줄로 끝내는 Spring Boot용 Java 라이브러리. 학생 정보, 고전독서 인증, 연락처를 조회합니다.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://cassiiopeia.github.io/SUH-sejong-univ-auth/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SUH-LAB">
+<meta property="og:title" content="SUH Sejong Univ Auth | 세종대학교 포털 인증을 3줄로 끝내는 Java 라이브러리">
+<meta property="og:description" content="세종대학교 포털 인증을 SSO 처리, 쿠키 관리, 파싱 없이 단 3줄로 끝내는 Spring Boot용 Java 라이브러리. 학생 정보, 고전독서 인증, 연락처를 조회합니다.">
+<meta property="og:url" content="https://cassiiopeia.github.io/SUH-sejong-univ-auth/">
+<meta property="og:image" content="https://cassiiopeia.github.io/SUH-sejong-univ-auth/og.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SUH Sejong Univ Auth | 세종대학교 포털 인증을 3줄로 끝내는 Java 라이브러리">
+<meta name="twitter:description" content="세종대학교 포털 인증을 SSO 처리, 쿠키 관리, 파싱 없이 단 3줄로 끝내는 Spring Boot용 Java 라이브러리. 학생 정보, 고전독서 인증, 연락처를 조회합니다.">
+<meta name="twitter:image" content="https://cassiiopeia.github.io/SUH-sejong-univ-auth/og.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "SUH Sejong Univ Auth", "description": "세종대학교 포털 인증을 SSO 처리, 쿠키 관리, 파싱 없이 단 3줄로 끝내는 Spring Boot용 Java 라이브러리. 학생 정보, 고전독서 인증, 연락처를 조회합니다.", "codeRepository": "https://github.com/Cassiiopeia/SUH-sejong-univ-auth", "programmingLanguage": "Java", "url": "https://cassiiopeia.github.io/SUH-sejong-univ-auth/", "image": "https://cassiiopeia.github.io/SUH-sejong-univ-auth/og.png", "author": {"@type": "Person", "name": "Suh Saechan", "alternateName": "서새찬", "url": "https://lab.suhsaechan.kr/dashboard"}, "license": "https://opensource.org/licenses/MIT"}</script>
+<style>
+:root{--bg:#fafafc;--fg:#1e293b;--mut:#64748b;--card:#fff;--bd:#e2e8f0;--pri:#4338ca;--pri2:#6366f1;--soft:#eef2ff;--code:#0f172a;--codefg:#e2e8f0}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--mut:#94a3b8;--card:#131a2e;--bd:#25304a;--pri:#a5b4fc;--pri2:#818cf8;--soft:#1b2342;--code:#070b17;--codefg:#e2e8f0}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--pri);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+header.top{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--bd)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+header.top b{font-weight:800;letter-spacing:-.02em}header.top nav a{margin-left:18px;color:var(--mut);font-size:.92rem}
+.hero{position:relative;overflow:hidden;padding:72px 0 56px}
+.hero:before{content:"";position:absolute;inset:-120px -80px auto auto;width:520px;height:520px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--pri2) 28%,transparent),transparent)}
+.hero h1{position:relative;font-size:clamp(2rem,5vw,3.2rem);line-height:1.15;letter-spacing:-.03em;margin:0 0 14px}
+.hero p.lead{position:relative;font-size:1.15rem;color:var(--mut);max-width:680px;margin:0 0 22px}
+.badges{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.badge{display:inline-block;padding:3px 12px;border-radius:999px;background:var(--soft);color:var(--pri);font-size:.82rem;font-weight:600;border:1px solid color-mix(in srgb,var(--pri2) 25%,transparent)}
+.btns{position:relative;display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:999px;font-weight:700;font-size:.95rem;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+.btn.pri{background:var(--pri2);border-color:var(--pri2);color:#fff}.btn:hover{text-decoration:none;filter:brightness(1.06)}
+section{padding:40px 0}section h2{font-size:1.6rem;letter-spacing:-.02em;margin:0 0 6px}section p.sub{color:var(--mut);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:20px 22px}
+.card h3{margin:0 0 6px;font-size:1.05rem}.card p{margin:0;color:var(--mut);font-size:.95rem}
+.code{position:relative;margin:12px 0 18px;background:var(--code);border-radius:16px;overflow:hidden}
+.code pre{margin:0;padding:18px 20px;overflow-x:auto;color:var(--codefg);font:13.5px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.code .lab{position:absolute;top:8px;left:14px;font-size:.72rem;color:#94a3b8;font-weight:700;letter-spacing:.04em}
+.code .lab+button+pre{padding-top:30px}
+.copy{position:absolute;top:8px;right:10px;border:1px solid #334155;background:#1e293b;color:#cbd5e1;border-radius:8px;font-size:.75rem;padding:3px 10px;cursor:pointer}
+.tbl{overflow-x:auto;border:1px solid var(--bd);border-radius:16px;background:var(--card);margin:12px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:top}
+th{background:var(--soft);color:var(--pri);font-weight:700;white-space:nowrap}tr:last-child td{border-bottom:0}
+td code,p code,li code{background:var(--soft);color:var(--pri);padding:1px 6px;border-radius:6px;font-size:.88em}
+.note{border-left:4px solid var(--pri2);background:var(--soft);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-size:.95rem}
+.note.warn{border-color:#f59e0b;background:color-mix(in srgb,#f59e0b 12%,var(--card))}
+ol.steps{padding-left:20px}ol.steps li{margin:6px 0}
+footer{border-top:1px solid var(--bd);padding:32px 0 56px;color:var(--mut);font-size:.9rem}
+footer a{color:var(--mut);text-decoration:underline}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><b>SUH Sejong Univ Auth</b><nav><a href="#why">왜 필요한가</a><a href="#start">빠른 시작</a><a href="#features">기능</a><a href="#api">API</a><a href="#config">설정</a><a href="https://github.com/Cassiiopeia/SUH-sejong-univ-auth" target="_blank" rel="noopener">GitHub</a></nav></div></header>
+<main>
+<section class="hero"><div class="wrap">
+<h1>세종대학교 포털 인증,<br><span style="color:var(--pri2)">단 3줄이면 끝</span></h1>
+<p class="lead">SSO 처리, 쿠키 관리, HTML/JSON 파싱의 복잡함을 모두 숨기고 학생 정보를 구조화된 객체로 돌려주는 Spring Boot 라이브러리입니다.</p>
+<div class="badges"><span class="badge">Java 17+</span><span class="badge">Spring Boot 3.x</span><span class="badge">v1.2.7</span><span class="badge">MIT License</span></div>
+<div class="btns"><a class="btn pri" href="#start" target="_blank" rel="noopener">빠른 시작</a><a class="btn" href="https://lab.suhsaechan.kr/sejong-auth" target="_blank" rel="noopener">직접 체험하기</a><a class="btn" href="https://github.com/Cassiiopeia/SUH-sejong-univ-auth" target="_blank" rel="noopener">GitHub</a></div>
+</div></section>
+<section id="why"><div class="wrap"><h2>왜 이 라이브러리인가</h2><p class="sub">포털 인증을 직접 구현하면 SSO 처리, 쿠키 관리, HTML/JSON 파싱까지 해야 합니다.</p><div class="tbl"><table><thead><tr><th>기존 방식</th><th>이 라이브러리</th></tr></thead><tbody><tr><td>직접 HTTP 요청 구현</td><td>자동화된 SSO 처리</td></tr><tr><td>쿠키·세션 수동 관리</td><td>자동 세션 관리</td></tr><tr><td>HTML/JSON 파싱 직접 구현</td><td>구조화된 데이터 반환</td></tr><tr><td>에러 처리 복잡</td><td>명확한 에러 코드</td></tr><tr><td>로그인 실패 감지 어려움</td><td>즉시 실패 감지</td></tr></tbody></table></div><div class="code"><span class="lab">Java</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>// 3줄이면 끝!
+SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
+String name = result.getName();       // "홍길동"
+String major = result.getMajor();     // "컴퓨터공학과"</code></pre></div></div></section><section id="start"><div class="wrap"><h2>빠른 시작</h2><p class="sub">Maven Central 이 아닌 SUH Nexus 저장소에서 제공합니다.</p><h3>1. 저장소 추가</h3><div class="code"><span class="lab">build.gradle</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>repositories {
+    mavenCentral()
+
+    // SUH Nexus 저장소 (필수)
+    maven {
+        name = 'SUH-NEXUS'
+        url "https://nexus.suhsaechan.kr/repository/maven-releases/"
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+}</code></pre></div><div class="code"><span class="lab">pom.xml</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;suh-nexus&lt;/id&gt;
+        &lt;name&gt;SUH Nexus Repository&lt;/name&gt;
+        &lt;url&gt;https://nexus.suhsaechan.kr/repository/maven-releases/&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;</code></pre></div><h3>2. 의존성 추가</h3><div class="code"><span class="lab">build.gradle</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>dependencies {
+    implementation 'kr.suhsaechan:sejong-univ-auth:1.2.7'
+}</code></pre></div><div class="code"><span class="lab">pom.xml</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;kr.suhsaechan&lt;/groupId&gt;
+    &lt;artifactId&gt;sejong-univ-auth&lt;/artifactId&gt;
+    &lt;version&gt;1.2.7&lt;/version&gt;
+&lt;/dependency&gt;</code></pre></div><h3>3. 바로 사용</h3><div class="code"><span class="lab">Java</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>@RestController
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final SuhSejongAuthEngine suhSejongAuthEngine;
+
+    @PostMapping("/auth/sejong")
+    public SejongAuthResult authenticate(@RequestParam String studentId,
+                                         @RequestParam String password) {
+        return suhSejongAuthEngine.authenticate(studentId, password);
+    }
+}</code></pre></div><p>Spring Boot Auto Configuration 덕분에 별도 설정 없이 바로 사용할 수 있습니다.</p></div></section><section id="features"><div class="wrap"><h2>주요 기능</h2><p class="sub"></p><div class="grid"><div class="card"><h3>SSO 인증</h3><p>세종대학교 포털에 자동 로그인하고 복잡한 SSO 리다이렉트를 처리합니다. 로그인 실패는 즉시 감지합니다.</p></div><div class="card"><h3>학생 정보 조회</h3><p>학과, 학번, 이름, 학년, 상태(재학·휴학·졸업)를 조회합니다.</p></div><div class="card"><h3>고전독서 인증 조회 (DHC)</h3><p>영역별 인증 도서, 시험 응시 이력, 공모전 참가 이력을 조회합니다.</p></div><div class="card"><h3>연락처 조회 (SIS)</h3><p>이메일, 전화번호, 영어 이름을 조회합니다.</p></div><div class="card"><h3>Spring Boot 자동 설정</h3><p>생성자 주입으로 바로 쓰고, application.yml 로 세부 설정을 바꿉니다.</p></div></div><h3>데이터 소스</h3><div class="tbl"><table><thead><tr><th>데이터 소스</th><th>도메인</th><th>제공 정보</th></tr></thead><tbody><tr><td><b>DHC</b> (대양휴머니티칼리지)</td><td>classic.sejong.ac.kr</td><td>학생정보, 고전독서 인증</td></tr><tr><td><b>SIS</b> (학사정보시스템)</td><td>sjpt.sejong.ac.kr</td><td>학생정보, 연락처(이메일, 전화번호)</td></tr></tbody></table></div><div class="code"><span class="lab">조회 방식</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>// 통합 인증 (DHC + SIS 모두 조회)
+SejongAuthResult result = authEngine.authenticate("학번", "비밀번호");
+
+// DHC 전용 (고전독서 정보 보장)
+SejongDhcAuthResult dhc = authEngine.authenticateWithDHC("학번", "비밀번호");
+SejongClassicReading reading = dhc.getClassicReading();
+
+// SIS 전용 (연락처 정보 보장)
+SejongSisAuthResult sis = authEngine.authenticateWithSIS("학번", "비밀번호");
+String email = sis.getEmail();</code></pre></div></div></section><section id="api"><div class="wrap"><h2>API 레퍼런스</h2><p class="sub">SuhSejongAuthEngine</p><div class="tbl"><table><thead><tr><th>메서드</th><th>설명</th><th>반환 타입</th></tr></thead><tbody><tr><td><code>authenticate(studentId, password)</code></td><td>통합 인증 (DHC + SIS)</td><td><code>SejongAuthResult</code></td></tr><tr><td><code>authenticateWithDHC(studentId, password)</code></td><td>DHC 인증 (고전독서 보장)</td><td><code>SejongDhcAuthResult</code></td></tr><tr><td><code>authenticateWithSIS(studentId, password)</code></td><td>SIS 인증 (연락처 보장)</td><td><code>SejongSisAuthResult</code></td></tr><tr><td><code>authenticateWithDHCRaw(studentId, password)</code></td><td>DHC 인증 + 원본 HTML</td><td><code>SejongDhcAuthResult</code></td></tr><tr><td><code>authenticateWithSISRaw(studentId, password)</code></td><td>SIS 인증 + 원본 JSON</td><td><code>SejongSisAuthResult</code></td></tr></tbody></table></div><h3>SejongAuthResult (통합 인증 결과)</h3><div class="tbl"><table><thead><tr><th>필드</th><th>타입</th><th>설명</th></tr></thead><tbody><tr><td><code>success</code></td><td>boolean</td><td>인증 성공 여부</td></tr><tr><td><code>major</code></td><td>String</td><td>학과명</td></tr><tr><td><code>studentId</code></td><td>String</td><td>학번</td></tr><tr><td><code>name</code></td><td>String</td><td>이름</td></tr><tr><td><code>grade</code></td><td>String</td><td>학년</td></tr><tr><td><code>status</code></td><td>String</td><td>상태 (재학/휴학/졸업)</td></tr><tr><td><code>classicReading</code></td><td>SejongClassicReading</td><td>고전독서 인증 정보</td></tr><tr><td><code>email</code></td><td>String</td><td>이메일 주소 (SIS 실패 시 null)</td></tr><tr><td><code>phoneNumber</code></td><td>String</td><td>전화번호 (SIS 실패 시 null)</td></tr><tr><td><code>englishName</code></td><td>String</td><td>영어 이름 (SIS 실패 시 null)</td></tr><tr><td><code>authenticatedAt</code></td><td>LocalDateTime</td><td>인증 시간</td></tr></tbody></table></div><h3>에러 코드</h3><div class="tbl"><table><thead><tr><th>코드</th><th>설명</th></tr></thead><tbody><tr><td><code>AUTHENTICATION_FAILED</code></td><td>학번 또는 비밀번호가 일치하지 않음</td></tr><tr><td><code>INVALID_INPUT</code></td><td>입력값이 비어있거나 유효하지 않음</td></tr><tr><td><code>CONNECTION_FAILED</code></td><td>세종대학교 포털 연결 실패</td></tr><tr><td><code>CONNECTION_TIMEOUT</code></td><td>연결 시간 초과</td></tr><tr><td><code>DATA_FETCH_FAILED</code></td><td>학생 정보 조회 실패</td></tr><tr><td><code>PARSE_ERROR</code></td><td>HTML/JSON 파싱 오류</td></tr><tr><td><code>SESSION_ERROR</code></td><td>세션 처리 오류</td></tr><tr><td><code>SSL_CONFIGURATION_ERROR</code></td><td>SSL 설정 오류</td></tr></tbody></table></div></div></section><section id="config"><div class="wrap"><h2>설정과 요구사항</h2><p class="sub">application.yml 에서 세부 설정을 바꿀 수 있습니다.</p><div class="code"><span class="lab">application.yml</span><button class="copy" type="button" aria-label="복사">복사</button><pre><code>sejong:
+  auth:
+    ssl-verification: false    # SSL 검증 (기본: true)
+    timeout-seconds: 10        # 타임아웃 초 (기본: 10)
+    max-retry: 3               # 최대 재시도 횟수 (기본: 3)</code></pre></div><div class="note">세종대학교 포털의 SSL 인증서 문제로 <code>ssl-verification: false</code> 를 권장합니다.</div><p>요구사항: <b>Java 17+</b>, <b>Spring Boot 3.x</b></p></div></section>
+</main>
+<footer><div class="wrap">
+<p>Made by <a href="https://github.com/Cassiiopeia" target="_blank" rel="noopener">SUH-LAB (서새찬)</a> · <a href="https://lab.suhsaechan.kr/dashboard" target="_blank" rel="noopener">포트폴리오</a> · <a href="https://github.com/Cassiiopeia/SUH-sejong-univ-auth" target="_blank" rel="noopener">GitHub 저장소</a></p>
+</div></footer>
+<script>document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var t=b.parentElement.querySelector('code').innerText;navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){b.textContent='복사됨';setTimeout(function(){b.textContent='복사'},1400)})})})</script>
+</body>
+</html>
