@@ -1,14 +1,52 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-22T00:41:29Z",
-    "currentVersion": "1.2.12",
+    "lastUpdated": "2026-10-22T03:00:37Z",
+    "currentVersion": "1.2.15",
     "projectType": "spring",
-    "totalReleases": 11,
+    "totalReleases": 12,
     "projectTypes": [
-      "spring"
+      "spring",
+      "python",
+      "node"
     ]
   },
   "releases": [
+    {
+      "version": "1.2.15",
+      "project_type": "spring",
+      "project_types": [
+        "spring",
+        "python",
+        "node"
+      ],
+      "date": "2026-10-22",
+      "pr_number": 25,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **새 기능**\n  * Python 패키지 추가 (pip install pro-sejong-auth)\n  * Node.js 패키지 추가 (npm install pro-sejong-auth)\n  * Java 라이브러리 Maven Central 배포 (저장소 추가 없이 사용)\n  * 세 언어 모두 같은 기능, 같은 결과, 같은 에러 코드\n\n* **버그 수정**\n  * 학사정보시스템 인증에서 틀린 비밀번호가 비밀번호 오류로 표시되지 않던 문제 해결\n\n* **문서**\n  * 언어별 설치·사용 안내와 공통 포털 흐름 문서 추가",
+      "parsed_changes": {
+        "새_기능": {
+          "title": "새 기능",
+          "items": [
+            "Python 패키지 추가 (pip install pro-sejong-auth)",
+            "Node.js 패키지 추가 (npm install pro-sejong-auth)",
+            "Java 라이브러리 Maven Central 배포 (저장소 추가 없이 사용)",
+            "세 언어 모두 같은 기능, 같은 결과, 같은 에러 코드"
+          ]
+        },
+        "버그_수정": {
+          "title": "버그 수정",
+          "items": [
+            "학사정보시스템 인증에서 틀린 비밀번호가 비밀번호 오류로 표시되지 않던 문제 해결"
+          ]
+        },
+        "문서": {
+          "title": "문서",
+          "items": [
+            "언어별 설치·사용 안내와 공통 포털 흐름 문서 추가"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.12",
       "project_type": "spring",
