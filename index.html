@@ -493,7 +493,7 @@ const DEMO_REQUEST_TIMEOUT_MILLISECONDS = 30000;
 // localStorage 키: 언어(ko|en), 테마(light|dark)
 const STORAGE_KEY_LANGUAGE = 'sejongAuthDocsLanguage';
 const STORAGE_KEY_THEME = 'sejongAuthDocsTheme';
-const ERROR_CODES = ['AUTHENTICATION_FAILED', 'INVALID_INPUT', 'CONNECTION_FAILED', 'CONNECTION_TIMEOUT', 'DATA_FETCH_FAILED', 'PARSE_ERROR', 'SESSION_ERROR', 'SSL_CONFIGURATION_ERROR'];
+const ERROR_CODES = ['AUTHENTICATION_FAILED', 'INVALID_INPUT', 'CONNECTION_FAILED', 'CONNECTION_TIMEOUT', 'DATA_FETCH_FAILED', 'PARSE_ERROR', 'SESSION_ERROR', 'SSL_CONFIGURATION_ERROR', 'ACCOUNT_LOCKED', 'ACCOUNT_UNAVAILABLE', 'TOO_MANY_ATTEMPTS'];
 
 const MESSAGES = {
   ko: {
@@ -536,6 +536,7 @@ const MESSAGES = {
     error_AUTHENTICATION_FAILED: '학번 또는 비밀번호가 일치하지 않음', error_INVALID_INPUT: '입력값이 비었거나 형식이 맞지 않음',
     error_CONNECTION_FAILED: '세종대 포털에 연결할 수 없음', error_CONNECTION_TIMEOUT: '포털 응답 시간 초과', error_DATA_FETCH_FAILED: '학생 정보 조회 실패',
     error_PARSE_ERROR: '포털 응답 구조 변경 등으로 파싱 실패', error_SESSION_ERROR: '포털 세션 처리 오류', error_SSL_CONFIGURATION_ERROR: 'SSL 설정 오류',
+    error_ACCOUNT_LOCKED: '비밀번호를 여러 번 틀려 포털 계정이 잠김. 포털 비밀번호 찾기(https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp)에서 재설정', error_ACCOUNT_UNAVAILABLE: '포털 계정으로 로그인할 수 없음 (사용 기간 종료 또는 관리자 차단)', error_TOO_MANY_ATTEMPTS: '같은 학번 3번 연속 실패로 30분 동안 데모 시도 차단 (포털 계정 잠금 방지)',
     faq0Q: '세종대 로그인 API가 있나요?', faq0A: '네. pro-sejong-auth는 세종대학교 포털 로그인(SSO)을 대신 처리하는 Java·Spring Boot 라이브러리입니다. 학번과 비밀번호로 재학생 여부, 학과, 학년, 고전독서 인증, 연락처를 조회합니다.',
     faq1Q: '비밀번호를 저장하나요?', faq1A: '라이브러리는 비밀번호를 저장하지 않고 포털 로그인 요청에만 씁니다. 이 페이지의 데모 서버도 결과만 돌려주고 입력값을 저장하지 않습니다. 실제 서비스에서는 비밀번호를 로그·DB에 남기지 않도록 주의하세요.',
     faq2Q: '세종대학교 공식 라이브러리인가요?', faq2A: '아닙니다. 세종대 학생이 만든 개인 오픈소스이며 학교와 무관합니다. 포털 구조가 바뀌면 동작이 멈출 수 있고, 그때는 이슈로 알려 주세요.',
@@ -583,6 +584,7 @@ const MESSAGES = {
     error_AUTHENTICATION_FAILED: 'Student ID or password is wrong', error_INVALID_INPUT: 'Input is empty or malformed',
     error_CONNECTION_FAILED: 'Cannot reach the Sejong portal', error_CONNECTION_TIMEOUT: 'Portal timed out', error_DATA_FETCH_FAILED: 'Failed to fetch student info',
     error_PARSE_ERROR: 'Could not parse the portal response (structure changed?)', error_SESSION_ERROR: 'Portal session error', error_SSL_CONFIGURATION_ERROR: 'SSL configuration error',
+    error_ACCOUNT_LOCKED: 'The portal locked the account after too many wrong passwords. Reset it at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp', error_ACCOUNT_UNAVAILABLE: 'The portal account cannot sign in (use period ended or blocked by the administrator)', error_TOO_MANY_ATTEMPTS: '3 failed attempts in a row for this student ID: demo blocked for 30 minutes to protect the portal account',
     faq0Q: 'Is there a Sejong University login API?', faq0A: 'Yes. pro-sejong-auth is a Java and Spring Boot library that handles the Sejong University portal login (SSO) for you. With a student ID and password it returns enrollment status, major, year, classic-reading certification and contact info.',
     faq1Q: 'Is my password stored?', faq1A: 'No. The library only uses it for the portal login request. The demo server on this page also returns the result without storing input. In your own service, never log or persist passwords.',
     faq2Q: 'Is this an official Sejong University library?', faq2A: 'No. It is a personal open-source project by a Sejong student and is not affiliated with the university. If the portal changes it may stop working; please open an issue.',
