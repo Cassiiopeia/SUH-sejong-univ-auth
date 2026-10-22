@@ -1,0 +1,48 @@
+# Node 패키지 npm 배포 (deploy 브랜치 push = 릴리스, Trusted Publishing(OIDC) 우선, NPM_TOKEN 은 대체 수단)
+# npm 설정: 패키지 Settings > Trusted Publisher > GitHub Actions, repo Cassiiopeia/pro-sejong-auth, workflow PROJECT-SEJONG-NPM-PUBLISH.yml
+name: PROJECT-SEJONG-NPM-PUBLISH
+
+on:
+  push:
+    branches: ["deploy"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Update npm (Trusted Publishing needs npm 11.5+)
+        run: npm install -g npm@latest
+      - name: Test
+        working-directory: node
+        run: |
+          npm ci
+          npm test
+      - name: Skip if version exists
+        id: check
+        working-directory: node
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "pro-sejong-auth@$VERSION" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"; echo "already published: $VERSION"
+          fi
+      - name: Publish to npm
+        if: steps.check.outputs.exists != 'true'
+        working-directory: node
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public

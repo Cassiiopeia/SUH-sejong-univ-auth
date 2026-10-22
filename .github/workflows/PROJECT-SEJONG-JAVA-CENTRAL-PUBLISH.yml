@@ -1,0 +1,47 @@
+# Java 라이브러리 Maven Central 배포 (deploy 브랜치 push = 릴리스, 이미 있는 버전은 건너뜀)
+# Nexus·GitHub Packages 배포는 PROJECT-SPRING-* 템플릿 워크플로우가 담당
+name: PROJECT-SEJONG-JAVA-CENTRAL-PUBLISH
+
+on:
+  push:
+    branches: ["deploy"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-central-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(sed -n "s/^version = '\(.*\)'/\1/p" build.gradle)" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if already on Central
+        id: check
+        run: |
+          URL="https://repo1.maven.org/maven2/kr/suhsaechan/sejong-univ-auth/${{ steps.version.outputs.version }}/"
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL")" = "200" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"; echo "already published: ${{ steps.version.outputs.version }}"
+          fi
+
+      - name: Publish to Maven Central
+        if: steps.check.outputs.exists != 'true'
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew :sejong-univ-auth:publishToMavenCentral --no-configuration-cache

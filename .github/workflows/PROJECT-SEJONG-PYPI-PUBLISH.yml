@@ -1,0 +1,40 @@
+# Python 패키지 PyPI 배포 (deploy 브랜치 push = 릴리스, Trusted Publishing: 토큰 저장 없음)
+# PyPI 설정: owner Cassiiopeia, repo pro-sejong-auth, workflow PROJECT-SEJONG-PYPI-PUBLISH.yml, environment pypi
+name: PROJECT-SEJONG-PYPI-PUBLISH
+
+on:
+  push:
+    branches: ["deploy"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pro-sejong-auth
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test and build
+        working-directory: python
+        run: |
+          python -m pip install --upgrade pip pytest build
+          python -m pytest -q
+          python -m build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/
+          skip-existing: true
