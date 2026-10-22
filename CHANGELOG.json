@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-22T03:16:22Z",
-    "currentVersion": "1.2.16",
+    "lastUpdated": "2026-10-22T05:27:39Z",
+    "currentVersion": "1.2.17",
     "projectType": "spring",
-    "totalReleases": 13,
+    "totalReleases": 14,
     "projectTypes": [
       "spring",
       "python",
@@ -11,6 +11,40 @@
     ]
   },
   "releases": [
+    {
+      "version": "1.2.17",
+      "project_type": "spring",
+      "project_types": [
+        "spring",
+        "python",
+        "node"
+      ],
+      "date": "2026-10-22",
+      "pr_number": 29,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **새 기능**\n  * 비밀번호를 여러 번 틀려 포털 계정이 잠기면 계정 잠금(ACCOUNT_LOCKED)과 비밀번호 재설정 주소를 알려 줌\n  * 사용 기간 종료·관리자 차단 계정은 ACCOUNT_UNAVAILABLE로 알려 줌\n\n* **개선**\n  * 비밀번호가 틀리면 추가 요청 없이 즉시 실패 (포털 판정 그대로 사용)\n\n* **문서**\n  * 계정 잠금 정책과 재설정 방법 안내 추가",
+      "parsed_changes": {
+        "새_기능": {
+          "title": "새 기능",
+          "items": [
+            "비밀번호를 여러 번 틀려 포털 계정이 잠기면 계정 잠금(ACCOUNT_LOCKED)과 비밀번호 재설정 주소를 알려 줌",
+            "사용 기간 종료·관리자 차단 계정은 ACCOUNT_UNAVAILABLE로 알려 줌"
+          ]
+        },
+        "개선": {
+          "title": "개선",
+          "items": [
+            "비밀번호가 틀리면 추가 요청 없이 즉시 실패 (포털 판정 그대로 사용)"
+          ]
+        },
+        "문서": {
+          "title": "문서",
+          "items": [
+            "계정 잠금 정책과 재설정 방법 안내 추가"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.16",
       "project_type": "spring",
