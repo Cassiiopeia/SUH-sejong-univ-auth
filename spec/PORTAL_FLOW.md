@@ -33,7 +33,18 @@ mainLogin=N&rtUrl=<return url>&id=<student id>&password=<password>
 
 - DHC `rtUrl`: `classic.sejong.ac.kr`
 - SIS `rtUrl`: `sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=`
-- The response body does not say whether the password was right. Wrong passwords are detected later by a 401.
+- The 200 response is a small HTML page whose script holds the verdict: `var result = '<value>'` (samples `fixtures/portal_login_ok.html`, `fixtures/portal_login_erridpwd.html`). Handle it exactly like the portal page does, and never retry a rejected login (each wrong password counts toward the lock):
+
+| `result` | Portal message | Library |
+|---|---|---|
+| `OK` | (redirects to rtUrl) | continue |
+| `erridpwd`, `Error` | 아이디나 비밀번호가 일치하지 않습니다 | `AUTHENTICATION_FAILED`, no further requests |
+| `pwdNeedChg` | Account locked after repeated wrong passwords, reset the password | `ACCOUNT_LOCKED` (reset page `https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp`) |
+| `invalidDt`, `invalid` | Use period ended / blocked by the administrator | `ACCOUNT_UNAVAILABLE` |
+| any other value | 로그인 처리 중 오류 | `SESSION_ERROR` |
+| no `var result` | (page format changed) | continue, the later 401 decides |
+
+Expected mapping for tests: `fixtures/expected_portal_login.json`. The portal source comments say the lock happens after 5 failures; the exact count and whether a success resets it are not verified.
 
 ## Step 2a: DHC (classic.sejong.ac.kr)
 

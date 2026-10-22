@@ -183,6 +183,30 @@ def _text(node: dict, field_name: str) -> str:
     return "" if value is None else str(value)
 
 
+# 포털 로그인 판정값: login_action.jsp 응답의 var result = '...' (포털 화면 분기와 같은 대응)
+_PORTAL_LOGIN_RESULT = re.compile(r"var\s+result\s*=\s*'([^']*)'")
+PORTAL_LOGIN_ACCEPTED = "OK"
+PORTAL_LOGIN_ERROR_CODE_BY_RESULT = {
+    "erridpwd": ErrorCode.AUTHENTICATION_FAILED,  # 아이디·비밀번호 불일치
+    "Error": ErrorCode.AUTHENTICATION_FAILED,  # 아이디·비밀번호 불일치
+    "pwdNeedChg": ErrorCode.ACCOUNT_LOCKED,  # 반복 실패로 잠김, 비밀번호 재설정 필요
+    "invalidDt": ErrorCode.ACCOUNT_UNAVAILABLE,  # 계정 사용 기간 종료
+    "invalid": ErrorCode.ACCOUNT_UNAVAILABLE,  # 관리자 요청으로 로그인 불가
+}
+
+
+def ensure_portal_login_accepted(html: str) -> None:
+    """포털 로그인 판정: OK 통과, 알려진 실패 > 코드별 예외, 그 외 값 > SESSION_ERROR, 판정값 없음 > 통과(이후 401 판정)"""
+    match = _PORTAL_LOGIN_RESULT.search(html or "")
+    if match is None or match.group(1) == PORTAL_LOGIN_ACCEPTED:
+        return
+    result_value = match.group(1)
+    error_code = PORTAL_LOGIN_ERROR_CODE_BY_RESULT.get(result_value)
+    if error_code is None:
+        raise SejongAuthError(ErrorCode.SESSION_ERROR, f"Portal login failed : result={result_value[:20]}")
+    raise SejongAuthError(error_code)
+
+
 # SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
 SIS_SUBMIT_ERROR_KEY = "_SUBMIT_ERROR_"
 SIS_LOGGED_OUT_ERROR_TYPE = "LOGOUT"

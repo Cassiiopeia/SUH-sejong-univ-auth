@@ -132,3 +132,27 @@ def test_sis_wrong_password_submit_error_raises_authentication_failed():
         client.authenticate_sis("21011234", "wrong")
 
     assert error.value.code == ErrorCode.AUTHENTICATION_FAILED
+
+
+def test_wrong_password_login_result_stops_before_sso():
+    # 포털 판정 erridpwd > SSO·데이터 요청 없이 즉시 실패 (불필요한 요청 0)
+    from conftest import read_fixture
+    client, sessions = client_with({LOGIN: [ok(read_fixture("portal_login_erridpwd.html"))]})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate("21011234", "wrong")
+
+    assert error.value.code == ErrorCode.AUTHENTICATION_FAILED
+    assert sessions[0].requested_urls == [LOGIN]
+
+
+def test_locked_account_raises_account_locked_without_retry():
+    from conftest import read_fixture
+    locked_body = read_fixture("portal_login_erridpwd.html").replace("'erridpwd'", "'pwdNeedChg'")
+    client, sessions = client_with({LOGIN: [ok(locked_body)]})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_sis("21011234", "pw")
+
+    assert error.value.code == ErrorCode.ACCOUNT_LOCKED
+    assert sessions[0].requested_urls == [LOGIN]

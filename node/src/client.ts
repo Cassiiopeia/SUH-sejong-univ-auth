@@ -1,7 +1,7 @@
 // 세종대 포털 인증 클라이언트: 입력 검증 > 포털 로그인(재시도) > SSO > 데이터 조회 > 파싱 (흐름: spec/PORTAL_FLOW.md)
 import { ErrorCode, SejongAuthError } from './errors.js';
 import type { RawOption, SejongAuthResult, SejongDhcAuthResult, SejongSisAuthResult } from './models.js';
-import { ensureSisLoggedIn, parseClassicReading, parseSisUserInfo, parseStudentInfo } from './parsers.js';
+import { ensurePortalLoginAccepted, ensureSisLoggedIn, parseClassicReading, parseSisUserInfo, parseStudentInfo } from './parsers.js';
 import { NodeHttpsSession, TimeoutError, type HttpResponse, type RequestOptions, type Session } from './transport.js';
 import { VERSION } from './version.js';
 
@@ -122,12 +122,17 @@ export class SejongAuthClient {
   }
 
   /** 포털 로그인 (실패 응답·시간 초과 시 maxRetry 회까지, 성공 여부는 이후 401 로 판별) */
+  /** 포털 로그인 (실패 응답·시간 초과 시 maxRetry 회까지) > 포털 판정값 확인 (틀린 비밀번호·잠금은 재시도 없이 즉시 실패) */
   private async login(session: Session, studentId: string, password: string, returnUrl: string): Promise<void> {
     const body = new URLSearchParams({ mainLogin: 'N', rtUrl: returnUrl, id: studentId, password }).toString();
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded', Referer: PORTAL_REFERER, Cookie: PORTAL_DEFAULT_COOKIE };
     for (let attempt = 1; attempt <= this.maxRetry; attempt += 1) {
       try {
-        if (isSuccessful(await callRaw(session, 'POST', PORTAL_LOGIN_URL, { body, headers }))) return;
+        const response = await callRaw(session, 'POST', PORTAL_LOGIN_URL, { body, headers });
+        if (isSuccessful(response)) {
+          ensurePortalLoginAccepted(response.body.toString('utf8'));
+          return;
+        }
       } catch (error) {
         if (!(error instanceof TimeoutError)) throw error;
         if (attempt === this.maxRetry) throw new SejongAuthError(ErrorCode.CONNECTION_TIMEOUT, undefined, { cause: error });

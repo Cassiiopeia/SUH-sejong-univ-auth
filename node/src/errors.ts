@@ -9,6 +9,8 @@ export const ErrorCode = {
   DATA_FETCH_FAILED: 'DATA_FETCH_FAILED',
   PARSE_ERROR: 'PARSE_ERROR',
   SSL_CONFIGURATION_ERROR: 'SSL_CONFIGURATION_ERROR',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  ACCOUNT_UNAVAILABLE: 'ACCOUNT_UNAVAILABLE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -23,6 +25,9 @@ const DEFAULT_MESSAGE_BY_CODE: Record<ErrorCode, string> = {
   DATA_FETCH_FAILED: 'Failed to fetch student information.',
   PARSE_ERROR: 'Failed to parse student information.',
   SSL_CONFIGURATION_ERROR: 'Failed to configure SSL.',
+  ACCOUNT_LOCKED: 'The portal account is locked after too many wrong passwords. '
+    + 'Reset the password at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp',
+  ACCOUNT_UNAVAILABLE: 'The portal account cannot sign in (use period ended or blocked by the administrator).',
 };
 
 /** 세종 인증 실패 (code 로 분기, 메시지에 비밀번호·개인정보 없음) */

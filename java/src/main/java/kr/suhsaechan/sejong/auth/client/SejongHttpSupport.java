@@ -6,7 +6,10 @@ import java.net.CookiePolicy;
 import java.net.SocketTimeoutException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -34,6 +37,17 @@ final class SejongHttpSupport {
   static final String PORTAL_REFERER = "https://portal.sejong.ac.kr";
   // 포털이 요구하는 초기 쿠키 (없으면 로그인 폼 거부)
   private static final String DEFAULT_COOKIE = "chknos=false";
+
+  // 포털 로그인 판정값: login_action.jsp 응답의 var result = '...' (포털 화면 분기와 같은 대응)
+  private static final Pattern PORTAL_LOGIN_RESULT = Pattern.compile("var\\s+result\\s*=\\s*'([^']*)'");
+  private static final String PORTAL_LOGIN_ACCEPTED = "OK";
+  private static final Map<String, SejongAuthErrorCode> PORTAL_LOGIN_ERROR_CODE_BY_RESULT = Map.of(
+      "erridpwd", SejongAuthErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
+      "Error", SejongAuthErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
+      "pwdNeedChg", SejongAuthErrorCode.ACCOUNT_LOCKED, // 반복 실패로 잠김, 비밀번호 재설정 필요
+      "invalidDt", SejongAuthErrorCode.ACCOUNT_UNAVAILABLE, // 계정 사용 기간 종료
+      "invalid", SejongAuthErrorCode.ACCOUNT_UNAVAILABLE); // 관리자 요청으로 로그인 불가
+  private static final int RESULT_LOG_MAX_LENGTH = 20;
 
   private SejongHttpSupport() {
   }
@@ -72,8 +86,8 @@ final class SejongHttpSupport {
   }
 
   /**
-   * 포털 로그인 (rtUrl: 로그인 후 SSO 로 넘어갈 대상 사이트)
-   * 응답 본문으로는 성공 여부를 알 수 없음 > 이후 데이터 요청의 401 로 판별
+   * 포털 로그인 (rtUrl: 로그인 후 SSO 로 넘어갈 대상 사이트) > 포털 판정값 확인
+   * 틀린 비밀번호·잠금은 재시도 없이 즉시 실패 (판정값이 없으면 이후 데이터 요청의 401 로 판별)
    */
   static void loginToPortal(OkHttpClient client, SejongAuthProperties properties,
       String studentId, String password, String returnUrl) throws IOException {
@@ -95,7 +109,26 @@ final class SejongHttpSupport {
     log.debug("[sejong auth] portal login request : rtUrl={}, studentId={}", returnUrl, studentId);
     try (Response response = executeWithRetry(client, request, properties.getMaxRetry())) {
       log.debug("[sejong auth] portal login response : code={}", response.code());
+      ensurePortalLoginAccepted(response.body() == null ? "" : response.body().string());
     }
+  }
+
+  /**
+   * 포털 로그인 판정: OK 통과, 알려진 실패 > 코드별 예외, 그 외 값 > SESSION_ERROR, 판정값 없음 > 통과
+   */
+  static void ensurePortalLoginAccepted(String loginResponseHtml) {
+    Matcher matcher = PORTAL_LOGIN_RESULT.matcher(loginResponseHtml == null ? "" : loginResponseHtml);
+    if (!matcher.find() || PORTAL_LOGIN_ACCEPTED.equals(matcher.group(1))) {
+      return;
+    }
+    String resultValue = matcher.group(1);
+    String loggedResult = resultValue.substring(0, Math.min(resultValue.length(), RESULT_LOG_MAX_LENGTH));
+    SejongAuthErrorCode errorCode = PORTAL_LOGIN_ERROR_CODE_BY_RESULT.get(resultValue);
+    if (errorCode == null) {
+      throw new SejongAuthException(SejongAuthErrorCode.SESSION_ERROR, "Portal login failed : result=" + loggedResult);
+    }
+    log.warn("[sejong auth] portal login rejected : result={}", loggedResult);
+    throw new SejongAuthException(errorCode);
   }
 
   /**

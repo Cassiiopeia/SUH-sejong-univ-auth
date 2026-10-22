@@ -48,7 +48,7 @@ session cookies, legacy TLS and HTML/JSON parsing. Same features, same results i
 | Keep session cookies across three Sejong domains | Cookies managed per call, nothing to store |
 | Get past the portal's legacy TLS cipher and firewall | Handled per language (see [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md)) |
 | Parse HTML tables (DHC) and a JSON API (SIS) | Typed results |
-| Detect a wrong password from a 200 response | Fails fast with `AUTHENTICATION_FAILED` |
+| Read the portal's verdict from a 200 response (wrong password, locked account) | Fails fast with `AUTHENTICATION_FAILED` / `ACCOUNT_LOCKED` |
 | Fix it again when the portal changes | Maintained here, all three languages verified against the live portal |
 
 ## Contents
@@ -214,8 +214,12 @@ Every language raises one error type with a `code`:
 | `PARSE_ERROR` | Could not parse the portal response (structure changed?) |
 | `SESSION_ERROR` | Portal session error |
 | `SSL_CONFIGURATION_ERROR` | SSL configuration error |
+| `ACCOUNT_LOCKED` | The portal locked the account after repeated wrong passwords |
+| `ACCOUNT_UNAVAILABLE` | The portal account cannot sign in (use period ended or blocked by the administrator) |
 
 Branch on the code, not on the message.
+
+> **Account lock.** The Sejong portal locks an account after repeated wrong passwords (its page says about 5). Unlocking needs a password reset at <https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp>; no library can do it for the student. The library never retries a rejected login, and stops at the first wrong password without further requests. If your service lets anyone type a student ID, limit failed attempts per student ID so a stranger cannot lock someone else's account.
 
 ## Configuration
 

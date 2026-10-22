@@ -14,6 +14,8 @@ class ErrorCode(str, Enum):
     DATA_FETCH_FAILED = "DATA_FETCH_FAILED"
     PARSE_ERROR = "PARSE_ERROR"
     SSL_CONFIGURATION_ERROR = "SSL_CONFIGURATION_ERROR"
+    ACCOUNT_LOCKED = "ACCOUNT_LOCKED"
+    ACCOUNT_UNAVAILABLE = "ACCOUNT_UNAVAILABLE"
 
 
 # 코드별 기본 메시지 (Java 메시지와 같은 영어 문구)
@@ -26,6 +28,9 @@ DEFAULT_MESSAGE_BY_CODE = {
     ErrorCode.DATA_FETCH_FAILED: "Failed to fetch student information.",
     ErrorCode.PARSE_ERROR: "Failed to parse student information.",
     ErrorCode.SSL_CONFIGURATION_ERROR: "Failed to configure SSL.",
+    ErrorCode.ACCOUNT_LOCKED: "The portal account is locked after too many wrong passwords. "
+    "Reset the password at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp",
+    ErrorCode.ACCOUNT_UNAVAILABLE: "The portal account cannot sign in (use period ended or blocked by the administrator).",
 }
 
 

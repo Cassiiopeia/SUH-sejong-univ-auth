@@ -1,0 +1,43 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>로그인 처리</title>
+</head>
+<body>
+<form name="frm" method="post" action="login.jsp">
+<input type="hidden" name="rtUrl" value="classic.sejong.ac.kr">
+</form>
+<script type="text/javascript">
+<!--
+    var result = 'erridpwd';
+    if ( result == 'OK' ) {
+	location.replace('http://classic.sejong.ac.kr');
+
+    } else if ( result == 'erridpwd' ) {
+        alert('아이디나 비밀번호가 일치하지 않습니다.'); // \n5회 이상 실패 시 비밀번호 초기화를 진행하여야 합니다. 1/10
+        document.frm.submit();
+    } else if ( result == 'pwdNeedChg' ) {
+        alert('일정 횟수 이상 패스워드를 잘못 입력하여 계정이 잠겼습니다. 비밀번호 찾기 페이지에서 비밀번호를 재설정하셔야 합니다. ');
+        document.frm.submit();
+    } else if ( result == 'invalidDt' ) {
+        alert('계정의 사용 허용기간이 종료되었습니다. sj로 시작하는 아이디, 원직번, 성명, 소속부서, 사용사유를 itservice@sejong.ac.kr로 보내주시기 바랍니다. 내용에 따라 사용권한 요청서가 추가로 필요할 수 있습니다. 세종사이버대학, 학술정보원(도서관) 등록 사용자의 경우 학술정보원으로 문의 해 주세요.');
+        document.frm.submit();
+    } else if ( result == 'Error' ) {
+        alert('아이디나 비밀번호가 일치하지 않습니다.');
+        document.frm.submit();
+    } else if ( result == 'invalid' ) { //오류코드에 대한 처리가 없어 추가함. 2019-08-09 백정우 추가
+        alert('이 계정은 계정관리자의 요청으로 현재 로그인이 불가 합니다.');
+        document.frm.submit();
+    } else { //오류코드에 대한 처리가 없어 추가함. 2019-08-09 백정우 추가
+        alert('로그인 처리 중 오류가 발생하였습니다.');
+        document.frm.submit();
+    }
+
+
+//-->
+</script>
+</body>
+</html>
+

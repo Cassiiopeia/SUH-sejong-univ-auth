@@ -2,9 +2,11 @@
 
 import re
 
-from conftest import read_expected
+import pytest
+from conftest import read_expected, read_fixture
 
-from sejong_auth.parsers import parse_classic_reading, parse_sis_user_info, parse_student_info
+from sejong_auth.errors import ErrorCode, SejongAuthError
+from sejong_auth.parsers import ensure_portal_login_accepted, parse_classic_reading, parse_sis_user_info, parse_student_info
 
 
 def to_snake_case(name: str) -> str:
@@ -37,3 +39,40 @@ def test_decodes_common_named_entities():
     html = ('<div class="b-con-box"><h4 class="b-h4-tit01">사용자 정보</h4><table class="b-board-table"><tbody>'
             '<tr><th>학과명</th><td>&lsquo;컴퓨터&rsquo; &ldquo;공학&rdquo;&hellip; &ndash;&mdash;</td></tr></tbody></table></div>')
     assert parse_student_info(html).major == "‘컴퓨터’ “공학”… –—"
+
+
+# 포털 로그인 판정값 > 에러 코드 (포털 화면과 같은 분기, spec/fixtures/expected_portal_login.json)
+PORTAL_LOGIN_CODE_BY_RESULT = {key: value for key, value in read_expected("expected_portal_login.json").items() if not key.startswith("_")}
+
+
+def portal_login_body(result_value: str) -> str:
+    return read_fixture("portal_login_erridpwd.html").replace("var result = 'erridpwd'", f"var result = '{result_value}'")
+
+
+@pytest.mark.parametrize("result_value,expected_code", sorted(PORTAL_LOGIN_CODE_BY_RESULT.items()))
+def test_portal_login_result_matches_portal_screen(result_value, expected_code):
+    body = portal_login_body(result_value)
+    if expected_code is None:
+        ensure_portal_login_accepted(body)
+        return
+    with pytest.raises(SejongAuthError) as error:
+        ensure_portal_login_accepted(body)
+    assert error.value.code.value == expected_code
+
+
+def test_portal_login_real_responses():
+    ensure_portal_login_accepted(read_fixture("portal_login_ok.html"))
+    with pytest.raises(SejongAuthError) as error:
+        ensure_portal_login_accepted(read_fixture("portal_login_erridpwd.html"))
+    assert error.value.code == ErrorCode.AUTHENTICATION_FAILED
+
+
+def test_portal_login_locked_message_points_to_password_reset():
+    with pytest.raises(SejongAuthError) as error:
+        ensure_portal_login_accepted(portal_login_body("pwdNeedChg"))
+    assert "https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp" in error.value.message
+
+
+def test_portal_login_without_result_keeps_legacy_check():
+    ensure_portal_login_accepted("")
+    ensure_portal_login_accepted("<html>changed portal page</html>")
