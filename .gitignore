@@ -62,10 +62,25 @@ Thumbs.db
 .report/
 
 # Test Configuration (민감 정보 포함)
-src/test/resources/application-dev.yml
+**/src/test/resources/application-dev.yml
 
 # Python (기존 항목 유지)
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Python
+python/.venv/
+python/dist/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node/node_modules/
+node/dist/
+*.tgz
+
+# SDD workspace
+.superpowers/
+node/src/version.ts

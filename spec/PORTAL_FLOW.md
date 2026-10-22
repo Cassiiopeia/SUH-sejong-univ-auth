@@ -1,0 +1,81 @@
+# Portal flow (single source for all languages)
+
+Every language implementation (Java, Python, Node) follows exactly this flow. When the Sejong portal changes, update this file first, then all three implementations in the same PR.
+
+Reference implementation: `java/src/main/java/kr/suhsaechan/sejong/auth/client/`.
+
+## Transport requirements
+
+| Requirement | Value | Why |
+|---|---|---|
+| TLS | TLSv1.2, cipher `AES256-SHA` (`TLS_RSA_WITH_AES_256_CBC_SHA`) must be allowed | The portal offers only this cipher. Recent JDK / OpenSSL defaults disable it |
+| Python | `ssl` context ciphers `DEFAULT:AES256-SHA:@SECLEVEL=1` | Verified with Python 3.14 / OpenSSL 3.6 |
+| Node | `https.Agent({ ciphers: 'DEFAULT:AES256-SHA:@SECLEVEL=1' })` | Verified with Node 26 / OpenSSL 3.6 (keep SECLEVEL 1: level 0 would also accept weak certificate keys) |
+| Java | remove `TLS_RSA_*` from `jdk.tls.disabledAlgorithms` (JVM-wide, see `SejongTlsSupport`) | |
+| User-Agent | Always send a non-empty, non-default User-Agent: `pro-sejong-auth-<language>/<version>` | Without it classic.sejong.ac.kr returns 404 after SSO, and sjpt.sejong.ac.kr's firewall blocks default library agents (for example `Python-urllib`) with an "Alert!!!" HTML page |
+| Cookies | One cookie jar per authentication call, honoring `Domain=.sejong.ac.kr` | `ssotoken` is set for `.sejong.ac.kr` and must reach classic / sjpt |
+| Redirects | Follow 301/302/303/307 automatically | SSO answers 303 |
+| Timeout | default 10 seconds (connect and read) | |
+| Retry | default 3 attempts, only for the portal login request: retry on non-2xx (close the response first) and on timeout. Timeout on the last attempt: `CONNECTION_TIMEOUT`. Exhausted: `CONNECTION_FAILED` | |
+| Certificate verification | on by default, optional switch to turn it off | |
+
+## Step 1: Portal login (shared by DHC and SIS)
+
+```
+POST https://portal.sejong.ac.kr/jsp/login/login_action.jsp
+Content-Type: application/x-www-form-urlencoded
+Host: portal.sejong.ac.kr
+Referer: https://portal.sejong.ac.kr
+Cookie: chknos=false
+
+mainLogin=N&rtUrl=<return url>&id=<student id>&password=<password>
+```
+
+- DHC `rtUrl`: `classic.sejong.ac.kr`
+- SIS `rtUrl`: `sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=`
+- The response body does not say whether the password was right. Wrong passwords are detected later by a 401.
+
+## Step 2a: DHC (classic.sejong.ac.kr)
+
+1. `GET https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do` (non-2xx after redirects: `SESSION_ERROR`)
+2. `GET https://classic.sejong.ac.kr/classic/reading/status.do`
+   - `401`: `AUTHENTICATION_FAILED`
+   - other non-200 or empty body: `DATA_FETCH_FAILED`
+   - `200`: HTML parsed by the rules below
+
+## Step 2b: SIS (sjpt.sejong.ac.kr)
+
+1. `GET https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=` with `Referer: https://portal.sejong.ac.kr` (non-2xx: `SESSION_ERROR`)
+2. `POST https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do?addParam=<addParam>` body `{}`
+   - headers: `Accept: application/json`, `Content-Type: application/json; charset=UTF-8`, `Referer: https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=`, `Origin: https://sjpt.sejong.ac.kr`
+   - `addParam` = Base64( URL-form-encode( `{"_runIntgUsrNo":"","_runPgLoginDt":"","_runningSejong":""}` ) ), appended to the URL as is
+   - `401`: `AUTHENTICATION_FAILED`; other non-200 or empty body: `DATA_FETCH_FAILED`
+   - `200` with `{"_SUBMIT_ERROR_": {"ERRTYPE": "LOGOUT", ...}}`: `AUTHENTICATION_FAILED` (a wrong password leaves no session, the API answers 200 with this error; sample `fixtures/sis_submit_error_logout.json`). Any other `_SUBMIT_ERROR_`: `DATA_FETCH_FAILED`
+
+## DHC HTML parsing
+
+Sample: `fixtures/dhc_status.html`, expected result: `fixtures/expected_dhc.json`.
+
+- Each section is `div.b-con-box` with `h4.b-h4-tit01` title text; rows are `table.b-board-table tbody tr`
+- Student info (title `사용자 정보`): rows of `th` label, `td` value. Labels: `학과명` major, `학번` student id, `이름` name, `학년` grade, `사용자 상태` status. Missing label: empty string. No rows at all: `PARSE_ERROR`
+- Certifications (`영역별 인증현황`): row `th` = area, first `td` = requiredCount, second `td` = certifiedCount. Rows without a `th` or with fewer than 2 `td` are skipped
+- Exam records (`인증 시험 현황`): 6 `td`: semester, area, bookTitle, examDate, score, passStatus
+- Subject substitutions (`과목 대체 인증 현황`) and curriculum records (`교과연계 인증 현황`): 5 `td`: semester, subjectName, area, bookTitle, completion
+- Contest records (`대회 인증 현황`): 4 `td`: semester, contestName, area, bookTitle
+- Rows with fewer cells (for example "검색된 결과가 없습니다." in one `colspan` cell) are skipped
+- Cell text: decode HTML entities (`&middot;` → `·`), collapse inner whitespace to one space, trim
+
+## SIS JSON parsing
+
+Sample: `fixtures/sis_user_info.json`, expected: `fixtures/expected_sis.json`.
+
+| Field | Source | Fallback |
+|---|---|---|
+| studentId | `dm_UserInfo.INTG_USR_NO` (missing `dm_UserInfo`: `PARSE_ERROR`) | |
+| name | `dm_UserInfo.INTG_USR_NM` | |
+| major | `dm_UserInfoGam.DEPT_NM` | `dm_UserInfoSch.DEPT_NM` |
+| email | `dm_UserInfoGam.USER_EMAIL` | |
+| phoneNumber | `USER_PHONE_NO1`-`NO2`-`NO3` of `dm_UserInfoGam`, non-empty parts joined with `-` | |
+| englishName | `dm_UserInfo.INTG_ENG_NM` | `dm_UserInfoSch.NM_ENG` |
+
+Missing values are empty strings. Invalid JSON: `PARSE_ERROR`.

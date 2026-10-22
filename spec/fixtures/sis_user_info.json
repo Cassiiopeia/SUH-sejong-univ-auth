@@ -1,0 +1,25 @@
+{
+  "dm_UserInfo": {
+    "INTG_USR_NO": "21011234",
+    "INTG_USR_NM": "홍길동",
+    "INTG_KOR_NM": "홍길동",
+    "INTG_ENG_NM": "Hong Gildong",
+    "INTG_LOCALE": "ko",
+    "RUNNING_SEJONG": ""
+  },
+  "dm_UserInfoGam": {
+    "DEPT_NM": "컴퓨터공학과",
+    "USER_NM": "홍길동",
+    "USER_EMAIL": "student@example.com",
+    "USER_PHONE_NO1": "010",
+    "USER_PHONE_NO2": "1234",
+    "USER_PHONE_NO3": "5678",
+    "LOGIN_ID": "21011234"
+  },
+  "dm_UserInfoSch": {
+    "NM": "홍길동",
+    "NM_ENG": "Hong Gildong",
+    "EMAIL": "student@example.com",
+    "USER_ID": "21011234"
+  }
+}

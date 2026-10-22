@@ -1,0 +1,130 @@
+plugins {
+	id 'java-library'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+	// Maven Central 배포 (0.36+ 는 Gradle 9 필요 > wrapper 8.14 에 맞춰 0.35.0)
+	id 'com.vanniktech.maven.publish' version '0.35.0'
+}
+
+// group, version: 루트 build.gradle (세 언어 공통 버전, projectops 가 갱신)
+description = 'Sejong University portal authentication for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot
+	implementation 'org.springframework.boot:spring-boot-starter'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// HTTP Client (OkHttp)
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.12.0'
+
+	// HTML Parser (Jsoup)
+	implementation 'org.jsoup:jsoup:1.17.2'
+
+	// JSON Parser (Jackson)
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+bootJar { enabled = false }
+// Boot 플러그인 기본 classifier(plain) 제거 > Maven 사용자가 받는 기본 jar 이름(sejong-univ-auth-{버전}.jar)
+jar {
+	enabled = true
+	archiveClassifier = ''
+}
+
+// javadoc: 한국어 주석의 '>' 흐름 표기 등을 doclint 오류로 막지 않음
+tasks.withType(Javadoc).configureEach {
+	options.encoding = 'UTF-8'
+	options.addBooleanOption('Xdoclint:none', true)
+}
+
+// 배포 (publication 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출)
+mavenPublishing {
+	// Maven Central: 자격증명이 있을 때만 (PROJECT-SEJONG-JAVA-CENTRAL-PUBLISH 의 MAVEN_CENTRAL_* Secret), 자동 게시
+	// GRADLE_PROPERTIES(Nexus 배포용)에는 Central 값을 넣지 않음 > 넣으면 Nexus 워크플로우의 publish 가 Central 에도 올림
+	if (project.findProperty('mavenCentralUsername')) {
+		publishToMavenCentral(true)
+	}
+	if (project.findProperty('signingInMemoryKey')) {
+		signAllPublications()
+	}
+	coordinates(project.group.toString(), project.name, project.version.toString())
+	pom {
+		name = 'sejong-univ-auth'
+		description = 'Sejong University login API for Java and Spring Boot (세종대 로그인 API)'
+		url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+		inceptionYear = '2025'
+		licenses {
+			license {
+				name = 'MIT License'
+				url = 'https://opensource.org/licenses/MIT'
+				distribution = 'repo'
+			}
+		}
+		developers {
+			developer {
+				id = 'Cassiiopeia'
+				name = 'SUH SAECHAN'
+				url = 'https://github.com/Cassiiopeia'
+			}
+		}
+		scm {
+			url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+			connection = 'scm:git:https://github.com/Cassiiopeia/pro-sejong-auth.git'
+			developerConnection = 'scm:git:ssh://git@github.com/Cassiiopeia/pro-sejong-auth.git'
+		}
+	}
+}
+
+publishing {
+	repositories {
+		// SUH Nexus: 기존 사용자(lab 서버 등) 호환용으로 유지
+		maven {
+			name = 'nexus'
+			url = uri(
+					version.toString().endsWith('SNAPSHOT')
+							? "https://nexus.suhsaechan.kr/repository/maven-snapshots/"
+							: "https://nexus.suhsaechan.kr/repository/maven-releases/"
+			)
+			credentials {
+				username = project.findProperty('nexusUsername')
+				password = project.findProperty('nexusPassword')
+			}
+		}
+		// GitHub Packages: GITHUB_TOKEN 있는 워크플로우에서만 등록 (Nexus 배포의 publish 에 섞이지 않게)
+		if (System.getenv('GITHUB_TOKEN')) {
+			maven {
+				name = 'GitHubPackages'
+				url = uri("https://maven.pkg.github.com/${System.getenv('GITHUB_REPOSITORY')}")
+				credentials {
+					username = System.getenv('GITHUB_ACTOR')
+					password = System.getenv('GITHUB_TOKEN')
+				}
+			}
+		}
+	}
+}

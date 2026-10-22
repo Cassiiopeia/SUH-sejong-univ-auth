@@ -1,4 +1,5 @@
-rootProject.name = 'sejong-univ-auth'
+rootProject.name = 'pro-sejong-auth'
 
-
-
+// Java 라이브러리: 프로젝트 이름 = Maven artifactId (sejong-univ-auth)
+include 'sejong-univ-auth'
+project(':sejong-univ-auth').projectDir = file('java')
