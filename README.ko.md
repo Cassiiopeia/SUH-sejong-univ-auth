@@ -97,7 +97,7 @@ repositories {
 <dependency>
     <groupId>kr.suhsaechan</groupId>
     <artifactId>sejong-univ-auth</artifactId>
-    <version>1.2.7</version>
+    <version>1.2.12</version>
 </dependency>
 ```
 
@@ -107,7 +107,7 @@ repositories {
 
 ```groovy
 dependencies {
-    implementation "kr.suhsaechan:sejong-univ-auth:1.2.7"
+    implementation "kr.suhsaechan:sejong-univ-auth:1.2.12"
 }
 ```
 
