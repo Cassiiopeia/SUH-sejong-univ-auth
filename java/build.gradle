@@ -1,0 +1,109 @@
+plugins {
+	id 'java-library'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'maven-publish'
+}
+
+// group, version: 루트 build.gradle (세 언어 공통 버전, projectops 가 갱신)
+description = 'Sejong University portal authentication for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+	withSourcesJar()
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot
+	implementation 'org.springframework.boot:spring-boot-starter'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// HTTP Client (OkHttp)
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+	implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.12.0'
+
+	// HTML Parser (Jsoup)
+	implementation 'org.jsoup:jsoup:1.17.2'
+
+	// JSON Parser (Jackson)
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+bootJar { enabled = false }
+// Boot 플러그인 기본 classifier(plain) 제거 > Maven 사용자가 받는 기본 jar 이름(sejong-univ-auth-{버전}.jar)
+jar {
+	enabled = true
+	archiveClassifier = ''
+}
+
+publishing {
+	publications {
+		// 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출
+		maven(MavenPublication) {
+			from components.java
+
+			pom {
+				name = 'sejong-univ-auth'
+				description = 'Sejong University portal authentication for Spring Boot'
+				url = 'https://github.com/Cassiiopeia/pro-sejong-auth/'
+				licenses {
+					license {
+						name = 'MIT License'
+						url = 'https://opensource.org/licenses/MIT'
+					}
+				}
+				scm {
+					url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+					connection = 'scm:git:https://github.com/Cassiiopeia/pro-sejong-auth.git'
+				}
+			}
+		}
+	}
+	repositories {
+		mavenLocal()
+		maven {
+			name = 'nexus'
+			url = uri(
+					version.endsWith('SNAPSHOT')
+							? "https://nexus.suhsaechan.kr/repository/maven-snapshots/"
+							: "https://nexus.suhsaechan.kr/repository/maven-releases/"
+			)
+			credentials {
+				username = project.findProperty('nexusUsername')
+				password = project.findProperty('nexusPassword')
+			}
+		}
+		// GitHub Packages: GITHUB_TOKEN 있는 워크플로우에서만 등록 (Nexus 배포의 publish 에 섞이지 않게)
+		if (System.getenv('GITHUB_TOKEN')) {
+			maven {
+				name = 'GitHubPackages'
+				url = uri("https://maven.pkg.github.com/${System.getenv('GITHUB_REPOSITORY')}")
+				credentials {
+					username = System.getenv('GITHUB_ACTOR')
+					password = System.getenv('GITHUB_TOKEN')
+				}
+			}
+		}
+	}
+}
+
