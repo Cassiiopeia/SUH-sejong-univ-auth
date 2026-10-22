@@ -57,13 +57,15 @@ All languages raise one error type carrying `code` (string, Java enum name) and 
 | Code | Meaning |
 |---|---|
 | `INVALID_INPUT` | Student ID or password is blank |
-| `AUTHENTICATION_FAILED` | Wrong student ID or password (DHC: 401, SIS: 200 with `_SUBMIT_ERROR_` LOGOUT) |
+| `AUTHENTICATION_FAILED` | Wrong student ID or password (portal login `erridpwd`/`Error`; fallback DHC 401, SIS 200 with `_SUBMIT_ERROR_` LOGOUT) |
 | `CONNECTION_FAILED` | Network error, or login retries exhausted |
 | `CONNECTION_TIMEOUT` | Timed out on the last login attempt |
 | `SESSION_ERROR` | SSO step returned non-2xx |
 | `DATA_FETCH_FAILED` | Data page returned non-200 or empty |
 | `PARSE_ERROR` | Response structure not as expected |
 | `SSL_CONFIGURATION_ERROR` | TLS setup failed |
+| `ACCOUNT_LOCKED` | Portal locked the account after repeated wrong passwords (`pwdNeedChg`); reset at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp |
+| `ACCOUNT_UNAVAILABLE` | Portal account cannot sign in: use period ended (`invalidDt`) or blocked by the administrator (`invalid`) |
 
 Java also keeps the deprecated `INVALID_CREDENTIALS`, which is never thrown and does not exist in Python or Node.
 

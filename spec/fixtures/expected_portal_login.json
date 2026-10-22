@@ -1,0 +1,10 @@
+{
+  "_comment": "portal login result value -> error code (null = login accepted). Bodies: portal_login_erridpwd.html with the result value replaced. A body without `var result` keeps the legacy 401 check.",
+  "OK": null,
+  "erridpwd": "AUTHENTICATION_FAILED",
+  "Error": "AUTHENTICATION_FAILED",
+  "pwdNeedChg": "ACCOUNT_LOCKED",
+  "invalidDt": "ACCOUNT_UNAVAILABLE",
+  "invalid": "ACCOUNT_UNAVAILABLE",
+  "somethingNew": "SESSION_ERROR"
+}

@@ -21,6 +21,9 @@ public enum SejongAuthErrorCode {
   AUTHENTICATION_FAILED("SEJONG_AUTH_009", "Sejong University portal authentication failed. Check the student ID and password."),
   SESSION_ERROR("SEJONG_AUTH_004", "An error occurred while handling the portal session."),
   INVALID_INPUT("SEJONG_AUTH_008", "Invalid input."),
+  ACCOUNT_LOCKED("SEJONG_AUTH_010", "The portal account is locked after too many wrong passwords. "
+      + "Reset the password at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp"),
+  ACCOUNT_UNAVAILABLE("SEJONG_AUTH_011", "The portal account cannot sign in (use period ended or blocked by the administrator)."),
 
   // 데이터 관련
   DATA_FETCH_FAILED("SEJONG_AUTH_005", "Failed to fetch student information."),

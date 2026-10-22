@@ -166,6 +166,27 @@ const textOf = (node: unknown, fieldName: string) => {
   return value === undefined || value === null ? '' : String(value);
 };
 
+// 포털 로그인 판정값: login_action.jsp 응답의 var result = '...' (포털 화면 분기와 같은 대응)
+const PORTAL_LOGIN_RESULT = /var\s+result\s*=\s*'([^']*)'/;
+const PORTAL_LOGIN_ACCEPTED = 'OK';
+const PORTAL_LOGIN_ERROR_CODE_BY_RESULT: Record<string, ErrorCode> = {
+  erridpwd: ErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
+  Error: ErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
+  pwdNeedChg: ErrorCode.ACCOUNT_LOCKED, // 반복 실패로 잠김, 비밀번호 재설정 필요
+  invalidDt: ErrorCode.ACCOUNT_UNAVAILABLE, // 계정 사용 기간 종료
+  invalid: ErrorCode.ACCOUNT_UNAVAILABLE, // 관리자 요청으로 로그인 불가
+};
+
+/** 포털 로그인 판정: OK 통과, 알려진 실패 > 코드별 예외, 그 외 값 > SESSION_ERROR, 판정값 없음 > 통과(이후 401 판정) */
+export function ensurePortalLoginAccepted(html: string): void {
+  const match = PORTAL_LOGIN_RESULT.exec(html ?? '');
+  if (!match || match[1] === PORTAL_LOGIN_ACCEPTED) return;
+  const resultValue = match[1];
+  const errorCode = Object.prototype.hasOwnProperty.call(PORTAL_LOGIN_ERROR_CODE_BY_RESULT, resultValue) ? PORTAL_LOGIN_ERROR_CODE_BY_RESULT[resultValue] : undefined;
+  if (!errorCode) throw new SejongAuthError(ErrorCode.SESSION_ERROR, `Portal login failed : result=${resultValue.slice(0, 20)}`);
+  throw new SejongAuthError(errorCode);
+}
+
 // SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
 const SIS_SUBMIT_ERROR_KEY = '_SUBMIT_ERROR_';
 const SIS_LOGGED_OUT_ERROR_TYPE = 'LOGOUT';

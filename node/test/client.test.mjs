@@ -93,3 +93,17 @@ test('sisWrongPasswordSubmitErrorRaisesAuthenticationFailed', async () => {
   const { client } = clientWith({ [LOGIN]: [ok()], [SIS_SSO]: [ok()], [SIS_USER_INFO]: [ok(readFixture('sis_submit_error_logout.json'))] });
   await rejectsWithCode(client.authenticateSis('21011234', 'wrong'), ErrorCode.AUTHENTICATION_FAILED);
 });
+
+test('wrongPasswordLoginResultStopsBeforeSso', async () => {
+  // 포털 판정 erridpwd > SSO·데이터 요청 없이 즉시 실패 (불필요한 요청 0)
+  const { client, sessions } = clientWith({ [LOGIN]: [ok(readFixture('portal_login_erridpwd.html'))] });
+  await rejectsWithCode(client.authenticate('21011234', 'wrong'), ErrorCode.AUTHENTICATION_FAILED);
+  assert.deepEqual(sessions[0].requestedUrls, [LOGIN]);
+});
+
+test('lockedAccountRaisesAccountLockedWithoutRetry', async () => {
+  const lockedBody = readFixture('portal_login_erridpwd.html').replace("'erridpwd'", "'pwdNeedChg'");
+  const { client, sessions } = clientWith({ [LOGIN]: [ok(lockedBody)] });
+  await rejectsWithCode(client.authenticateSis('21011234', 'pw'), ErrorCode.ACCOUNT_LOCKED);
+  assert.deepEqual(sessions[0].requestedUrls, [LOGIN]);
+});

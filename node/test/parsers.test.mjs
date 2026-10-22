@@ -1,7 +1,8 @@
 // spec/fixtures 파싱 결과 == 기대값 (Java, Python 과 같은 기준)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseClassicReading, parseSisUserInfo, parseStudentInfo } from '../dist/esm/parsers.js';
+import { ensurePortalLoginAccepted, parseClassicReading, parseSisUserInfo, parseStudentInfo } from '../dist/esm/parsers.js';
+import { ErrorCode, SejongAuthError } from '../dist/esm/errors.js';
 import { readExpected, readFixture } from './helpers.mjs';
 
 test('parseDhcFixture', () => {
@@ -21,4 +22,31 @@ test('decodesCommonNamedEntitiesAndIgnoresInvalidCodePoints', () => {
   const html = `<div class="b-con-box"><h4 class="b-h4-tit01">사용자 정보</h4><table class="b-board-table"><tbody>
     <tr><th>학과명</th><td>&lsquo;컴퓨터&rsquo; &ldquo;공학&rdquo;&hellip; &ndash;&mdash;&#x110000;</td></tr></tbody></table></div>`;
   assert.equal(parseStudentInfo(html).major, '‘컴퓨터’ “공학”… –—&#x110000;');
+});
+
+// 포털 로그인 판정값 > 에러 코드 (포털 화면과 같은 분기, spec/fixtures/expected_portal_login.json)
+const portalLoginCodeByResult = Object.entries(readExpected('expected_portal_login.json')).filter(([key]) => !key.startsWith('_'));
+const portalLoginBody = (resultValue) => readFixture('portal_login_erridpwd.html').replace("var result = 'erridpwd'", `var result = '${resultValue}'`);
+const throwsWithCode = (action, code) => assert.throws(action, (error) => error instanceof SejongAuthError && error.code === code);
+
+test('portalLoginResultMatchesPortalScreen', () => {
+  for (const [resultValue, expectedCode] of portalLoginCodeByResult) {
+    const body = portalLoginBody(resultValue);
+    if (expectedCode === null) ensurePortalLoginAccepted(body);
+    else throwsWithCode(() => ensurePortalLoginAccepted(body), expectedCode);
+  }
+});
+
+test('portalLoginRealResponses', () => {
+  ensurePortalLoginAccepted(readFixture('portal_login_ok.html'));
+  throwsWithCode(() => ensurePortalLoginAccepted(readFixture('portal_login_erridpwd.html')), ErrorCode.AUTHENTICATION_FAILED);
+});
+
+test('portalLoginLockedMessagePointsToPasswordReset', () => {
+  assert.throws(() => ensurePortalLoginAccepted(portalLoginBody('pwdNeedChg')), /https:\/\/portal\.sejong\.ac\.kr\/jsp\/inquiry\/pwinquiry\.jsp/);
+});
+
+test('portalLoginWithoutResultKeepsLegacyCheck', () => {
+  ensurePortalLoginAccepted('');
+  ensurePortalLoginAccepted('<html>changed portal page</html>');
 });

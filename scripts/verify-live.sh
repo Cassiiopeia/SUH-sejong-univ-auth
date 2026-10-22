@@ -12,15 +12,14 @@ cd "$(dirname "$0")/.."
 ./gradlew -q :sejong-univ-auth:test --tests '*CrossLanguageSummaryTest' --rerun-tasks
 (cd node && npm run --silent build)
 OUT=java/build/cross-language
+# 언어마다 정상 > 틀림 > SIS 틀림 순서 (포털 잠금 방지: 연속 실패 최대 2회, 정상 로그인이 사이에 끼도록)
 python3 scripts/cross-language/summarize.py > "$OUT/python.json"
 python3 scripts/cross-language/summarize.py --wrong-password > "$OUT/python-wrong.json"
-node scripts/cross-language/summarize.mjs > "$OUT/node.json"
-node scripts/cross-language/summarize.mjs --wrong-password > "$OUT/node-wrong.json"
-
-# SIS 단독 틀린 비밀번호 (200 + _SUBMIT_ERROR_ 경로)
 python3 -c "import os,sys,json; sys.path.insert(0,'python/src'); from sejong_auth import authenticate_sis, SejongAuthError
 try: authenticate_sis(os.environ['SEJONG_TEST_STUDENT_ID'], os.environ['SEJONG_TEST_PASSWORD']+'-wrong'); print(json.dumps({}))
 except SejongAuthError as e: print(json.dumps({'error': e.code.value}))" > "$OUT/python-sis-wrong.json"
+node scripts/cross-language/summarize.mjs > "$OUT/node.json"
+node scripts/cross-language/summarize.mjs --wrong-password > "$OUT/node-wrong.json"
 node --input-type=module -e "import { authenticateSis } from './node/dist/esm/index.js';
 try { await authenticateSis(process.env.SEJONG_TEST_STUDENT_ID, process.env.SEJONG_TEST_PASSWORD + '-wrong'); console.log('{}'); }
 catch (error) { console.log(JSON.stringify({ error: error.code })); }" > "$OUT/node-sis-wrong.json"

@@ -42,7 +42,7 @@
 | 세종대 도메인 3곳의 세션 쿠키를 직접 관리 | 호출마다 쿠키 관리, 따로 저장할 것 없음 |
 | 포털의 오래된 암호화 방식과 방화벽을 직접 통과 | 언어별로 처리됨 ([spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md)) |
 | HTML 표(DHC)와 JSON API(SIS)를 직접 파싱 | 정리된 결과 객체 |
-| 200 응답 속에서 비밀번호 오류를 직접 판별 | `AUTHENTICATION_FAILED`로 즉시 실패 |
+| 200 응답 속 포털 판정(비밀번호 오류, 계정 잠금)을 직접 판별 | `AUTHENTICATION_FAILED` / `ACCOUNT_LOCKED`로 즉시 실패 |
 | 포털이 바뀔 때마다 다시 수정 | 여기서 유지보수, 세 언어 모두 실제 포털로 검증 |
 
 ## 목차
@@ -206,8 +206,12 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 | `PARSE_ERROR` | 포털 응답 구조 변경 등으로 파싱 실패 |
 | `SESSION_ERROR` | 포털 세션 처리 오류 |
 | `SSL_CONFIGURATION_ERROR` | SSL 설정 오류 |
+| `ACCOUNT_LOCKED` | 비밀번호를 여러 번 틀려 포털이 계정을 잠금 |
+| `ACCOUNT_UNAVAILABLE` | 포털 계정으로 로그인할 수 없음 (사용 기간 종료 또는 관리자 차단) |
 
 분기는 메시지가 아니라 코드로 하세요.
+
+> **계정 잠금.** 세종대 포털은 비밀번호를 여러 번 틀리면(포털 안내상 약 5회) 계정을 잠급니다. 잠금은 <https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp> 에서 비밀번호를 재설정해야 풀리며, 라이브러리가 대신 풀 수 없습니다. 라이브러리는 거부된 로그인을 재시도하지 않고, 첫 실패에서 추가 요청 없이 멈춥니다. 누구나 학번을 입력할 수 있는 서비스라면 학번별 실패 횟수를 제한해 남이 다른 학생의 계정을 잠그지 못하게 하세요.
 
 ## 설정
 
