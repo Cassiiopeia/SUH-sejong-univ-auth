@@ -57,7 +57,7 @@ All languages raise one error type carrying `code` (string, Java enum name) and 
 | Code | Meaning |
 |---|---|
 | `INVALID_INPUT` | Student ID or password is blank |
-| `AUTHENTICATION_FAILED` | Wrong student ID or password (portal answered 401) |
+| `AUTHENTICATION_FAILED` | Wrong student ID or password (DHC: 401, SIS: 200 with `_SUBMIT_ERROR_` LOGOUT) |
 | `CONNECTION_FAILED` | Network error, or login retries exhausted |
 | `CONNECTION_TIMEOUT` | Timed out on the last login attempt |
 | `SESSION_ERROR` | SSO step returned non-2xx |

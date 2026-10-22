@@ -64,7 +64,8 @@ tasks.withType(Javadoc).configureEach {
 
 // 배포 (publication 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출)
 mavenPublishing {
-	// Maven Central: GRADLE_PROPERTIES Secret 에 자격증명이 있을 때만, Release 마다 자동 게시
+	// Maven Central: 자격증명이 있을 때만 (PROJECT-SEJONG-JAVA-CENTRAL-PUBLISH 의 MAVEN_CENTRAL_* Secret), 자동 게시
+	// GRADLE_PROPERTIES(Nexus 배포용)에는 Central 값을 넣지 않음 > 넣으면 Nexus 워크플로우의 publish 가 Central 에도 올림
 	if (project.findProperty('mavenCentralUsername')) {
 		publishToMavenCentral(true)
 	}

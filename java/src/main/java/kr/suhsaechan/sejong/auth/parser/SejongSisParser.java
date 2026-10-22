@@ -16,6 +16,33 @@ public class SejongSisParser {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
+  // SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
+  private static final String SUBMIT_ERROR_KEY = "_SUBMIT_ERROR_";
+  private static final String LOGGED_OUT_ERROR_TYPE = "LOGOUT";
+
+  /**
+   * initUserInfo 오류 응답 판정: LOGOUT > AUTHENTICATION_FAILED, 그 외 오류 > DATA_FETCH_FAILED (JSON 아니면 통과)
+   *
+   * @param json initUserInfo.do API 응답 JSON
+   * @throws SejongAuthException 오류 응답일 때
+   */
+  public void ensureLoggedIn(String json) {
+    JsonNode submitError;
+    try {
+      submitError = objectMapper.readTree(json).path(SUBMIT_ERROR_KEY);
+    } catch (Exception e) {
+      return; // JSON 아님 > 파싱 단계에서 PARSE_ERROR
+    }
+    if (submitError.isMissingNode() || !submitError.isObject()) {
+      return;
+    }
+    String errorType = getTextValue(submitError, "ERRTYPE");
+    if (LOGGED_OUT_ERROR_TYPE.equals(errorType)) {
+      throw new SejongAuthException(SejongAuthErrorCode.AUTHENTICATION_FAILED);
+    }
+    throw new SejongAuthException(SejongAuthErrorCode.DATA_FETCH_FAILED, "SIS returned an error : " + errorType);
+  }
+
   /**
    * JSON에서 학과명 파싱
    *

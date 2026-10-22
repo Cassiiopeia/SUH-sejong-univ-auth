@@ -10,7 +10,7 @@ Reference implementation: `java/src/main/java/kr/suhsaechan/sejong/auth/client/`
 |---|---|---|
 | TLS | TLSv1.2, cipher `AES256-SHA` (`TLS_RSA_WITH_AES_256_CBC_SHA`) must be allowed | The portal offers only this cipher. Recent JDK / OpenSSL defaults disable it |
 | Python | `ssl` context ciphers `DEFAULT:AES256-SHA:@SECLEVEL=1` | Verified with Python 3.14 / OpenSSL 3.6 |
-| Node | `https.Agent({ ciphers: 'DEFAULT:AES256-SHA:@SECLEVEL=0' })` | Verified with Node 26 / OpenSSL 3.6 |
+| Node | `https.Agent({ ciphers: 'DEFAULT:AES256-SHA:@SECLEVEL=1' })` | Verified with Node 26 / OpenSSL 3.6 (keep SECLEVEL 1: level 0 would also accept weak certificate keys) |
 | Java | remove `TLS_RSA_*` from `jdk.tls.disabledAlgorithms` (JVM-wide, see `SejongTlsSupport`) | |
 | User-Agent | Always send a non-empty, non-default User-Agent: `pro-sejong-auth-<language>/<version>` | Without it classic.sejong.ac.kr returns 404 after SSO, and sjpt.sejong.ac.kr's firewall blocks default library agents (for example `Python-urllib`) with an "Alert!!!" HTML page |
 | Cookies | One cookie jar per authentication call, honoring `Domain=.sejong.ac.kr` | `ssotoken` is set for `.sejong.ac.kr` and must reach classic / sjpt |
@@ -50,6 +50,7 @@ mainLogin=N&rtUrl=<return url>&id=<student id>&password=<password>
    - headers: `Accept: application/json`, `Content-Type: application/json; charset=UTF-8`, `Referer: https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=`, `Origin: https://sjpt.sejong.ac.kr`
    - `addParam` = Base64( URL-form-encode( `{"_runIntgUsrNo":"","_runPgLoginDt":"","_runningSejong":""}` ) ), appended to the URL as is
    - `401`: `AUTHENTICATION_FAILED`; other non-200 or empty body: `DATA_FETCH_FAILED`
+   - `200` with `{"_SUBMIT_ERROR_": {"ERRTYPE": "LOGOUT", ...}}`: `AUTHENTICATION_FAILED` (a wrong password leaves no session, the API answers 200 with this error; sample `fixtures/sis_submit_error_logout.json`). Any other `_SUBMIT_ERROR_`: `DATA_FETCH_FAILED`
 
 ## DHC HTML parsing
 

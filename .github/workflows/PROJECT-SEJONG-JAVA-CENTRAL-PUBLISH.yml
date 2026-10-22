@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   publish:
+    # 수동 실행도 deploy 브랜치에서만 (공개 저장소 버전은 지울 수 없음)
+    if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -36,6 +38,10 @@ jobs:
           if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL")" = "200" ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"; echo "already published: ${{ steps.version.outputs.version }}"
           fi
+
+      - name: Test
+        if: steps.check.outputs.exists != 'true'
+        run: ./gradlew :sejong-univ-auth:test
 
       - name: Publish to Maven Central
         if: steps.check.outputs.exists != 'true'

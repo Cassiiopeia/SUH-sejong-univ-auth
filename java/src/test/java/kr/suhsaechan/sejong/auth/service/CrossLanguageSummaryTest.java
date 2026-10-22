@@ -45,6 +45,7 @@ class CrossLanguageSummaryTest {
     Files.createDirectories(OUTPUT_DIRECTORY);
     Files.writeString(OUTPUT_DIRECTORY.resolve("java.json"), summarize(studentId, password), StandardCharsets.UTF_8);
     Files.writeString(OUTPUT_DIRECTORY.resolve("java-wrong.json"), summarize(studentId, password + "-wrong"), StandardCharsets.UTF_8);
+    Files.writeString(OUTPUT_DIRECTORY.resolve("java-sis-wrong.json"), summarizeSisError(studentId, password + "-wrong"), StandardCharsets.UTF_8);
   }
 
   private String summarize(String studentId, String password) throws Exception {
@@ -66,6 +67,16 @@ class CrossLanguageSummaryTest {
         fieldHashes.put(entry.getKey(), hash(canonicalMapper.writeValueAsString(entry.getValue())));
       }
       return canonicalMapper.writeValueAsString(Map.of("fields", fieldHashes));
+    } catch (SejongAuthException exception) {
+      return canonicalMapper.writeValueAsString(Map.of("error", exception.getErrorCode().name()));
+    }
+  }
+
+  // SIS 단독 인증의 실패 코드 (성공이면 빈 객체)
+  private String summarizeSisError(String studentId, String password) throws Exception {
+    try {
+      createEngine().authenticateWithSIS(studentId, password);
+      return "{}";
     } catch (SejongAuthException exception) {
       return canonicalMapper.writeValueAsString(Map.of("error", exception.getErrorCode().name()));
     }

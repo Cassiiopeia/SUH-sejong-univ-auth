@@ -62,7 +62,7 @@ Thumbs.db
 .report/
 
 # Test Configuration (민감 정보 포함)
-java/src/test/resources/application-dev.yml
+**/src/test/resources/application-dev.yml
 
 # Python (기존 항목 유지)
 __pycache__/

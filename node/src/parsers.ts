@@ -23,17 +23,27 @@ const LABEL_STATUS = '사용자 상태';
 // 주석 | 태그(닫힘 여부, 이름, 속성) | 글자
 const TOKEN_PATTERN = /<!--[\s\S]*?-->|<(\/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>|([^<]+)/g;
 const RAW_TEXT_TAGS = new Set(['script', 'style']);
+// 포털 표에 나올 수 있는 이름 엔티티 (그 외 이름은 원문 유지)
 const NAMED_ENTITIES: Record<string, string> = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', middot: '·',
+  lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', hellip: '…', ndash: '–', mdash: '—',
+  laquo: '«', raquo: '»', bull: '•', copy: '©', reg: '®', trade: '™', times: '×', divide: '÷',
 };
+const MAX_CODE_POINT = 0x10ffff;
+
+// 숫자 엔티티 > 문자 (범위 밖·서로게이트는 원문 유지)
+function decodeCodePoint(entity: string, codePoint: number): string {
+  const isSurrogate = codePoint >= 0xd800 && codePoint <= 0xdfff;
+  return Number.isInteger(codePoint) && codePoint <= MAX_CODE_POINT && !isSurrogate ? String.fromCodePoint(codePoint) : entity;
+}
 
 interface Cell { tag: 'th' | 'td'; text: string }
 interface Section { title: string; rows: Cell[][] }
 
 function decodeEntities(text: string): string {
   return text.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (entity, body: string) => {
-    if (body.startsWith('#x')) return String.fromCodePoint(parseInt(body.slice(2), 16));
-    if (body.startsWith('#')) return String.fromCodePoint(parseInt(body.slice(1), 10));
+    if (body.startsWith('#x')) return decodeCodePoint(entity, parseInt(body.slice(2), 16));
+    if (body.startsWith('#')) return decodeCodePoint(entity, parseInt(body.slice(1), 10));
     return NAMED_ENTITIES[body] ?? entity;
   });
 }
@@ -155,6 +165,25 @@ const textOf = (node: unknown, fieldName: string) => {
   const value = isObject(node) ? node[fieldName] : undefined;
   return value === undefined || value === null ? '' : String(value);
 };
+
+// SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
+const SIS_SUBMIT_ERROR_KEY = '_SUBMIT_ERROR_';
+const SIS_LOGGED_OUT_ERROR_TYPE = 'LOGOUT';
+
+/** initUserInfo 오류 응답 판정: LOGOUT > AUTHENTICATION_FAILED, 그 외 오류 > DATA_FETCH_FAILED */
+export function ensureSisLoggedIn(jsonText: string): void {
+  let root: unknown;
+  try {
+    root = JSON.parse(jsonText);
+  } catch {
+    return; // JSON 아님 > 파싱 단계에서 PARSE_ERROR
+  }
+  const submitError = isObject(root) ? root[SIS_SUBMIT_ERROR_KEY] : undefined;
+  if (!isObject(submitError)) return;
+  const errorType = textOf(submitError, 'ERRTYPE');
+  if (errorType === SIS_LOGGED_OUT_ERROR_TYPE) throw new SejongAuthError(ErrorCode.AUTHENTICATION_FAILED);
+  throw new SejongAuthError(ErrorCode.DATA_FETCH_FAILED, `SIS returned an error : ${errorType}`);
+}
 
 /** initUserInfo JSON > 학번, 이름, 학과, 이메일, 전화번호, 영문 이름 (dm_UserInfo 없으면 PARSE_ERROR) */
 export function parseSisUserInfo(jsonText: string): SejongSisUserInfo {

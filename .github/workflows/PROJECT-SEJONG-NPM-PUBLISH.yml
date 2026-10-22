@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   publish:
+    # 수동 실행도 deploy 브랜치에서만 (공개 저장소 버전은 지울 수 없음)
+    if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -26,7 +28,7 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
       - name: Update npm (Trusted Publishing needs npm 11.5+)
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
       - name: Test
         working-directory: node
         run: |

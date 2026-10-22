@@ -87,3 +87,9 @@ test('errorMessageNeverContainsPassword', async () => {
   await assert.rejects(client.authenticateDhc('21011234', 'secret-password-value'), (error) =>
     error.code === ErrorCode.CONNECTION_FAILED && !String(error.message).includes('secret-password-value'));
 });
+
+test('sisWrongPasswordSubmitErrorRaisesAuthenticationFailed', async () => {
+  // 틀린 비밀번호: initUserInfo 가 200 + _SUBMIT_ERROR_(ERRTYPE LOGOUT) 를 돌려줌
+  const { client } = clientWith({ [LOGIN]: [ok()], [SIS_SSO]: [ok()], [SIS_USER_INFO]: [ok(readFixture('sis_submit_error_logout.json'))] });
+  await rejectsWithCode(client.authenticateSis('21011234', 'wrong'), ErrorCode.AUTHENTICATION_FAILED);
+});

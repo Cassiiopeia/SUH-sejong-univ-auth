@@ -165,7 +165,10 @@ public class SuhSejongAuthEngine {
     validateCredentials(studentId, password);
     log.info("[sejong auth] SIS auth started : studentId={}, raw={}", studentId, shouldIncludeRawJson);
 
-    SejongSisAuthResult sisResult = buildSisResult(sisClient.authenticateAndFetchJson(studentId, password), shouldIncludeRawJson);
+    String json = sisClient.authenticateAndFetchJson(studentId, password);
+    // 틀린 비밀번호는 401 이 아니라 200 + _SUBMIT_ERROR_(LOGOUT)
+    sisParser.ensureLoggedIn(json);
+    SejongSisAuthResult sisResult = buildSisResult(json, shouldIncludeRawJson);
 
     log.info("[sejong auth] SIS auth completed : studentId={}", studentId);
     return sisResult;

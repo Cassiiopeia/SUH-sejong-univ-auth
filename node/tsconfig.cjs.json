@@ -3,8 +3,8 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node10",
-    "declaration": false,
-    "declarationDir": null,
+    "declaration": true,
+    "declarationDir": "dist/cjs",
     "outDir": "dist/cjs"
   }
 }

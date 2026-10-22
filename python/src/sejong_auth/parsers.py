@@ -183,6 +183,26 @@ def _text(node: dict, field_name: str) -> str:
     return "" if value is None else str(value)
 
 
+# SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
+SIS_SUBMIT_ERROR_KEY = "_SUBMIT_ERROR_"
+SIS_LOGGED_OUT_ERROR_TYPE = "LOGOUT"
+
+
+def ensure_sis_logged_in(json_text: str) -> None:
+    """initUserInfo 오류 응답 판정: LOGOUT > AUTHENTICATION_FAILED, 그 외 오류 > DATA_FETCH_FAILED"""
+    try:
+        root = json.loads(json_text)
+    except (TypeError, ValueError):
+        return  # JSON 아님 > 파싱 단계에서 PARSE_ERROR
+    submit_error = root.get(SIS_SUBMIT_ERROR_KEY) if isinstance(root, dict) else None
+    if not isinstance(submit_error, dict):
+        return
+    error_type = _text(submit_error, "ERRTYPE")
+    if error_type == SIS_LOGGED_OUT_ERROR_TYPE:
+        raise SejongAuthError(ErrorCode.AUTHENTICATION_FAILED)
+    raise SejongAuthError(ErrorCode.DATA_FETCH_FAILED, f"SIS returned an error : {error_type}")
+
+
 def parse_sis_user_info(json_text: str) -> SejongSisUserInfo:
     """initUserInfo JSON > 학번, 이름, 학과, 이메일, 전화번호, 영문 이름 (dm_UserInfo 없으면 PARSE_ERROR)"""
     try:

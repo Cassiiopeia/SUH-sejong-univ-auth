@@ -30,3 +30,10 @@ def test_parse_sis_fixture(sis_json):
     expected = snake_case_keys(read_expected("expected_sis.json"))
 
     assert parse_sis_user_info(sis_json).to_dict() == expected
+
+
+def test_decodes_common_named_entities():
+    # Node·Jsoup 과 같은 기대값
+    html = ('<div class="b-con-box"><h4 class="b-h4-tit01">사용자 정보</h4><table class="b-board-table"><tbody>'
+            '<tr><th>학과명</th><td>&lsquo;컴퓨터&rsquo; &ldquo;공학&rdquo;&hellip; &ndash;&mdash;</td></tr></tbody></table></div>')
+    assert parse_student_info(html).major == "‘컴퓨터’ “공학”… –—"

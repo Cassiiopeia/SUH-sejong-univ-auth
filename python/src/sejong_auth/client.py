@@ -10,7 +10,7 @@ from typing import Callable, Optional
 from . import __version__
 from .errors import ErrorCode, SejongAuthError
 from .models import SejongAuthResult, SejongDhcAuthResult, SejongSisAuthResult
-from .parsers import parse_classic_reading, parse_sis_user_info, parse_student_info
+from .parsers import ensure_sis_logged_in, parse_classic_reading, parse_sis_user_info, parse_student_info
 from .transport import HttpResponse, UrllibSession, create_ssl_context
 
 PORTAL_LOGIN_URL = "https://portal.sejong.ac.kr/jsp/login/login_action.jsp"
@@ -106,7 +106,10 @@ class SejongAuthClient:
             "Referer": SIS_SSO_URL,
             "Origin": SIS_ORIGIN,
         })
-        return self._expect_data(response, "initUserInfo API request failed")
+        json_text = self._expect_data(response, "initUserInfo API request failed")
+        # 틀린 비밀번호는 401 이 아니라 200 + _SUBMIT_ERROR_(LOGOUT)
+        ensure_sis_logged_in(json_text)
+        return json_text
 
     def _login(self, session, student_id: str, password: str, return_url: str) -> None:
         """포털 로그인 (실패 응답·시간 초과 시 max_retry 회까지, 성공 여부는 이후 401 로 판별)"""

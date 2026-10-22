@@ -1,7 +1,7 @@
 // 세종대 포털 인증 클라이언트: 입력 검증 > 포털 로그인(재시도) > SSO > 데이터 조회 > 파싱 (흐름: spec/PORTAL_FLOW.md)
 import { ErrorCode, SejongAuthError } from './errors.js';
 import type { RawOption, SejongAuthResult, SejongDhcAuthResult, SejongSisAuthResult } from './models.js';
-import { parseClassicReading, parseSisUserInfo, parseStudentInfo } from './parsers.js';
+import { ensureSisLoggedIn, parseClassicReading, parseSisUserInfo, parseStudentInfo } from './parsers.js';
 import { NodeHttpsSession, TimeoutError, type HttpResponse, type RequestOptions, type Session } from './transport.js';
 import { VERSION } from './version.js';
 
@@ -115,7 +115,10 @@ export class SejongAuthClient {
         Origin: SIS_ORIGIN,
       },
     });
-    return expectData(response, 'initUserInfo API request failed');
+    const jsonText = expectData(response, 'initUserInfo API request failed');
+    // 틀린 비밀번호는 401 이 아니라 200 + _SUBMIT_ERROR_(LOGOUT)
+    ensureSisLoggedIn(jsonText);
+    return jsonText;
   }
 
   /** 포털 로그인 (실패 응답·시간 초과 시 maxRetry 회까지, 성공 여부는 이후 401 로 판별) */

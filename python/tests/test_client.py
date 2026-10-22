@@ -121,3 +121,14 @@ def test_error_message_never_contains_password():
 
     assert error.value.code == ErrorCode.CONNECTION_FAILED
     assert "secret-password-value" not in str(error.value)
+
+
+def test_sis_wrong_password_submit_error_raises_authentication_failed():
+    # 틀린 비밀번호: initUserInfo 가 200 + _SUBMIT_ERROR_(ERRTYPE LOGOUT) 를 돌려줌
+    from conftest import read_fixture
+    client, _ = client_with({LOGIN: [ok()], SIS_SSO: [ok()], SIS_USER_INFO: [ok(read_fixture("sis_submit_error_logout.json"))]})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_sis("21011234", "wrong")
+
+    assert error.value.code == ErrorCode.AUTHENTICATION_FAILED
