@@ -1,14 +1,33 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-22T00:36:05Z",
-    "currentVersion": "1.2.11",
+    "lastUpdated": "2026-10-22T00:41:29Z",
+    "currentVersion": "1.2.12",
     "projectType": "spring",
-    "totalReleases": 10,
+    "totalReleases": 11,
     "projectTypes": [
       "spring"
     ]
   },
   "releases": [
+    {
+      "version": "1.2.12",
+      "project_type": "spring",
+      "project_types": [
+        "spring"
+      ],
+      "date": "2026-10-22",
+      "pr_number": 21,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **기타**\n  * GitHub Packages 배포가 실패하던 문제 해결",
+      "parsed_changes": {
+        "기타": {
+          "title": "기타",
+          "items": [
+            "GitHub Packages 배포가 실패하던 문제 해결"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.11",
       "project_type": "spring",
