@@ -65,10 +65,10 @@ public class SejongPortalClient {
     } catch (SejongAuthException e) {
       throw e;
     } catch (IOException e) {
-      log.error("세종포털 인증 중 IOException: {}", e.getMessage());
+      log.error("[sejong auth] portal authentication IOException : {}", e.getMessage());
       throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     } catch (Exception e) {
-      log.error("세종포털 인증 중 예외 발생: {}", e.getMessage());
+      log.error("[sejong auth] portal authentication error : {}", e.getMessage());
       throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     }
   }
@@ -93,15 +93,15 @@ public class SejongPortalClient {
         .header("Cookie", DEFAULT_COOKIE)
         .build();
 
-    log.debug("세종포털 로그인 요청: URL={}, studentId={}", properties.getPortalLoginUrl(), studentId);
+    log.debug("[sejong auth] portal login request : url={}, studentId={}", properties.getPortalLoginUrl(), studentId);
 
     try (Response response = executeWithRetry(client, request)) {
       // 응답 바디 읽기 (원본 Malsami 코드와 동일하게 로그인 실패 체크 제거)
       // 로그인 성공/실패 여부는 이후 SSO 및 데이터 페이지 요청에서 간접적으로 확인됨
       String responseBody = response.body() != null ? response.body().string() : "";
 
-      log.debug("세종포털 로그인 응답: code={}, bodyLength={}", response.code(), responseBody.length());
-      log.debug("세종포털 로그인 요청 완료: 응답코드={}", response.code());
+      log.debug("[sejong auth] portal login response : code={}, bodyLength={}", response.code(), responseBody.length());
+      log.debug("[sejong auth] portal login request done : code={}", response.code());
     }
   }
 
@@ -117,9 +117,9 @@ public class SejongPortalClient {
     try (Response ssoResponse = client.newCall(ssoRequest).execute()) {
       if (!ssoResponse.isSuccessful()) {
         throw new SejongAuthException(SejongAuthErrorCode.SESSION_ERROR,
-            "SSO 리다이렉트 실패: " + ssoResponse.code());
+            "SSO redirect failed : " + ssoResponse.code());
       }
-      log.debug("SSO 리다이렉트 완료: 응답코드={}", ssoResponse.code());
+      log.debug("[sejong auth] SSO redirect done : code={}", ssoResponse.code());
     }
   }
 
@@ -139,18 +139,18 @@ public class SejongPortalClient {
 
       // 401 Unauthorized: 로그인 실패 (학번/비밀번호 불일치)
       if (responseCode == 401) {
-        log.warn("세종포털 인증 실패: 401 Unauthorized - 학번 또는 비밀번호가 일치하지 않습니다.");
+        log.warn("[sejong auth] portal authentication rejected 401 : student ID or password mismatch");
         throw new SejongAuthException(SejongAuthErrorCode.AUTHENTICATION_FAILED);
       }
 
       // 그 외 실패 응답
       if (response.body() == null || responseCode != 200) {
         throw new SejongAuthException(SejongAuthErrorCode.DATA_FETCH_FAILED,
-            "고전독서 페이지 요청 실패: " + responseCode);
+            "Classic reading page request failed : " + responseCode);
       }
 
       String html = response.body().string();
-      log.debug("고전독서 페이지 요청 완료: 응답코드={}, HTML길이={}", responseCode, html.length());
+      log.debug("[sejong auth] classic reading page loaded : code={}, htmlLength={}", responseCode, html.length());
       return html;
     }
   }
@@ -170,10 +170,10 @@ public class SejongPortalClient {
           return response;
         }
         tryCount++;
-        log.warn("요청 실패, 재시도 중... ({}회)", tryCount);
+        log.warn("[sejong auth] request failed, retrying (attempt {})", tryCount);
       } catch (SocketTimeoutException e) {
         tryCount++;
-        log.warn("타임아웃 발생, 재시도 중... ({}회)", tryCount);
+        log.warn("[sejong auth] timeout, retrying (attempt {})", tryCount);
         if (tryCount >= maxRetry) {
           throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_TIMEOUT, e);
         }
@@ -181,7 +181,7 @@ public class SejongPortalClient {
     }
 
     throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED,
-        "최대 재시도 횟수 초과: " + maxRetry);
+        "Max retry count exceeded : " + maxRetry);
   }
 
   /**
@@ -218,7 +218,7 @@ public class SejongPortalClient {
         builder.sslSocketFactory(sslSocketFactory, trustManager);
         builder.hostnameVerifier(createTrustAllHostnameVerifier());
 
-        log.debug("SSL 검증 비활성화됨");
+        log.debug("[sejong auth] SSL verification disabled");
       }
 
       return builder.build();

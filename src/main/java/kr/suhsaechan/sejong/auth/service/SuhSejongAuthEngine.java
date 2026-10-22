@@ -53,7 +53,7 @@ public class SuhSejongAuthEngine {
    */
   public SejongAuthResult authenticate(String studentId, String password) {
     validateCredentials(studentId, password);
-    log.info("세종대학교 통합 인증 시작: studentId={}", studentId);
+    log.info("[sejong auth] integrated auth started : studentId={}", studentId);
 
     // 1. DHC에서 정보 가져오기
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
@@ -74,7 +74,7 @@ public class SuhSejongAuthEngine {
       phoneNumber = sisParser.parsePhoneNumber(json);
       englishName = sisParser.parseEnglishName(json);
     } catch (Exception e) {
-      log.warn("SIS 연락처 정보 조회 실패 (무시됨): {}", e.getMessage());
+      log.warn("[sejong auth] SIS contact lookup failed (ignored) : {}", e.getMessage());
       // SIS 실패 시에도 DHC 정보만으로 결과 반환
     }
 
@@ -93,7 +93,7 @@ public class SuhSejongAuthEngine {
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 통합 인증 완료: studentId={}, name={}", studentId, name);
+    log.info("[sejong auth] integrated auth completed : studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -109,7 +109,7 @@ public class SuhSejongAuthEngine {
    */
   public SejongDhcAuthResult authenticateWithDHC(String studentId, String password) {
     validateCredentials(studentId, password);
-    log.info("세종대학교 DHC 인증 시작: studentId={}", studentId);
+    log.info("[sejong auth] DHC auth started : studentId={}", studentId);
 
     // 1. 포털 로그인 및 HTML 가져오기
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
@@ -136,7 +136,7 @@ public class SuhSejongAuthEngine {
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 DHC 인증 완료: studentId={}, name={}", studentId, name);
+    log.info("[sejong auth] DHC auth completed : studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -152,7 +152,7 @@ public class SuhSejongAuthEngine {
    */
   public SejongSisAuthResult authenticateWithSIS(String studentId, String password) {
     validateCredentials(studentId, password);
-    log.info("세종대학교 SIS 인증 시작: studentId={}", studentId);
+    log.info("[sejong auth] SIS auth started : studentId={}", studentId);
 
     // 1. SIS 로그인 및 JSON 가져오기
     String json = sisClient.authenticateAndFetchJson(studentId, password);
@@ -181,7 +181,7 @@ public class SuhSejongAuthEngine {
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("세종대학교 SIS 인증 완료: studentId={}, name={}", studentId, name);
+    log.info("[sejong auth] SIS auth completed : studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -196,7 +196,7 @@ public class SuhSejongAuthEngine {
    */
   public SejongDhcAuthResult authenticateWithDHCRaw(String studentId, String password) {
     validateCredentials(studentId, password);
-    log.info("세종대학교 DHC 인증 시작 (원본 HTML 포함): studentId={}", studentId);
+    log.info("[sejong auth] DHC auth started (with raw HTML) : studentId={}", studentId);
 
     // 1. 포털 로그인 및 HTML 가져오기
     String html = portalClient.authenticateAndFetchHtml(studentId, password);
@@ -224,7 +224,7 @@ public class SuhSejongAuthEngine {
         .rawHtml(html)
         .build();
 
-    log.info("세종대학교 DHC 인증 완료 (원본 HTML 포함): studentId={}, name={}", studentId, name);
+    log.info("[sejong auth] DHC auth completed (with raw HTML) : studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -239,7 +239,7 @@ public class SuhSejongAuthEngine {
    */
   public SejongSisAuthResult authenticateWithSISRaw(String studentId, String password) {
     validateCredentials(studentId, password);
-    log.info("세종대학교 SIS 인증 시작 (원본 JSON 포함): studentId={}", studentId);
+    log.info("[sejong auth] SIS auth started (with raw JSON) : studentId={}", studentId);
 
     // 1. SIS 로그인 및 JSON 가져오기
     String json = sisClient.authenticateAndFetchJson(studentId, password);
@@ -269,7 +269,7 @@ public class SuhSejongAuthEngine {
         .rawJson(json)
         .build();
 
-    log.info("세종대학교 SIS 인증 완료 (원본 JSON 포함): studentId={}, name={}", studentId, name);
+    log.info("[sejong auth] SIS auth completed (with raw JSON) : studentId={}, name={}", studentId, name);
     return result;
   }
 
@@ -282,10 +282,10 @@ public class SuhSejongAuthEngine {
    */
   private void validateCredentials(String studentId, String password) {
     if (CommonUtil.isBlank(studentId)) {
-      throw new SejongAuthException(SejongAuthErrorCode.INVALID_INPUT, "학번이 비어있습니다.");
+      throw new SejongAuthException(SejongAuthErrorCode.INVALID_INPUT, "Student ID is empty");
     }
     if (CommonUtil.isBlank(password)) {
-      throw new SejongAuthException(SejongAuthErrorCode.INVALID_INPUT, "비밀번호가 비어있습니다.");
+      throw new SejongAuthException(SejongAuthErrorCode.INVALID_INPUT, "Password is empty");
     }
   }
 }

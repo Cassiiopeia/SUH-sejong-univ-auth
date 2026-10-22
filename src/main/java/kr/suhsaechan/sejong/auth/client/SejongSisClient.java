@@ -73,10 +73,10 @@ public class SejongSisClient {
     } catch (SejongAuthException e) {
       throw e;
     } catch (IOException e) {
-      log.error("학사정보시스템 인증 중 IOException: {}", e.getMessage());
+      log.error("[sejong auth] SIS authentication IOException : {}", e.getMessage());
       throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     } catch (Exception e) {
-      log.error("학사정보시스템 인증 중 예외 발생: {}", e.getMessage());
+      log.error("[sejong auth] SIS authentication error : {}", e.getMessage());
       throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     }
   }
@@ -100,11 +100,11 @@ public class SejongSisClient {
         .header("Cookie", DEFAULT_COOKIE)
         .build();
 
-    log.debug("세종포털 로그인 요청 (SIS): URL={}, studentId={}", PORTAL_LOGIN_URL, studentId);
+    log.debug("[sejong auth] portal login request (SIS) : url={}, studentId={}", PORTAL_LOGIN_URL, studentId);
 
     try (Response response = executeWithRetry(client, request)) {
       String responseBody = response.body() != null ? response.body().string() : "";
-      log.debug("세종포털 로그인 응답: code={}, bodyLength={}", response.code(), responseBody.length());
+      log.debug("[sejong auth] portal login response : code={}, bodyLength={}", response.code(), responseBody.length());
     }
   }
 
@@ -121,9 +121,9 @@ public class SejongSisClient {
     try (Response response = client.newCall(request).execute()) {
       if (!response.isSuccessful()) {
         throw new SejongAuthException(SejongAuthErrorCode.SESSION_ERROR,
-            "SIS SSO 페이지 접근 실패: " + response.code());
+            "SIS SSO page request failed : " + response.code());
       }
-      log.debug("SIS SSO 페이지 접근 완료: 응답코드={}", response.code());
+      log.debug("[sejong auth] SIS SSO page loaded : code={}", response.code());
     }
   }
 
@@ -154,17 +154,17 @@ public class SejongSisClient {
 
       // 401 Unauthorized: 로그인 실패
       if (responseCode == 401) {
-        log.warn("학사정보시스템 인증 실패: 401 Unauthorized");
+        log.warn("[sejong auth] SIS authentication rejected 401 : unauthorized");
         throw new SejongAuthException(SejongAuthErrorCode.AUTHENTICATION_FAILED);
       }
 
       if (response.body() == null || responseCode != 200) {
         throw new SejongAuthException(SejongAuthErrorCode.DATA_FETCH_FAILED,
-            "initUserInfo API 요청 실패: " + responseCode);
+            "initUserInfo API request failed : " + responseCode);
       }
 
       String json = response.body().string();
-      log.debug("initUserInfo API 응답: 응답코드={}, JSON길이={}", responseCode, json.length());
+      log.debug("[sejong auth] initUserInfo response : code={}, jsonLength={}", responseCode, json.length());
       return json;
     }
   }
@@ -193,10 +193,10 @@ public class SejongSisClient {
           return response;
         }
         tryCount++;
-        log.warn("요청 실패, 재시도 중... ({}회)", tryCount);
+        log.warn("[sejong auth] request failed, retrying (attempt {})", tryCount);
       } catch (SocketTimeoutException e) {
         tryCount++;
-        log.warn("타임아웃 발생, 재시도 중... ({}회)", tryCount);
+        log.warn("[sejong auth] timeout, retrying (attempt {})", tryCount);
         if (tryCount >= maxRetry) {
           throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_TIMEOUT, e);
         }
@@ -204,7 +204,7 @@ public class SejongSisClient {
     }
 
     throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED,
-        "최대 재시도 횟수 초과: " + maxRetry);
+        "Max retry count exceeded : " + maxRetry);
   }
 
   /**
@@ -238,7 +238,7 @@ public class SejongSisClient {
         builder.sslSocketFactory(sslSocketFactory, trustManager);
         builder.hostnameVerifier(createTrustAllHostnameVerifier());
 
-        log.debug("SSL 검증 비활성화됨 (SIS)");
+        log.debug("[sejong auth] SSL verification disabled (SIS)");
       }
 
       return builder.build();

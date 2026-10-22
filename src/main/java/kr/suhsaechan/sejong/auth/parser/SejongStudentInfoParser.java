@@ -89,7 +89,7 @@ public class SejongStudentInfoParser {
 
       if (data.isEmpty()) {
         throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
-            "사용자 정보 테이블을 찾을 수 없습니다.");
+            "Student info table not found");
       }
 
       return data;

@@ -53,7 +53,7 @@ public class SejongClassicReadingParser {
           .curriculumRecords(parseCurriculumRecords(doc))
           .build();
 
-      log.debug("고전독서 정보 파싱 완료: {}", reading);
+      log.debug("[sejong auth] classic reading parsed : {}", reading);
       return reading;
 
     } catch (Exception e) {

@@ -1,63 +1,66 @@
-# DHC (대양휴머니티칼리지) 로그인 플로우 상세 문서
+# DHC (Daeyang Humanity College) Login Flow Details
 
-## 📋 개요
+English | [한국어](DHC_LOGIN_FLOW.ko.md)
 
-**DHC (Daeyang Humanity College, 대양휴머니티칼리지)**는 세종대학교의 교양 교육 시스템으로, 학생들의 **고전독서 인증** 정보를 관리합니다.
+## 📋 Overview
 
-| 항목 | 내용 |
+**DHC (Daeyang Humanity College, 대양휴머니티칼리지)** is Sejong University's liberal arts education system. It manages students' **classic reading certification** records.
+
+| Item | Details |
 |------|------|
-| 도메인 | `classic.sejong.ac.kr` |
-| 프로토콜 | HTTPS |
-| 인증 방식 | 세종포털 SSO |
-| 데이터 형식 | HTML |
-| 제공 정보 | 학생 기본정보, 고전독서 인증 현황 |
+| Domain | `classic.sejong.ac.kr` |
+| Protocol | HTTPS |
+| Authentication | Sejong Portal SSO |
+| Data format | HTML |
+| Provided data | Basic student info, classic reading certification status |
 
 ---
 
-## 🔄 인증 흐름 다이어그램
+## 🔄 Authentication Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         DHC 로그인 플로우                                 │
+│                            DHC Login Flow                               │
 └─────────────────────────────────────────────────────────────────────────┘
 
-  클라이언트                포털                    SSO                    DHC
+  Client                  Portal                   SSO                    DHC
       │                     │                      │                      │
-      │  1. POST 로그인     │                      │                      │
-      │ ─────────────────► │                      │                      │
-      │   (id, password,   │                      │                      │
-      │    rtUrl=classic)  │                      │                      │
+      │  1. POST login      │                      │                      │
+      │ ─────────────────►  │                      │                      │
+      │   (id, password,    │                      │                      │
+      │    rtUrl=classic)   │                      │                      │
       │                     │                      │                      │
       │  ◄───────────────── │                      │                      │
-      │   Set-Cookie       │                      │                      │
-      │   (세션쿠키)        │                      │                      │
+      │   Set-Cookie        │                      │                      │
+      │   (session cookie)  │                      │                      │
       │                     │                      │                      │
-      │  2. GET SSO        │                      │                      │
-      │ ─────────────────────────────────────────►│                      │
-      │   (쿠키 포함)       │                      │                      │
+      │  2. GET SSO         │                      │                      │
+      │ ─────────────────────────────────────────► │                      │
+      │   (with cookies)    │                      │                      │
       │                     │                      │                      │
-      │  ◄─────────────────────────────────────── │                      │
-      │   SSO 토큰 발급     │                      │                      │
+      │  ◄──────────────────────────────────────── │                      │
+      │   SSO token issued  │                      │                      │
       │                     │                      │                      │
-      │  3. GET 학생정보    │                      │                      │
-      │ ─────────────────────────────────────────────────────────────────►│
-      │   (쿠키 포함)       │                      │                      │
+      │  3. GET student info│                      │                      │
+      │ ────────────────────────────────────────────────────────────────► │
+      │   (with cookies)    │                      │                      │
       │                     │                      │                      │
-      │  ◄───────────────────────────────────────────────────────────────│
-      │   HTML 응답         │                      │                      │
-      │   (학생정보+고전독서)│                      │                      │
+      │  ◄─────────────────────────────────────────────────────────────── │
+      │   HTML response     │                      │                      │
+      │   (student info +   │                      │                      │
+      │    classic reading) │                      │                      │
       │                     │                      │                      │
 ```
 
 ---
 
-## 📡 상세 HTTP 요청/응답
+## 📡 HTTP Request/Response Details
 
-### Step 1: 포털 로그인
+### Step 1: Portal Login
 
-세종대학교 포털에 로그인하고, `rtUrl` 파라미터로 DHC 사이트로 리다이렉트를 지정합니다.
+Log in to the Sejong University portal and set the redirect target to the DHC site with the `rtUrl` parameter.
 
-**요청**
+**Request**
 ```http
 POST https://portal.sejong.ac.kr/jsp/login/login_action.jsp HTTP/1.1
 Host: portal.sejong.ac.kr
@@ -65,60 +68,60 @@ Referer: https://portal.sejong.ac.kr
 Content-Type: application/x-www-form-urlencoded
 Cookie: chknos=false
 
-mainLogin=N&rtUrl=classic.sejong.ac.kr&id={학번}&password={비밀번호}
+mainLogin=N&rtUrl=classic.sejong.ac.kr&id={studentId}&password={password}
 ```
 
-| 파라미터 | 필수 | 설명 |
+| Parameter | Required | Description |
 |---------|------|------|
-| `mainLogin` | O | 메인 로그인 여부 (항상 "N") |
-| `rtUrl` | O | 로그인 후 리다이렉트 URL (classic.sejong.ac.kr) |
-| `id` | O | 학번 |
-| `password` | O | 비밀번호 |
+| `mainLogin` | O | Main login flag (always "N") |
+| `rtUrl` | O | Redirect URL after login (classic.sejong.ac.kr) |
+| `id` | O | Student ID |
+| `password` | O | Password |
 
-**응답**
+**Response**
 ```http
 HTTP/1.1 200 OK
 Set-Cookie: JSESSIONID=...; Path=/; HttpOnly
 Set-Cookie: ssotoken=...; Domain=.sejong.ac.kr; Path=/
 ```
 
-**중요**: 이 단계에서 설정된 쿠키(`JSESSIONID`, `ssotoken`)가 이후 모든 요청에 자동으로 포함됩니다.
+**Important**: The cookies set in this step (`JSESSIONID`, `ssotoken`) are sent automatically with every later request.
 
 ---
 
-### Step 2: SSO 리다이렉트
+### Step 2: SSO Redirect
 
-포털에서 발급받은 쿠키로 DHC의 SSO 엔드포인트에 접근합니다.
+Call the DHC SSO endpoint with the cookies issued by the portal.
 
-**요청**
+**Request**
 ```http
 GET https://classic.sejong.ac.kr/userCertified.do HTTP/1.1
 Host: classic.sejong.ac.kr
 Cookie: JSESSIONID=...; ssotoken=...
 ```
 
-**응답**
+**Response**
 ```http
 HTTP/1.1 200 OK
 Set-Cookie: CLASSIC_JSESSIONID=...; Path=/
 ```
 
-이 단계에서 DHC 사이트의 세션이 생성됩니다.
+This step creates the session on the DHC site.
 
 ---
 
-### Step 3: 고전독서인증현황 페이지 요청
+### Step 3: Classic Reading Certification Status Page Request
 
-인증된 세션으로 학생 정보가 포함된 페이지를 요청합니다.
+Request the page that contains the student info, using the authenticated session.
 
-**요청**
+**Request**
 ```http
 GET https://classic.sejong.ac.kr/classical/certificationStatus.do HTTP/1.1
 Host: classic.sejong.ac.kr
 Cookie: CLASSIC_JSESSIONID=...; ssotoken=...
 ```
 
-**응답 (성공 시)**
+**Response (success)**
 ```http
 HTTP/1.1 200 OK
 Content-Type: text/html; charset=UTF-8
@@ -127,7 +130,7 @@ Content-Type: text/html; charset=UTF-8
 <html>
 <head>...</head>
 <body>
-  <!-- 학생 정보 테이블 -->
+  <!-- Student info table -->
   <div class="tbl">
     <table>
       <tr><th>학과</th><td>컴퓨터공학과</td></tr>
@@ -138,26 +141,28 @@ Content-Type: text/html; charset=UTF-8
     </table>
   </div>
 
-  <!-- 고전독서 인증 정보 -->
+  <!-- Classic reading certification info -->
   <div class="certifications">...</div>
 </body>
 </html>
 ```
 
-**응답 (인증 실패 시)**
+The portal returns Korean labels and values. In this sample: `학과` (department), `학번` (student ID), `성명` (name), `학년` (year), `상태` (status), `컴퓨터공학과` (Department of Computer Science and Engineering), `재학` (enrolled). `홍길동` is a placeholder name.
+
+**Response (authentication failure)**
 ```http
 HTTP/1.1 401 Unauthorized
 ```
 
 ---
 
-## 🔍 HTML 파싱 로직
+## 🔍 HTML Parsing Logic
 
-### 학생 기본정보 파싱 (SejongStudentInfoParser)
+### Basic Student Info Parsing (SejongStudentInfoParser)
 
-HTML에서 학생 정보를 추출하는 로직입니다.
+This logic extracts student info from the HTML.
 
-**대상 HTML 구조**
+**Target HTML structure**
 ```html
 <div class="tbl">
   <table>
@@ -183,15 +188,17 @@ HTML에서 학생 정보를 추출하는 로직입니다.
 </div>
 ```
 
-**파싱 로직**
+`재학상태` (enrollment status) is a header label on the portal page.
+
+**Parsing logic**
 ```java
-// Jsoup을 사용한 파싱
+// Parse with Jsoup
 Document doc = Jsoup.parse(html);
 
-// 학생정보 테이블 선택
+// Select the student info table
 Element table = doc.selectFirst("div.tbl table");
 
-// 각 행에서 데이터 추출
+// Extract data from each row
 Elements rows = table.select("tr");
 for (Element row : rows) {
     Elements headers = row.select("th");
@@ -212,7 +219,7 @@ for (Element row : rows) {
 }
 ```
 
-**추출 결과**
+**Extracted result**
 ```java
 SejongStudentInfo {
     major: "컴퓨터공학과",
@@ -225,11 +232,11 @@ SejongStudentInfo {
 
 ---
 
-### 고전독서 인증정보 파싱 (SejongClassicReadingParser)
+### Classic Reading Certification Parsing (SejongClassicReadingParser)
 
-**대상 HTML 구조**
+**Target HTML structure**
 ```html
-<!-- 영역별 인증 현황 -->
+<!-- Certification status by area -->
 <div class="certArea">
   <div class="area1">
     <span class="title">서양의 역사와 사상</span>
@@ -238,10 +245,10 @@ SejongStudentInfo {
       <li>아리스토텔레스의 정치학 (2023-06-20)</li>
     </ul>
   </div>
-  <!-- ... 다른 영역들 -->
+  <!-- ... other areas -->
 </div>
 
-<!-- 시험 응시 이력 -->
+<!-- Exam history -->
 <div class="examHistory">
   <table>
     <tr>
@@ -253,7 +260,9 @@ SejongStudentInfo {
 </div>
 ```
 
-**추출 결과**
+The portal returns Korean values. In this sample: `서양의 역사와 사상` (Western History and Thought), `동양의 역사와 사상` (Eastern History and Thought), `플라톤의 국가` (Plato's Republic), `아리스토텔레스의 정치학` (Aristotle's Politics), `합격` (pass).
+
+**Extracted result**
 ```java
 SejongClassicReading {
     certifications: [
@@ -271,43 +280,43 @@ SejongClassicReading {
 
 ---
 
-## ⚠️ 에러 처리
+## ⚠️ Error Handling
 
-### 인증 실패 감지
+### Detecting Authentication Failure
 
-| HTTP 응답 코드 | 의미 | 처리 |
+| HTTP response code | Meaning | Handling |
 |---------------|------|------|
-| 401 Unauthorized | 학번/비밀번호 불일치 | `AUTHENTICATION_FAILED` 예외 발생 |
-| 200 (빈 HTML) | 세션 만료 | `SESSION_ERROR` 예외 발생 |
-| 500 | 서버 오류 | `CONNECTION_FAILED` 예외 발생 |
-| Timeout | 연결 시간 초과 | `CONNECTION_TIMEOUT` 예외 발생 |
+| 401 Unauthorized | Student ID/password mismatch | Throws `AUTHENTICATION_FAILED` |
+| 200 (empty HTML) | Session expired | Throws `SESSION_ERROR` |
+| 500 | Server error | Throws `CONNECTION_FAILED` |
+| Timeout | Connection timed out | Throws `CONNECTION_TIMEOUT` |
 
-### 파싱 실패 감지
+### Detecting Parsing Failure
 
 ```java
-// 필수 요소가 없는 경우
+// Required element is missing
 if (table == null || table.select("tr").isEmpty()) {
     throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
-        "학생 정보 테이블을 찾을 수 없습니다.");
+        "Student info table not found");
 }
 ```
 
 ---
 
-## 🛠️ 코드 레퍼런스
+## 🛠️ Code Reference
 
-### 관련 클래스 매핑
+### Class Mapping
 
-| 클래스 | 역할 | 위치 |
+| Class | Role | Location |
 |--------|------|------|
-| `SejongPortalClient` | HTTP 요청 처리 | `client/SejongPortalClient.java` |
-| `SejongStudentInfoParser` | 학생정보 HTML 파싱 | `parser/SejongStudentInfoParser.java` |
-| `SejongClassicReadingParser` | 고전독서 HTML 파싱 | `parser/SejongClassicReadingParser.java` |
-| `SejongDhcAuthResult` | DHC 인증 결과 모델 | `model/SejongDhcAuthResult.java` |
-| `SejongStudentInfo` | 학생정보 모델 | `model/SejongStudentInfo.java` |
-| `SejongClassicReading` | 고전독서 정보 모델 | `model/SejongClassicReading.java` |
+| `SejongPortalClient` | Handles HTTP requests | `client/SejongPortalClient.java` |
+| `SejongStudentInfoParser` | Parses student info HTML | `parser/SejongStudentInfoParser.java` |
+| `SejongClassicReadingParser` | Parses classic reading HTML | `parser/SejongClassicReadingParser.java` |
+| `SejongDhcAuthResult` | DHC auth result model | `model/SejongDhcAuthResult.java` |
+| `SejongStudentInfo` | Student info model | `model/SejongStudentInfo.java` |
+| `SejongClassicReading` | Classic reading info model | `model/SejongClassicReading.java` |
 
-### 설정 프로퍼티
+### Configuration Properties
 
 ```yaml
 sejong:
@@ -319,38 +328,38 @@ sejong:
 
 ---
 
-## 🔒 보안 고려사항
+## 🔒 Security Considerations
 
-### SSL 인증서
+### SSL Certificate
 
-세종대학교 포털의 SSL 인증서는 간헐적으로 문제가 발생할 수 있습니다. 프로덕션 환경에서는 `ssl-verification: false` 설정을 사용할 수 있지만, 가능하면 신뢰할 수 있는 인증서를 사용하는 것이 권장됩니다.
+The Sejong University portal's SSL certificate can have intermittent problems. You can use the `ssl-verification: false` setting in production, but using a trusted certificate is recommended where possible.
 
-### 비밀번호 보안
+### Password Security
 
-- 비밀번호는 메모리에서 즉시 처리 후 삭제
-- 로그에 비밀번호 노출 금지
-- HTTPS 통신만 사용
+- Passwords are processed in memory and discarded immediately
+- Passwords are never written to logs
+- HTTPS only
 
-### 세션 관리
+### Session Management
 
-- 쿠키는 요청별로 생성되는 `CookieManager`에서 관리
-- 요청 완료 후 쿠키 자동 폐기
-- 세션 재사용 없음
+- Cookies are managed by a `CookieManager` created per request
+- Cookies are discarded automatically after the request completes
+- Sessions are not reused
 
 ---
 
-## 📊 성능 특성
+## 📊 Performance
 
-| 항목 | 값 |
+| Item | Value |
 |------|-----|
-| 평균 응답 시간 | 2-4초 |
-| 타임아웃 기본값 | 10초 |
-| 재시도 횟수 | 3회 |
-| HTTP 연결 | Keep-Alive 미사용 (요청별 새 연결) |
+| Average response time | 2-4 seconds |
+| Default timeout | 10 seconds |
+| Retry count | 3 |
+| HTTP connection | No Keep-Alive (new connection per request) |
 
 ---
 
-## 🔗 관련 문서
+## 🔗 Related Documents
 
-- [SIS 로그인 플로우](SIS_LOGIN_FLOW.md) - 학사정보시스템 인증 상세
-- [README](../README.md) - 라이브러리 사용 가이드
+- [SIS Login Flow](SIS_LOGIN_FLOW.md) - SIS (academic information system) authentication details
+- [README](../README.md) - Library usage guide

@@ -53,7 +53,7 @@ public class SejongSisParser {
 
       if (dmUserInfo.isMissingNode()) {
         throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
-            "dm_UserInfo 필드를 찾을 수 없습니다.");
+            "dm_UserInfo field not found");
       }
 
       String studentId = getTextValue(dmUserInfo, "INTG_USR_NO");

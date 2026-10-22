@@ -4,69 +4,80 @@
 
 # SUH Sejong Univ Auth
 
-**세종대학교 포털 인증을 3줄로 끝내는 Spring Boot용 Java 라이브러리**
+**Sejong University portal authentication for Spring Boot, in three lines of Java**
 
-한국어 | [English](README.en.md)
+English | [한국어](README.ko.md)
 
-<!-- 수정하지마세요 자동으로 동기화 됩니다 -->
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
-## 최신 버전 : v1.2.7 (2026-07-09)
+## Latest Version : v1.2.7 (2026-07-09)
 
 [![Nexus](https://img.shields.io/nexus/r/kr.suhsaechan/sejong-univ-auth?server=https%3A%2F%2Fnexus.suhsaechan.kr&label=Nexus&color=C20F2F)](https://nexus.suhsaechan.kr/#browse/browse:maven-releases:kr%2Fsuhsaechan%2Fsejong-univ-auth)
 [![Java](https://img.shields.io/badge/Java-17+-324D60)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-324D60)](https://spring.io/projects/spring-boot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
 
-### [▶ 브라우저에서 바로 체험하기](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)
+### [▶ Try it live in your browser](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)
 
 </div>
 
 ---
 
-학번과 비밀번호만으로 세종대 재학생 여부, 학과, 학년, 고전독서 인증, 연락처를 가져옵니다.
-포털 로그인, SSO 리다이렉트, 세션 쿠키, HTML·JSON 파싱은 라이브러리가 처리합니다.
+Verify a Sejong University student with just a student ID and password, and get their major, year,
+classic-reading certification and contact info. The library handles the portal login, SSO redirects,
+session cookies and HTML/JSON parsing.
 
 ```java
-SejongAuthResult result = sejongAuthEngine.authenticate("학번", "비밀번호");
+SejongAuthResult result = sejongAuthEngine.authenticate("studentId", "password");
 result.getName();    // "홍길동"
 result.getMajor();   // "컴퓨터공학과"
 ```
 
 <p align="center">
   <a href="https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo">
-    <img src="docs/assets/demo-ko.png" alt="소개 페이지의 실시간 인증 데모" width="820">
+    <img src="docs/assets/demo-en-dark.png" alt="Live authentication demo on the project page" width="820">
   </a>
   <br>
-  <sub>소개 페이지의 실시간 데모. 실제 인증 결과이며 개인정보 칸만 예시값으로 바꿨습니다.</sub>
+  <sub>Live demo on the project page. A real authentication result with personal fields replaced by sample values.</sub>
 </p>
 
-## 목차
+## Why this library
 
-- [이런 곳에 씁니다](#이런-곳에-씁니다)
-- [빠른 시작](#빠른-시작)
-- [사용법](#사용법)
-- [결과 필드](#결과-필드)
-- [에러 코드](#에러-코드)
-- [설정](#설정)
+| Doing it yourself | With this library |
+|---|---|
+| Reverse-engineer the portal login form and SSO redirects | `authenticate()` handles the login and SSO chain |
+| Keep session cookies across three Sejong domains | Cookies managed per call, nothing to store |
+| Parse HTML tables (DHC) and a JSON API (SIS) | Typed result objects (`SejongAuthResult`) |
+| Detect a wrong password from a 200 response | Fails fast with `AUTHENTICATION_FAILED` |
+| Fix it again when the portal changes TLS or URLs | Maintained here, verified against the live portal |
+
+## Contents
+
+- [Why this library](#why-this-library)
+- [Use cases](#use-cases)
+- [Quick start](#quick-start)
+- [Usage](#usage)
+- [Result fields](#result-fields)
+- [Error codes](#error-codes)
+- [Configuration](#configuration)
 - [FAQ](#faq)
-- [기여하기](#기여하기)
+- [Contributing](#contributing)
 
-## 이런 곳에 씁니다
+## Use cases
 
-- 동아리·학생회·학내 커뮤니티 가입 시 **세종대 학생 인증**
-- 학과·학년 조건이 있는 학내 이벤트 참여 확인
-- 고전독서 인증 현황을 보여 주는 학습 도우미
+- **Verifying Sejong students** when they join a club, student council or campus community
+- Checking major or year for campus events
+- Study helpers that show classic-reading certification progress
 
-| 데이터 소스 | 도메인 | 제공 정보 |
+| Source | Domain | Data |
 |---|---|---|
-| **DHC** (대양휴머니티칼리지) | classic.sejong.ac.kr | 학생 정보 + 고전독서 인증 현황 |
-| **SIS** (학사정보시스템) | sjpt.sejong.ac.kr | 학생 정보 + 이메일, 전화번호, 영문 이름 |
+| **DHC** (Daeyang Humanity College) | classic.sejong.ac.kr | Student info + classic-reading certification |
+| **SIS** (Student Information System) | sjpt.sejong.ac.kr | Student info + email, phone, English name |
 
-## 빠른 시작
+## Quick start
 
-> Maven Central이 아니라 **SUH Nexus 저장소**에서 배포합니다. 저장소를 먼저 추가하세요.
+> Published to the **SUH Nexus repository**, not Maven Central. Add the repository first.
 
-**1. 저장소 추가**
+**1. Add the repository**
 
 ```groovy
 // build.gradle
@@ -96,7 +107,7 @@ repositories {
 
 </details>
 
-**2. 의존성 추가** (최신 버전은 위 Nexus 배지 확인)
+**2. Add the dependency** (see the Nexus badge above for the latest version)
 
 ```groovy
 dependencies {
@@ -104,9 +115,9 @@ dependencies {
 }
 ```
 
-**3. 주입받아 호출**
+**3. Inject and call**
 
-Spring Boot Auto Configuration이 `SuhSejongAuthEngine` 빈을 등록합니다. 별도 설정은 필요 없습니다.
+Spring Boot auto-configuration registers a `SuhSejongAuthEngine` bean. No extra configuration is needed.
 
 ```java
 @RestController
@@ -123,19 +134,19 @@ public class AuthController {
 }
 ```
 
-## 사용법
+## Usage
 
-필요한 정보에 맞는 메서드를 고릅니다. 통합 인증은 SIS(연락처) 조회가 실패해도 학생 정보는 돌려줍니다.
+Pick the method for the data you need. Integrated auth still returns student info when the SIS (contact) lookup fails.
 
-| 메서드 | 용도 | 반환 |
+| Method | Use | Returns |
 |---|---|---|
-| `authenticate(studentId, password)` | 통합: 학생 정보 + 고전독서 + 연락처 | `SejongAuthResult` |
-| `authenticateWithDHC(studentId, password)` | 학생 정보 + 고전독서 (보장) | `SejongDhcAuthResult` |
-| `authenticateWithSIS(studentId, password)` | 학생 정보 + 연락처 (보장) | `SejongSisAuthResult` |
-| `authenticateWithDHCRaw(studentId, password)` | DHC + 원본 HTML (디버깅) | `SejongDhcAuthResult` |
-| `authenticateWithSISRaw(studentId, password)` | SIS + 원본 JSON (디버깅) | `SejongSisAuthResult` |
+| `authenticate(studentId, password)` | Integrated: student info + classic reading + contact | `SejongAuthResult` |
+| `authenticateWithDHC(studentId, password)` | Student info + classic reading (guaranteed) | `SejongDhcAuthResult` |
+| `authenticateWithSIS(studentId, password)` | Student info + contact (guaranteed) | `SejongSisAuthResult` |
+| `authenticateWithDHCRaw(studentId, password)` | DHC + raw HTML (debugging) | `SejongDhcAuthResult` |
+| `authenticateWithSISRaw(studentId, password)` | SIS + raw JSON (debugging) | `SejongSisAuthResult` |
 
-**고전독서 인증 확인**
+**Check classic reading**
 
 ```java
 SejongDhcAuthResult result = sejongAuthEngine.authenticateWithDHC(studentId, password);
@@ -146,100 +157,101 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 }
 ```
 
-**실패 처리**: 인증에 실패하면 `SejongAuthException`을 던집니다.
+**Handle failures**: a failed authentication throws `SejongAuthException`.
 
 ```java
 try {
     sejongAuthEngine.authenticate(studentId, password);
 } catch (SejongAuthException exception) {
     switch (exception.getErrorCode()) {
-        case AUTHENTICATION_FAILED -> // 학번·비밀번호 불일치
-        case CONNECTION_FAILED, CONNECTION_TIMEOUT -> // 포털 장애
-        default -> // 파싱·세션 오류
+        case AUTHENTICATION_FAILED -> // wrong student ID or password
+        case CONNECTION_FAILED, CONNECTION_TIMEOUT -> // portal outage
+        default -> // parsing or session error
     }
 }
 ```
 
-## 결과 필드
+## Result fields
 
-통합 인증 결과 `SejongAuthResult` 기준입니다.
+Fields of the integrated result `SejongAuthResult`. Text values come from the portal as-is (Korean).
 
-| 필드 | 타입 | 설명 |
+| Field | Type | Description |
 |---|---|---|
-| `success` | boolean | 인증 성공 여부 |
-| `studentId` | String | 학번 |
-| `name` | String | 이름 |
-| `major` | String | 학과(전공) |
-| `grade` | String | 학년 |
-| `status` | String | 학적 상태 (재학, 휴학, 졸업) |
-| `classicReading` | SejongClassicReading | 고전독서 인증 현황, 시험·대회·대체 이수 기록 |
-| `email` | String | 이메일 (SIS 실패 시 null) |
-| `phoneNumber` | String | 전화번호, `010-1234-5678` 형식 (SIS 실패 시 null) |
-| `englishName` | String | 영문 이름 (SIS 실패 시 null) |
-| `authenticatedAt` | LocalDateTime | 인증 시각 |
+| `success` | boolean | Whether authentication succeeded |
+| `studentId` | String | Student ID |
+| `name` | String | Name |
+| `major` | String | Major |
+| `grade` | String | Year |
+| `status` | String | Enrollment status (재학 enrolled, 휴학 on leave, 졸업 graduated) |
+| `classicReading` | SejongClassicReading | Classic-reading certification, exam, contest and substitution records |
+| `email` | String | Email (null if SIS fails) |
+| `phoneNumber` | String | Phone, `010-1234-5678` format (null if SIS fails) |
+| `englishName` | String | English name (null if SIS fails) |
+| `authenticatedAt` | LocalDateTime | Authentication time |
 
-- `SejongDhcAuthResult`: 연락처 필드 없음, Raw 메서드 사용 시 `rawHtml` 포함
-- `SejongSisAuthResult`: 고전독서 필드 없음, `grade`·`status`는 null, Raw 메서드 사용 시 `rawJson` 포함
+- `SejongDhcAuthResult`: no contact fields; includes `rawHtml` with the Raw method
+- `SejongSisAuthResult`: no classic-reading field, `grade` and `status` are null; includes `rawJson` with the Raw method
 
-## 에러 코드
+## Error codes
 
-| 코드 | 의미 |
+| Code | Meaning |
 |---|---|
-| `AUTHENTICATION_FAILED` | 학번 또는 비밀번호가 일치하지 않음 |
-| `INVALID_INPUT` | 입력값이 비었거나 형식이 맞지 않음 |
-| `CONNECTION_FAILED` | 세종대 포털에 연결할 수 없음 |
-| `CONNECTION_TIMEOUT` | 포털 응답 시간 초과 |
-| `DATA_FETCH_FAILED` | 학생 정보 조회 실패 |
-| `PARSE_ERROR` | 포털 응답 구조 변경 등으로 파싱 실패 |
-| `SESSION_ERROR` | 포털 세션 처리 오류 |
-| `SSL_CONFIGURATION_ERROR` | SSL 설정 오류 |
+| `AUTHENTICATION_FAILED` | Student ID or password is wrong |
+| `INVALID_INPUT` | Input is empty or malformed |
+| `CONNECTION_FAILED` | Cannot reach the Sejong portal |
+| `CONNECTION_TIMEOUT` | Portal timed out |
+| `DATA_FETCH_FAILED` | Failed to fetch student info |
+| `PARSE_ERROR` | Could not parse the portal response (structure changed?) |
+| `SESSION_ERROR` | Portal session error |
+| `SSL_CONFIGURATION_ERROR` | SSL configuration error |
 
-## 설정
+## Configuration
 
-`application.yml`에서 바꿀 수 있습니다. 모두 선택 항목입니다.
+All optional, in `application.yml`:
 
 ```yaml
 sejong:
   auth:
-    ssl-verification: true   # 포털 인증서 검증 (기본 true)
-    timeout-seconds: 10      # 요청 제한 시간 (기본 10)
-    max-retry: 3             # 재시도 횟수 (기본 3)
+    ssl-verification: true   # verify the portal certificate (default true)
+    timeout-seconds: 10      # request timeout (default 10)
+    max-retry: 3             # retry count (default 3)
 ```
 
-요구 사항: **Java 17+**, **Spring Boot 3.x**
+Requirements: **Java 17+**, **Spring Boot 3.x**
 
-내부 동작이 궁금하면 [DHC 로그인 플로우](docs/DHC_LOGIN_FLOW.md), [SIS 로그인 플로우](docs/SIS_LOGIN_FLOW.md)를 보세요.
+For internals, see the [DHC login flow](docs/DHC_LOGIN_FLOW.md) and [SIS login flow](docs/SIS_LOGIN_FLOW.md).
 
 ## FAQ
 
 <details>
-<summary><b>비밀번호를 저장하나요?</b></summary>
+<summary><b>Is the password stored?</b></summary>
 
-라이브러리는 비밀번호를 저장하지 않고 포털 로그인 요청에만 씁니다. 소개 페이지의 데모 서버도 결과만 돌려주고 입력값을 저장하지 않습니다.
-여러분의 서비스에서도 비밀번호를 로그나 DB에 남기지 않도록 주의하세요.
+No. The library only uses it for the portal login request. The demo server behind the project page also returns the result without storing input.
+In your own service, never log or persist passwords.
 </details>
 
 <details>
-<summary><b>세종대학교 공식 라이브러리인가요?</b></summary>
+<summary><b>Is this an official Sejong University library?</b></summary>
 
-아닙니다. 세종대 학생이 만든 개인 오픈소스이며 학교와 제휴 관계가 없습니다.
+No. It is a personal open-source project by a Sejong student and is not affiliated with the university.
 </details>
 
 <details>
-<summary><b>인증이 갑자기 실패해요</b></summary>
+<summary><b>Authentication suddenly fails</b></summary>
 
-[데모](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)로 먼저 확인해 보세요. 데모도 실패하면 포털 쪽이 바뀌었을 가능성이 높습니다.
-[이슈](https://github.com/Cassiiopeia/SUH-sejong-univ-auth/issues)에 에러 코드와 함께 남겨 주세요.
+Try the [demo](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo) first. If the demo also fails, the portal has probably changed.
+Please open an [issue](https://github.com/Cassiiopeia/SUH-sejong-univ-auth/issues) with the error code.
 </details>
 
-## 기여하기
+## Contributing
 
-버그 제보, 포털 변경 대응, 문서 개선 모두 환영합니다. 빌드·테스트 방법은 [CONTRIBUTING.md](CONTRIBUTING.md)를 보세요.
+Bug reports, portal-change fixes and docs improvements are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for build and test steps.
+Report security issues privately as described in [SECURITY.md](SECURITY.md).
 
-## 라이선스
+## License
 
 [MIT](LICENSE) © 2025 Suh Saechan
 
 ---
 
-<sub>이 프로젝트는 세종대학교의 공식 제품이 아니며 세종대학교와 제휴 관계가 없습니다. 세종대학교 교표의 권리는 세종대학교에 있습니다.</sub>
+<sub>This project is not an official product of Sejong University and is not affiliated with it. The Sejong University seal belongs to Sejong University.</sub>

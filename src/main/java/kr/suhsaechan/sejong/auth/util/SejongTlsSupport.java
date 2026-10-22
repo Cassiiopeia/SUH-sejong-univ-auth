@@ -39,7 +39,7 @@ public final class SejongTlsSupport {
   public static void ensureLegacyCipherEnabled() {
     // static 초기화(APPLIED) 실행을 보장하기 위한 no-op 트리거
     if (!APPLIED) {
-      log.debug("세종대 TLS 레거시 cipher 재허용이 이미 적용되어 있거나 불필요합니다.");
+      log.debug("[sejong tls] legacy cipher re-enable already applied or not needed");
     }
   }
 
@@ -52,7 +52,7 @@ public final class SejongTlsSupport {
     // "TLS_RSA_*" 항목만 제거 (앞뒤 콤마·공백 정리)
     String cleaned = disabled.replaceAll("(?i)\\s*,?\\s*TLS_RSA_\\*", "").replaceAll("^\\s*,\\s*", "").trim();
     Security.setProperty(DISABLED_ALGORITHMS_KEY, cleaned);
-    log.info("세종대 포털 호환을 위해 TLS_RSA_* cipher 재허용 적용 (jdk.tls.disabledAlgorithms 조정)");
+    log.info("[sejong tls] re-enabled TLS_RSA_* ciphers for Sejong portal compatibility (jdk.tls.disabledAlgorithms adjusted)");
     return true;
   }
 }
