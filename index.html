@@ -223,7 +223,7 @@ footer a{color:var(--text-muted)}
           <a class="button" href="#quick-start" data-i18n="heroStart">설치 방법 보기</a>
         </div>
         <div class="meta-row">
-          <img src="https://img.shields.io/nexus/r/kr.suhsaechan/sejong-univ-auth?server=https%3A%2F%2Fnexus.suhsaechan.kr&label=Nexus&color=C20F2F" alt="Nexus latest version">
+          <img src="https://img.shields.io/maven-central/v/kr.suhsaechan/sejong-univ-auth?label=Maven%20Central&color=C20F2F" alt="Maven Central latest version">
           <img src="https://img.shields.io/badge/license-MIT-324D60" alt="MIT License">
           <img src="https://img.shields.io/github/stars/Cassiiopeia/pro-sejong-auth?style=flat&color=324D60" alt="GitHub stars">
         </div>
@@ -322,38 +322,33 @@ result.getMajor();   <span class="comment">// "컴퓨터공학과"</span></pre><
   <section class="block" id="quick-start">
     <div class="container">
       <h2 class="section-title" data-i18n="quickTitle">빠른 시작</h2>
-      <p class="section-lead" data-i18n-html="quickLead">Maven Central이 아니라 <b>SUH Nexus 저장소</b>에서 배포합니다. 저장소를 먼저 추가하세요.</p>
+      <p class="section-lead" data-i18n-html="quickLead"><b>Maven Central</b>에서 배포합니다. Gradle·Maven 기본 저장소라 의존성 한 줄이면 됩니다.</p>
       <div class="tab-list" role="tablist" id="build-tool-tabs" style="margin-bottom:8px">
         <button class="tab-button" type="button" role="tab" aria-selected="true" data-build-tool="gradle">Gradle</button>
         <button class="tab-button" type="button" role="tab" aria-selected="false" data-build-tool="maven">Maven</button>
       </div>
 
-      <h3 class="step-title"><b>1</b><span data-i18n="step1">저장소 추가</span></h3>
+      <h3 class="step-title"><b>1</b><span data-i18n="step1">저장소 (기본값)</span></h3>
       <div class="code-block" data-build-tool-panel="gradle"><span class="code-block-label">build.gradle</span><button class="copy-button" type="button" data-i18n="copy">복사</button>
 <pre>repositories {
     mavenCentral()
-    maven { url <span class="string">"https://nexus.suhsaechan.kr/repository/maven-releases/"</span> }
+    <span class="comment">// Maven Central 은 기본 저장소 (추가 설정 없음)</span>
 }</pre></div>
       <div class="code-block" data-build-tool-panel="maven" hidden><span class="code-block-label">pom.xml</span><button class="copy-button" type="button" data-i18n="copy">복사</button>
-<pre>&lt;repositories&gt;
-    &lt;repository&gt;
-        &lt;id&gt;suh-nexus&lt;/id&gt;
-        &lt;url&gt;https://nexus.suhsaechan.kr/repository/maven-releases/&lt;/url&gt;
-    &lt;/repository&gt;
-&lt;/repositories&gt;</pre></div>
+<pre>&lt;!-- Maven Central 은 기본 저장소 (repositories 설정 불필요) --&gt;</pre></div>
 
       <h3 class="step-title"><b>2</b><span data-i18n="step2">의존성 추가</span></h3>
       <div class="code-block" data-build-tool-panel="gradle"><span class="code-block-label">build.gradle</span><button class="copy-button" type="button" data-i18n="copy">복사</button>
 <pre>dependencies {
-    implementation <span class="string">"kr.suhsaechan:sejong-univ-auth:<span class="library-version">1.2.12</span>"</span>
+    implementation <span class="string">"kr.suhsaechan:sejong-univ-auth:<span class="library-version">1.2.16</span>"</span>
 }</pre></div>
       <div class="code-block" data-build-tool-panel="maven" hidden><span class="code-block-label">pom.xml</span><button class="copy-button" type="button" data-i18n="copy">복사</button>
 <pre>&lt;dependency&gt;
     &lt;groupId&gt;kr.suhsaechan&lt;/groupId&gt;
     &lt;artifactId&gt;sejong-univ-auth&lt;/artifactId&gt;
-    &lt;version&gt;<span class="library-version">1.2.12</span>&lt;/version&gt;
+    &lt;version&gt;<span class="library-version">1.2.16</span>&lt;/version&gt;
 &lt;/dependency&gt;</pre></div>
-      <p class="section-lead" style="margin:-4px 0 0;font-size:.9rem" data-i18n-html="versionHint">최신 버전은 위 Nexus 배지에서 확인하세요.</p>
+      <p class="section-lead" style="margin:-4px 0 0;font-size:.9rem" data-i18n-html="versionHint">최신 버전은 위 Maven Central 배지에서 확인하세요.</p>
 
       <h3 class="step-title"><b>3</b><span data-i18n="step3">주입받아 호출</span></h3>
       <div class="code-block"><span class="code-block-label">AuthController.java</span><button class="copy-button" type="button" data-i18n="copy">복사</button>
@@ -510,8 +505,8 @@ const MESSAGES = {
     flowTitle: '어떻게 동작하나요', flowLead: '라이브러리는 사용자가 브라우저에서 하는 로그인을 서버에서 그대로 재현합니다.',
     flow1Title: '학번·비밀번호 전달', flow1Body: '내 서비스가 authenticate() 호출', flow2Title: '포털 로그인', flow2Body: 'portal.sejong.ac.kr 로그인, 실패 시 즉시 예외',
     flow3Title: 'SSO로 정보 조회', flow3Body: 'DHC(classic.sejong.ac.kr) · SIS(sjpt.sejong.ac.kr)', flow4Title: '결과 객체 반환', flow4Body: '이름, 학과, 학년, 고전독서, 연락처',
-    quickTitle: '빠른 시작', quickLead: 'Maven Central이 아니라 <b>SUH Nexus 저장소</b>에서 배포합니다. 저장소를 먼저 추가하세요.',
-    step1: '저장소 추가', step2: '의존성 추가', step3: '주입받아 호출', versionHint: '최신 버전은 위 Nexus 배지에서 확인하세요.',
+    quickTitle: '빠른 시작', quickLead: '<b>Maven Central</b>에서 배포합니다. Gradle·Maven 기본 저장소라 의존성 한 줄이면 됩니다.',
+    step1: '저장소 (기본값)', step2: '의존성 추가', step3: '주입받아 호출', versionHint: '최신 버전은 위 Maven Central 배지에서 확인하세요.',
     usageTitle: '사용법', usageLead: '필요한 정보에 맞는 메서드를 고르세요. 통합 인증은 연락처 조회가 실패해도 학생 정보는 돌려줍니다.',
     colMethod: '메서드', colUse: '용도', colReturn: '반환',
     useIntegrated: '통합: 학생 정보 + 고전독서 + 연락처', useDhc: '학생 정보 + 고전독서 (보장)', useSis: '학생 정보 + 연락처 (보장)',
@@ -556,8 +551,8 @@ const MESSAGES = {
     flowTitle: 'How it works', flowLead: 'The library replays, on your server, the same login a student does in the browser.',
     flow1Title: 'Pass ID and password', flow1Body: 'Your service calls authenticate()', flow2Title: 'Portal login', flow2Body: 'Signs in to portal.sejong.ac.kr, throws on failure',
     flow3Title: 'Fetch via SSO', flow3Body: 'DHC (classic.sejong.ac.kr) · SIS (sjpt.sejong.ac.kr)', flow4Title: 'Typed result', flow4Body: 'Name, major, year, classic reading, contact',
-    quickTitle: 'Quick start', quickLead: 'Published to the <b>SUH Nexus repository</b>, not Maven Central. Add the repository first.',
-    step1: 'Add the repository', step2: 'Add the dependency', step3: 'Inject and call', versionHint: 'Check the Nexus badge above for the latest version.',
+    quickTitle: 'Quick start', quickLead: 'Published to <b>Maven Central</b>, the default repository for Gradle and Maven: one dependency line is all you need.',
+    step1: 'Repository (default)', step2: 'Add the dependency', step3: 'Inject and call', versionHint: 'Check the Maven Central badge above for the latest version.',
     usageTitle: 'Usage', usageLead: 'Pick the method for the data you need. Integrated auth still returns student info if the contact lookup fails.',
     colMethod: 'Method', colUse: 'Use', colReturn: 'Returns',
     useIntegrated: 'Integrated: student info + classic reading + contact', useDhc: 'Student info + classic reading (guaranteed)', useSis: 'Student info + contact (guaranteed)',
