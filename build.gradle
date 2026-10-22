@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'kr.suhsaechan'
-version = '1.2.10'
+version = '1.2.11'
 description = 'SUH-sejong-univ-auth'
 
 java {
