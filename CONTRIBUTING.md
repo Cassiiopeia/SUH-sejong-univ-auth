@@ -9,7 +9,7 @@ Please do not report security vulnerabilities in public issues. Use the private 
 ## Start with an issue
 
 - Bugs: include the error code (`SejongAuthException.getErrorCode()`) and the method you called. Never post student IDs, passwords or other personal data.
-- If authentication broke because the portal changed, first check whether the [live demo](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo) reproduces it.
+- If authentication broke because the portal changed, first check whether the [live demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo) reproduces it.
 - For larger changes, agree on the direction in an issue before opening a PR.
 
 ## Development setup

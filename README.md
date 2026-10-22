@@ -2,9 +2,11 @@
 
 <img src="docs/assets/sejong-seal.png" alt="Sejong University seal" width="120">
 
-# SUH Sejong Univ Auth
+# pro-sejong-auth
 
-**Sejong University portal authentication for Spring Boot, in three lines of Java**
+**Sejong University login API for Java and Spring Boot: verify students in three lines**
+
+<sub>세종대 로그인 API · 세종대학교 포털 인증 · 학번 인증 라이브러리</sub>
 
 English | [한국어](README.ko.md)
 
@@ -16,7 +18,7 @@ English | [한국어](README.ko.md)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-324D60)](https://spring.io/projects/spring-boot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
 
-### [▶ Try it live in your browser](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)
+### [▶ Try it live in your browser](https://cassiiopeia.github.io/pro-sejong-auth/#demo)
 
 </div>
 
@@ -33,7 +35,7 @@ result.getMajor();   // "컴퓨터공학과"
 ```
 
 <p align="center">
-  <a href="https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo">
+  <a href="https://cassiiopeia.github.io/pro-sejong-auth/#demo">
     <img src="docs/assets/demo-en-dark.png" alt="Live authentication demo on the project page" width="820">
   </a>
   <br>
@@ -241,8 +243,8 @@ No. It is a personal open-source project by a Sejong student and is not affiliat
 <details>
 <summary><b>Authentication suddenly fails</b></summary>
 
-Try the [demo](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo) first. If the demo also fails, the portal has probably changed.
-Please open an [issue](https://github.com/Cassiiopeia/SUH-sejong-univ-auth/issues) with the error code.
+Try the [demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo) first. If the demo also fails, the portal has probably changed.
+Please open an [issue](https://github.com/Cassiiopeia/pro-sejong-auth/issues) with the error code.
 </details>
 
 ## Contributing

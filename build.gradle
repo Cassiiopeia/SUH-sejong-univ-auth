@@ -7,7 +7,7 @@ plugins {
 
 group = 'kr.suhsaechan'
 version = '1.2.13'
-description = 'SUH-sejong-univ-auth'
+description = 'pro-sejong-auth'
 
 java {
 	toolchain {
@@ -66,7 +66,7 @@ publishing {
 			pom {
 				name = 'sejong-univ-auth'
 				description = 'Sejong University portal authentication for Spring Boot'
-				url = 'https://github.com/Cassiiopeia/SUH-sejong-univ-auth/'
+				url = 'https://github.com/Cassiiopeia/pro-sejong-auth/'
 				licenses {
 					license {
 						name = 'MIT License'
@@ -74,8 +74,8 @@ publishing {
 					}
 				}
 				scm {
-					url = 'https://github.com/Cassiiopeia/SUH-sejong-univ-auth'
-					connection = 'scm:git:https://github.com/Cassiiopeia/SUH-sejong-univ-auth.git'
+					url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+					connection = 'scm:git:https://github.com/Cassiiopeia/pro-sejong-auth.git'
 				}
 			}
 		}

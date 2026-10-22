@@ -9,7 +9,7 @@
 ## 이슈 먼저
 
 - 버그: 에러 코드(`SejongAuthException.getErrorCode()`)와 사용한 메서드를 적어 주세요. 학번·비밀번호·개인정보는 절대 올리지 마세요.
-- 포털이 바뀌어 인증이 깨졌다면 [데모](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)로 먼저 재현 여부를 확인해 주세요.
+- 포털이 바뀌어 인증이 깨졌다면 [데모](https://cassiiopeia.github.io/pro-sejong-auth/#demo)로 먼저 재현 여부를 확인해 주세요.
 - 큰 변경은 PR 전에 이슈로 방향을 맞춥니다.
 
 ## 개발 환경

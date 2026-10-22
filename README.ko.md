@@ -2,9 +2,9 @@
 
 <img src="docs/assets/sejong-seal.png" alt="Sejong University seal" width="120">
 
-# SUH Sejong Univ Auth
+# pro-sejong-auth
 
-**세종대학교 포털 인증을 3줄로 끝내는 Spring Boot용 Java 라이브러리**
+**세종대 로그인 API: 세종대학교 포털 인증을 3줄로 끝내는 Java·Spring Boot 라이브러리**
 
 [English](README.md) | 한국어
 
@@ -13,7 +13,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-324D60)](https://spring.io/projects/spring-boot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
 
-### [▶ 브라우저에서 바로 체험하기](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)
+### [▶ 브라우저에서 바로 체험하기](https://cassiiopeia.github.io/pro-sejong-auth/#demo)
 
 </div>
 
@@ -29,7 +29,7 @@ result.getMajor();   // "컴퓨터공학과"
 ```
 
 <p align="center">
-  <a href="https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo">
+  <a href="https://cassiiopeia.github.io/pro-sejong-auth/#demo">
     <img src="docs/assets/demo-ko.png" alt="소개 페이지의 실시간 인증 데모" width="820">
   </a>
   <br>
@@ -237,8 +237,8 @@ sejong:
 <details>
 <summary><b>인증이 갑자기 실패해요</b></summary>
 
-[데모](https://cassiiopeia.github.io/SUH-sejong-univ-auth/#demo)로 먼저 확인해 보세요. 데모도 실패하면 포털 쪽이 바뀌었을 가능성이 높습니다.
-[이슈](https://github.com/Cassiiopeia/SUH-sejong-univ-auth/issues)에 에러 코드와 함께 남겨 주세요.
+[데모](https://cassiiopeia.github.io/pro-sejong-auth/#demo)로 먼저 확인해 보세요. 데모도 실패하면 포털 쪽이 바뀌었을 가능성이 높습니다.
+[이슈](https://github.com/Cassiiopeia/pro-sejong-auth/issues)에 에러 코드와 함께 남겨 주세요.
 </details>
 
 ## 기여하기
