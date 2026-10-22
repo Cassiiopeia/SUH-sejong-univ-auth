@@ -109,6 +109,18 @@ public class AuthController {
 }
 ```
 
+<details>
+<summary>Spring 없이 쓰기 (일반 Java)</summary>
+
+```java
+SejongAuthProperties properties = new SejongAuthProperties();
+SuhSejongAuthEngine engine = new SuhSejongAuthEngine(new SejongPortalClient(properties), new SejongStudentInfoParser(),
+    new SejongClassicReadingParser(), new SejongSisClient(properties), new SejongSisParser());
+SejongAuthResult result = engine.authenticate(studentId, password);
+```
+
+</details>
+
 ## 빠른 시작: Python
 
 Python 3.9+, 표준 라이브러리 외 의존성 없음.
@@ -126,6 +138,8 @@ try:
 except SejongAuthError as error:
     if error.code == ErrorCode.AUTHENTICATION_FAILED:
         print("학번 또는 비밀번호가 틀렸습니다")
+    elif error.code == ErrorCode.ACCOUNT_LOCKED:
+        print("포털 계정이 잠겼습니다. 포털에서 비밀번호를 재설정하세요")
 ```
 
 ## 빠른 시작: Node.js
@@ -145,6 +159,8 @@ try {
 } catch (error) {
   if (error instanceof SejongAuthError && error.code === ErrorCode.AUTHENTICATION_FAILED) {
     console.log('학번 또는 비밀번호가 틀렸습니다');
+  } else if (error instanceof SejongAuthError && error.code === ErrorCode.ACCOUNT_LOCKED) {
+    console.log('포털 계정이 잠겼습니다. 포털에서 비밀번호를 재설정하세요');
   }
 }
 ```
@@ -199,6 +215,8 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 | 코드 | 의미 |
 |---|---|
 | `AUTHENTICATION_FAILED` | 학번 또는 비밀번호가 일치하지 않음 |
+| `ACCOUNT_LOCKED` | 비밀번호를 여러 번 틀려 포털이 계정을 잠금 |
+| `ACCOUNT_UNAVAILABLE` | 포털 계정으로 로그인할 수 없음 (사용 기간 종료 또는 관리자 차단) |
 | `INVALID_INPUT` | 입력값이 비었음 (네트워크 호출 전에 확인) |
 | `CONNECTION_FAILED` | 세종대 포털에 연결할 수 없음 |
 | `CONNECTION_TIMEOUT` | 포털 응답 시간 초과 |
@@ -206,8 +224,6 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 | `PARSE_ERROR` | 포털 응답 구조 변경 등으로 파싱 실패 |
 | `SESSION_ERROR` | 포털 세션 처리 오류 |
 | `SSL_CONFIGURATION_ERROR` | SSL 설정 오류 |
-| `ACCOUNT_LOCKED` | 비밀번호를 여러 번 틀려 포털이 계정을 잠금 |
-| `ACCOUNT_UNAVAILABLE` | 포털 계정으로 로그인할 수 없음 (사용 기간 종료 또는 관리자 차단) |
 
 분기는 메시지가 아니라 코드로 하세요.
 
@@ -247,6 +263,12 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 
 [데모](https://cassiiopeia.github.io/pro-sejong-auth/#demo)로 먼저 확인해 보세요. 데모도 실패하면 포털 쪽이 바뀌었을 가능성이 높습니다.
 [이슈](https://github.com/Cassiiopeia/pro-sejong-auth/issues)에 에러 코드와 함께 남겨 주세요.
+</details>
+
+<details>
+<summary><b>포털 계정이 잠겼어요</b></summary>
+
+비밀번호를 여러 번 틀리면 포털이 계정을 잠그고, 라이브러리는 `ACCOUNT_LOCKED`를 돌려줍니다. <https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp> 에서 본인 확인 후 비밀번호를 재설정하세요. 기다린다고 풀리지 않습니다.
 </details>
 
 <details>

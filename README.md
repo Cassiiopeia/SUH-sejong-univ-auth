@@ -115,6 +115,18 @@ public class AuthController {
 }
 ```
 
+<details>
+<summary>Without Spring (plain Java)</summary>
+
+```java
+SejongAuthProperties properties = new SejongAuthProperties();
+SuhSejongAuthEngine engine = new SuhSejongAuthEngine(new SejongPortalClient(properties), new SejongStudentInfoParser(),
+    new SejongClassicReadingParser(), new SejongSisClient(properties), new SejongSisParser());
+SejongAuthResult result = engine.authenticate(studentId, password);
+```
+
+</details>
+
 ## Quick start: Python
 
 Python 3.9+, no dependencies beyond the standard library.
@@ -132,6 +144,8 @@ try:
 except SejongAuthError as error:
     if error.code == ErrorCode.AUTHENTICATION_FAILED:
         print("Wrong student ID or password")
+    elif error.code == ErrorCode.ACCOUNT_LOCKED:
+        print("Portal account locked: reset the password on the portal")
 ```
 
 ## Quick start: Node.js
@@ -151,6 +165,8 @@ try {
 } catch (error) {
   if (error instanceof SejongAuthError && error.code === ErrorCode.AUTHENTICATION_FAILED) {
     console.log('Wrong student ID or password');
+  } else if (error instanceof SejongAuthError && error.code === ErrorCode.ACCOUNT_LOCKED) {
+    console.log('Portal account locked: reset the password on the portal');
   }
 }
 ```
@@ -207,6 +223,8 @@ Every language raises one error type with a `code`:
 | Code | Meaning |
 |---|---|
 | `AUTHENTICATION_FAILED` | Student ID or password is wrong |
+| `ACCOUNT_LOCKED` | The portal locked the account after repeated wrong passwords |
+| `ACCOUNT_UNAVAILABLE` | The portal account cannot sign in (use period ended or blocked by the administrator) |
 | `INVALID_INPUT` | Input is empty (checked before any network call) |
 | `CONNECTION_FAILED` | Cannot reach the Sejong portal |
 | `CONNECTION_TIMEOUT` | Portal timed out |
@@ -214,8 +232,6 @@ Every language raises one error type with a `code`:
 | `PARSE_ERROR` | Could not parse the portal response (structure changed?) |
 | `SESSION_ERROR` | Portal session error |
 | `SSL_CONFIGURATION_ERROR` | SSL configuration error |
-| `ACCOUNT_LOCKED` | The portal locked the account after repeated wrong passwords |
-| `ACCOUNT_UNAVAILABLE` | The portal account cannot sign in (use period ended or blocked by the administrator) |
 
 Branch on the code, not on the message.
 
@@ -255,6 +271,12 @@ No. It is a personal open-source project by a Sejong student and is not affiliat
 
 Try the [demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo) first. If the demo also fails, the portal has probably changed.
 Please open an [issue](https://github.com/Cassiiopeia/pro-sejong-auth/issues) with the error code.
+</details>
+
+<details>
+<summary><b>My portal account got locked</b></summary>
+
+The portal locks an account after repeated wrong passwords, and the library reports `ACCOUNT_LOCKED`. Reset the password at <https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp> (identity verification required). Waiting does not unlock it.
 </details>
 
 <details>
