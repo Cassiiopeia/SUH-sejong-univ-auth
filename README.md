@@ -4,18 +4,18 @@
 
 # pro-sejong-auth
 
-**Sejong University login API for Java and Spring Boot: verify students in three lines**
+**Sejong University login API for Java, Python and Node.js: verify students in one call**
 
-<sub>세종대 로그인 API · 세종대학교 포털 인증 · 학번 인증 라이브러리</sub>
+<sub>세종대 로그인 API · 세종대학교 포털 인증 · 학번 인증 라이브러리 (Java · Python · Node)</sub>
 
 English | [한국어](README.ko.md)
 
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
 ## Latest Version : v1.2.12 (2026-10-22)
 
-[![Nexus](https://img.shields.io/nexus/r/kr.suhsaechan/sejong-univ-auth?server=https%3A%2F%2Fnexus.suhsaechan.kr&label=Nexus&color=C20F2F)](https://nexus.suhsaechan.kr/#browse/browse:maven-releases:kr%2Fsuhsaechan%2Fsejong-univ-auth)
-[![Java](https://img.shields.io/badge/Java-17+-324D60)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-324D60)](https://spring.io/projects/spring-boot)
+[![Maven Central](https://img.shields.io/maven-central/v/kr.suhsaechan/sejong-univ-auth?label=Maven%20Central&color=C20F2F)](https://central.sonatype.com/artifact/kr.suhsaechan/sejong-univ-auth)
+[![PyPI](https://img.shields.io/pypi/v/pro-sejong-auth?label=PyPI&color=324D60)](https://pypi.org/project/pro-sejong-auth/)
+[![npm](https://img.shields.io/npm/v/pro-sejong-auth?label=npm&color=324D60)](https://www.npmjs.com/package/pro-sejong-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
 
 ### [▶ Try it live in your browser](https://cassiiopeia.github.io/pro-sejong-auth/#demo)
@@ -26,13 +26,11 @@ English | [한국어](README.ko.md)
 
 Verify a Sejong University student with just a student ID and password, and get their major, year,
 classic-reading certification and contact info. The library handles the portal login, SSO redirects,
-session cookies and HTML/JSON parsing.
+session cookies, legacy TLS and HTML/JSON parsing. Same features, same results in every language.
 
-```java
-SejongAuthResult result = sejongAuthEngine.authenticate("studentId", "password");
-result.getName();    // "홍길동"
-result.getMajor();   // "컴퓨터공학과"
-```
+| Java / Spring Boot | Python | Node.js |
+|---|---|---|
+| `implementation "kr.suhsaechan:sejong-univ-auth:<version>"` | `pip install pro-sejong-auth` | `npm install pro-sejong-auth` |
 
 <p align="center">
   <a href="https://cassiiopeia.github.io/pro-sejong-auth/#demo">
@@ -48,16 +46,18 @@ result.getMajor();   // "컴퓨터공학과"
 |---|---|
 | Reverse-engineer the portal login form and SSO redirects | `authenticate()` handles the login and SSO chain |
 | Keep session cookies across three Sejong domains | Cookies managed per call, nothing to store |
-| Parse HTML tables (DHC) and a JSON API (SIS) | Typed result objects (`SejongAuthResult`) |
+| Get past the portal's legacy TLS cipher and firewall | Handled per language (see [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md)) |
+| Parse HTML tables (DHC) and a JSON API (SIS) | Typed results |
 | Detect a wrong password from a 200 response | Fails fast with `AUTHENTICATION_FAILED` |
-| Fix it again when the portal changes TLS or URLs | Maintained here, verified against the live portal |
+| Fix it again when the portal changes | Maintained here, all three languages verified against the live portal |
 
 ## Contents
 
-- [Why this library](#why-this-library)
 - [Use cases](#use-cases)
-- [Quick start](#quick-start)
-- [Usage](#usage)
+- [Quick start: Java / Spring Boot](#quick-start-java--spring-boot)
+- [Quick start: Python](#quick-start-python)
+- [Quick start: Node.js](#quick-start-nodejs)
+- [Operations](#operations)
 - [Result fields](#result-fields)
 - [Error codes](#error-codes)
 - [Configuration](#configuration)
@@ -75,17 +75,13 @@ result.getMajor();   // "컴퓨터공학과"
 | **DHC** (Daeyang Humanity College) | classic.sejong.ac.kr | Student info + classic-reading certification |
 | **SIS** (Student Information System) | sjpt.sejong.ac.kr | Student info + email, phone, English name |
 
-## Quick start
+## Quick start: Java / Spring Boot
 
-> Published to the **SUH Nexus repository**, not Maven Central. Add the repository first.
-
-**1. Add the repository**
+Published to **Maven Central** (no extra repository needed). Java 17+, Spring Boot 3.x.
 
 ```groovy
-// build.gradle
-repositories {
-    mavenCentral()
-    maven { url "https://nexus.suhsaechan.kr/repository/maven-releases/" }
+dependencies {
+    implementation "kr.suhsaechan:sejong-univ-auth:<version>"   // see the Maven Central badge
 }
 ```
 
@@ -93,33 +89,16 @@ repositories {
 <summary>Maven</summary>
 
 ```xml
-<repositories>
-    <repository>
-        <id>suh-nexus</id>
-        <url>https://nexus.suhsaechan.kr/repository/maven-releases/</url>
-    </repository>
-</repositories>
-
 <dependency>
     <groupId>kr.suhsaechan</groupId>
     <artifactId>sejong-univ-auth</artifactId>
-    <version>1.2.12</version>
+    <version><!-- see the Maven Central badge --></version>
 </dependency>
 ```
 
 </details>
 
-**2. Add the dependency** (see the Nexus badge above for the latest version)
-
-```groovy
-dependencies {
-    implementation "kr.suhsaechan:sejong-univ-auth:1.2.12"
-}
-```
-
-**3. Inject and call**
-
-Spring Boot auto-configuration registers a `SuhSejongAuthEngine` bean. No extra configuration is needed.
+Spring Boot auto-configuration registers a `SuhSejongAuthEngine` bean.
 
 ```java
 @RestController
@@ -136,19 +115,58 @@ public class AuthController {
 }
 ```
 
-## Usage
+## Quick start: Python
 
-Pick the method for the data you need. Integrated auth still returns student info when the SIS (contact) lookup fails.
+Python 3.9+, no dependencies beyond the standard library.
 
-| Method | Use | Returns |
-|---|---|---|
-| `authenticate(studentId, password)` | Integrated: student info + classic reading + contact | `SejongAuthResult` |
-| `authenticateWithDHC(studentId, password)` | Student info + classic reading (guaranteed) | `SejongDhcAuthResult` |
-| `authenticateWithSIS(studentId, password)` | Student info + contact (guaranteed) | `SejongSisAuthResult` |
-| `authenticateWithDHCRaw(studentId, password)` | DHC + raw HTML (debugging) | `SejongDhcAuthResult` |
-| `authenticateWithSISRaw(studentId, password)` | SIS + raw JSON (debugging) | `SejongSisAuthResult` |
+```bash
+pip install pro-sejong-auth
+```
 
-**Check classic reading**
+```python
+from sejong_auth import authenticate, SejongAuthError, ErrorCode
+
+try:
+    result = authenticate("21011234", "password")
+    print(result.name, result.major, result.grade)
+except SejongAuthError as error:
+    if error.code == ErrorCode.AUTHENTICATION_FAILED:
+        print("Wrong student ID or password")
+```
+
+## Quick start: Node.js
+
+Node 18+, zero dependencies, TypeScript types, ESM and CommonJS. Server-side only.
+
+```bash
+npm install pro-sejong-auth
+```
+
+```js
+import { authenticate, SejongAuthError, ErrorCode } from 'pro-sejong-auth';
+
+try {
+  const result = await authenticate('21011234', 'password');
+  console.log(result.name, result.major, result.grade);
+} catch (error) {
+  if (error instanceof SejongAuthError && error.code === ErrorCode.AUTHENTICATION_FAILED) {
+    console.log('Wrong student ID or password');
+  }
+}
+```
+
+## Operations
+
+| Operation | Java | Python | Node |
+|---|---|---|---|
+| Integrated: student info + classic reading + contact | `authenticate(id, pw)` | `authenticate(id, pw)` | `authenticate(id, pw)` |
+| DHC: student info + classic reading | `authenticateWithDHC` | `authenticate_dhc` | `authenticateDhc` |
+| SIS: student info + contact | `authenticateWithSIS` | `authenticate_sis` | `authenticateSis` |
+| With raw response (debugging) | `authenticateWithDHCRaw`, `authenticateWithSISRaw` | `include_raw=True` | `{ includeRaw: true }` |
+
+The integrated call still returns student info when the SIS (contact) lookup fails; contact fields are then null.
+
+**Check classic reading (Java)**
 
 ```java
 SejongDhcAuthResult result = sejongAuthEngine.authenticateWithDHC(studentId, password);
@@ -159,47 +177,37 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 }
 ```
 
-**Handle failures**: a failed authentication throws `SejongAuthException`.
-
-```java
-try {
-    sejongAuthEngine.authenticate(studentId, password);
-} catch (SejongAuthException exception) {
-    switch (exception.getErrorCode()) {
-        case AUTHENTICATION_FAILED -> // wrong student ID or password
-        case CONNECTION_FAILED, CONNECTION_TIMEOUT -> // portal outage
-        default -> // parsing or session error
-    }
-}
-```
-
 ## Result fields
 
-Fields of the integrated result `SejongAuthResult`. Text values come from the portal as-is (Korean).
+Names below are Java / Node. Python uses snake_case (`student_id`, `phone_number`, ...). Full schema: [spec/RESULT_SCHEMA.md](spec/RESULT_SCHEMA.md).
 
 | Field | Type | Description |
 |---|---|---|
 | `success` | boolean | Whether authentication succeeded |
-| `studentId` | String | Student ID |
-| `name` | String | Name |
-| `major` | String | Major |
-| `grade` | String | Year |
-| `status` | String | Enrollment status (재학 enrolled, 휴학 on leave, 졸업 graduated) |
-| `classicReading` | SejongClassicReading | Classic-reading certification, exam, contest and substitution records |
-| `email` | String | Email (null if SIS fails) |
-| `phoneNumber` | String | Phone, `010-1234-5678` format (null if SIS fails) |
-| `englishName` | String | English name (null if SIS fails) |
-| `authenticatedAt` | LocalDateTime | Authentication time |
+| `studentId` | string | Student ID |
+| `name` | string | Name |
+| `major` | string | Major |
+| `grade` | string | Year |
+| `status` | string | Enrollment status (재학 enrolled, 휴학 on leave, 졸업 graduated) |
+| `classicReading` | object | Classic-reading certification, exam, contest and substitution records |
+| `email` | string or null | Email (null if SIS fails) |
+| `phoneNumber` | string or null | Phone, `010-1234-5678` format (null if SIS fails) |
+| `englishName` | string or null | English name (null if SIS fails) |
+| `authenticatedAt` | datetime | Authentication time |
 
-- `SejongDhcAuthResult`: no contact fields; includes `rawHtml` with the Raw method
-- `SejongSisAuthResult`: no classic-reading field, `grade` and `status` are empty strings; includes `rawJson` with the Raw method
+- DHC result: no contact fields; `rawHtml` with the raw option
+- SIS result: no classic-reading field, `grade` and `status` are empty strings; `rawJson` with the raw option
+
+Text values come from the portal as-is (Korean).
 
 ## Error codes
+
+Every language raises one error type with a `code`:
 
 | Code | Meaning |
 |---|---|
 | `AUTHENTICATION_FAILED` | Student ID or password is wrong |
-| `INVALID_INPUT` | Input is empty or malformed |
+| `INVALID_INPUT` | Input is empty (checked before any network call) |
 | `CONNECTION_FAILED` | Cannot reach the Sejong portal |
 | `CONNECTION_TIMEOUT` | Portal timed out |
 | `DATA_FETCH_FAILED` | Failed to fetch student info |
@@ -207,30 +215,28 @@ Fields of the integrated result `SejongAuthResult`. Text values come from the po
 | `SESSION_ERROR` | Portal session error |
 | `SSL_CONFIGURATION_ERROR` | SSL configuration error |
 
+Branch on the code, not on the message.
+
 ## Configuration
 
-All optional, in `application.yml`:
+All optional. Defaults: 10 second timeout, 3 login retries, certificate verification on.
 
-```yaml
-sejong:
-  auth:
-    ssl-verification: true   # verify the portal certificate (default true)
-    timeout-seconds: 10      # request timeout (default 10)
-    max-retry: 3             # retry count (default 3)
-```
+| Java (`application.yml`) | Python | Node |
+|---|---|---|
+| `sejong.auth.timeout-seconds: 10` | `SejongAuthClient(timeout_seconds=10)` | `new SejongAuthClient({ timeoutSeconds: 10 })` |
+| `sejong.auth.max-retry: 3` | `max_retry=3` | `maxRetry: 3` |
+| `sejong.auth.ssl-verification: true` | `ssl_verification=True` | `sslVerification: true` |
 
-Requirements: **Java 17+**, **Spring Boot 3.x**
+> **Java TLS note**: the Sejong portal only offers the legacy `TLS_RSA_WITH_AES_256_CBC_SHA` cipher, which recent JDKs disable. On first use the Java library removes `TLS_RSA_*` from `jdk.tls.disabledAlgorithms`, which affects **the whole JVM**. If your service cannot accept that, run the authentication in a separate process. Python and Node only change the TLS settings of their own connections.
 
-> **TLS note**: the Sejong portal only offers the legacy `TLS_RSA_WITH_AES_256_CBC_SHA` cipher, which recent JDKs disable. On first use the library removes `TLS_RSA_*` from `jdk.tls.disabledAlgorithms`, which affects **the whole JVM**, not just this library. If your service cannot accept that, run the authentication in a separate process.
-
-For internals, see the [DHC login flow](docs/DHC_LOGIN_FLOW.md) and [SIS login flow](docs/SIS_LOGIN_FLOW.md).
+How the portal flow works: [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md), [DHC login flow](docs/DHC_LOGIN_FLOW.md), [SIS login flow](docs/SIS_LOGIN_FLOW.md).
 
 ## FAQ
 
 <details>
 <summary><b>Is the password stored?</b></summary>
 
-No. The library only uses it for the portal login request. The demo server behind the project page also returns the result without storing input.
+No. The libraries only use it for the portal login request. The demo server behind the project page also returns the result without storing input.
 In your own service, never log or persist passwords.
 </details>
 
@@ -247,9 +253,15 @@ Try the [demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo) first. If th
 Please open an [issue](https://github.com/Cassiiopeia/pro-sejong-auth/issues) with the error code.
 </details>
 
+<details>
+<summary><b>I used the SUH Nexus repository before</b></summary>
+
+Older Java versions were published to `https://nexus.suhsaechan.kr/repository/maven-releases/`. New versions are on Maven Central (and still mirrored to Nexus for now), so you can drop the extra repository.
+</details>
+
 ## Contributing
 
-Bug reports, portal-change fixes and docs improvements are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for build and test steps.
+Bug reports, portal-change fixes and docs improvements are all welcome. A portal change is fixed in all three languages in one PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 Report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License

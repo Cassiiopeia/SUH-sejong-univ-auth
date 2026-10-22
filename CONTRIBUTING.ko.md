@@ -12,42 +12,59 @@
 - 포털이 바뀌어 인증이 깨졌다면 [데모](https://cassiiopeia.github.io/pro-sejong-auth/#demo)로 먼저 재현 여부를 확인해 주세요.
 - 큰 변경은 PR 전에 이슈로 방향을 맞춥니다.
 
+## 레포 구성
+
+| 폴더 | 내용 |
+|---|---|
+| `java/` | Java / Spring Boot 라이브러리 (`kr.suhsaechan:sejong-univ-auth`) |
+| `python/` | Python 패키지 (`pro-sejong-auth`, import `sejong_auth`) |
+| `node/` | Node.js 패키지 (`pro-sejong-auth`, TypeScript) |
+| `spec/` | 공통 계약: 포털 흐름, 결과 스키마, 모든 언어 테스트가 쓰는 개인정보 제거 응답 샘플 |
+
+세 언어는 버전 번호 하나를 같이 씁니다 (`version.yml`, 릴리스 워크플로우가 갱신).
+
 ## 개발 환경
 
-- JDK 17 이상
-- Gradle Wrapper 포함 (별도 설치 불필요)
-
 ```bash
-./gradlew build      # 컴파일 + 단위 테스트
-./gradlew test       # 단위 테스트만
+./gradlew build                                   # Java (JDK 17+, Gradle Wrapper 포함)
+cd python && python -m pip install pytest && python -m pytest   # Python 3.9+
+cd node && npm ci && npm test                     # Node 18+
 ```
 
 ## 실제 포털 연동 테스트
 
-`SuhSejongAuthEngineTest`의 `실제인증_*` 테스트는 실제 세종대 포털에 로그인하므로 기본으로 `@Disabled` 처리돼 있습니다.
+실제 세종대 포털에 로그인하므로 계정을 넣었을 때만 실행됩니다.
 
-1. `src/test/resources/application-dev.yml` 생성 (`.gitignore` 대상이라 커밋되지 않음)
+- Python·Node: `SEJONG_TEST_STUDENT_ID`, `SEJONG_TEST_PASSWORD` 환경변수를 설정하고 위 명령으로 실행
+- Java: `java/src/test/resources/application-dev.yml` 생성 (`.gitignore` 대상)
 
-   ```yaml
-   sejong:
-     auth:
-       test:
-         student-id: "본인 학번"
-         password: "본인 비밀번호"
-   ```
+  ```yaml
+  sejong:
+    auth:
+      test:
+        student-id: "본인 학번"
+        password: "본인 비밀번호"
+  ```
 
-2. 로컬에서만 `@Disabled`를 빼고 실행한 뒤, 커밋 전에 되돌립니다.
+  `SuhSejongAuthEngineTest`의 `실제인증_*` 테스트는 `@Disabled`입니다. 로컬에서만 빼고 실행한 뒤 커밋 전에 되돌립니다.
+- 세 언어 한 번에, 결과를 필드별로 비교 (개인정보 출력 없음):
 
-   ```bash
-   ./gradlew test --tests '*SuhSejongAuthEngineTest'
-   ```
+  ```bash
+  SEJONG_TEST_STUDENT_ID=... SEJONG_TEST_PASSWORD=... scripts/verify-live.sh
+  ```
 
 > 비밀번호를 여러 번 틀리면 포털 계정이 잠길 수 있습니다. 실패하면 반복 실행하지 말고 원인을 먼저 확인하세요.
+
+## 포털이 바뀌었을 때
+
+1. `spec/PORTAL_FLOW.md` 수정 (응답 모양이 바뀌었으면 `spec/fixtures/`도, 개인정보는 제거)
+2. Java, Python, Node를 **한 PR에서** 같이 수정
+3. 언어별 테스트와 `scripts/verify-live.sh` 실행
 
 ## PR
 
 - 브랜치는 `main` 기준으로 만듭니다.
-- 동작이 바뀌면 테스트를 함께 추가합니다. 포털 응답 파싱 변경은 원본 HTML·JSON 샘플(개인정보 제거)로 파서 테스트를 남겨 주세요.
+- 동작이 바뀌면 테스트를 함께 추가합니다. 파서 변경은 `spec/fixtures/`에 샘플을 두고 모든 언어가 같은 기대값을 쓰게 합니다.
 - 로그·예외 메시지에 비밀번호나 개인정보가 남지 않는지 확인합니다.
 
 ## 라이선스

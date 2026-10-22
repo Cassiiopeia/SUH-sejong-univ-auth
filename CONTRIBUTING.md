@@ -12,42 +12,59 @@ Please do not report security vulnerabilities in public issues. Use the private 
 - If authentication broke because the portal changed, first check whether the [live demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo) reproduces it.
 - For larger changes, agree on the direction in an issue before opening a PR.
 
+## Repository layout
+
+| Folder | What |
+|---|---|
+| `java/` | Java / Spring Boot library (`kr.suhsaechan:sejong-univ-auth`) |
+| `python/` | Python package (`pro-sejong-auth`, import `sejong_auth`) |
+| `node/` | Node.js package (`pro-sejong-auth`, TypeScript) |
+| `spec/` | Shared contract: portal flow, result schema, sanitized response samples used by every language's tests |
+
+All three languages share one version number (`version.yml`, updated by the release workflow).
+
 ## Development setup
 
-- JDK 17 or later
-- The Gradle Wrapper is included (no separate install needed)
-
 ```bash
-./gradlew build      # compile + unit tests
-./gradlew test       # unit tests only
+./gradlew build                                   # Java (JDK 17+, Gradle Wrapper included)
+cd python && python -m pip install pytest && python -m pytest   # Python 3.9+
+cd node && npm ci && npm test                     # Node 18+
 ```
 
 ## Tests against the real portal
 
-The `실제인증_*` tests in `SuhSejongAuthEngineTest` log in to the real Sejong portal, so they are `@Disabled` by default.
+Live tests log in to the real Sejong portal, so they only run when you provide an account.
 
-1. Create `src/test/resources/application-dev.yml` (it is in `.gitignore`, so it will not be committed)
+- Python and Node: set `SEJONG_TEST_STUDENT_ID` and `SEJONG_TEST_PASSWORD`, then run the tests as above
+- Java: create `java/src/test/resources/application-dev.yml` (in `.gitignore`)
 
-   ```yaml
-   sejong:
-     auth:
-       test:
-         student-id: "your student ID"
-         password: "your password"
-   ```
+  ```yaml
+  sejong:
+    auth:
+      test:
+        student-id: "your student ID"
+        password: "your password"
+  ```
 
-2. Remove `@Disabled` locally, run the tests, and restore it before committing.
+  The `실제인증_*` tests in `SuhSejongAuthEngineTest` are `@Disabled`; remove it locally and restore before committing.
+- All three at once, comparing results field by field (no personal data printed):
 
-   ```bash
-   ./gradlew test --tests '*SuhSejongAuthEngineTest'
-   ```
+  ```bash
+  SEJONG_TEST_STUDENT_ID=... SEJONG_TEST_PASSWORD=... scripts/verify-live.sh
+  ```
 
 > Several wrong passwords in a row can lock the portal account. If a run fails, find the cause before running it again.
+
+## When the portal changes
+
+1. Update `spec/PORTAL_FLOW.md` (and `spec/fixtures/` if the response shape changed, with personal data removed)
+2. Fix Java, Python and Node in the **same PR**
+3. Run each language's tests and `scripts/verify-live.sh`
 
 ## Pull requests
 
 - Branch from `main`.
-- Add tests when behavior changes. For changes to response parsing, add a parser test with an HTML or JSON sample (personal data removed).
+- Add tests when behavior changes. Parser changes need a fixture in `spec/fixtures/` and the same expected values for all languages.
 - Make sure no password or personal data ends up in logs or exception messages.
 
 ## License
