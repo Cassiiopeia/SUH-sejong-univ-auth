@@ -1,0 +1,52 @@
+{
+  "name": "pro-sejong-auth",
+  "version": "1.2.14",
+  "description": "Sejong University login API for Node.js: verify students with portal SSO (세종대 로그인 API)",
+  "keywords": [
+    "sejong",
+    "sejong-university",
+    "세종대",
+    "authentication",
+    "sso",
+    "student-verification"
+  ],
+  "homepage": "https://cassiiopeia.github.io/pro-sejong-auth/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cassiiopeia/pro-sejong-auth.git",
+    "directory": "node"
+  },
+  "bugs": "https://github.com/Cassiiopeia/pro-sejong-auth/issues",
+  "license": "MIT",
+  "author": "Suh Saechan",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/write-version.mjs && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.mjs",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}

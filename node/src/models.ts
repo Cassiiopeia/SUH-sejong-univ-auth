@@ -1,0 +1,90 @@
+// 결과 타입: Java 결과 클래스와 같은 필드 이름 (spec/RESULT_SCHEMA.md)
+
+export interface ClassicCertification {
+  area: string;
+  requiredCount: string;
+  certifiedCount: string;
+}
+
+export interface ClassicExamRecord {
+  semester: string;
+  area: string;
+  bookTitle: string;
+  examDate: string;
+  score: string;
+  passStatus: string;
+}
+
+export interface ClassicSubjectRecord {
+  semester: string;
+  subjectName: string;
+  area: string;
+  bookTitle: string;
+  completion: string;
+}
+
+export interface ClassicContestRecord {
+  semester: string;
+  contestName: string;
+  area: string;
+  bookTitle: string;
+}
+
+/** 고전독서 인증 현황: 영역별 인증, 시험, 과목 대체, 대회, 교과연계 */
+export interface SejongClassicReading {
+  certifications: ClassicCertification[];
+  examRecords: ClassicExamRecord[];
+  subjectSubstitutions: ClassicSubjectRecord[];
+  contestRecords: ClassicContestRecord[];
+  curriculumRecords: ClassicSubjectRecord[];
+}
+
+/** DHC 사용자 정보 표 (없는 값은 빈 문자열) */
+export interface SejongStudentInfo {
+  major: string;
+  studentId: string;
+  name: string;
+  grade: string;
+  status: string;
+}
+
+/** SIS initUserInfo 값 */
+export interface SejongSisUserInfo {
+  studentId: string;
+  name: string;
+  major: string;
+  email: string;
+  phoneNumber: string;
+  englishName: string;
+}
+
+/** 통합 인증 결과 (연락처는 SIS 실패 시 null) */
+export interface SejongAuthResult extends SejongStudentInfo {
+  success: true;
+  classicReading: SejongClassicReading;
+  email: string | null;
+  phoneNumber: string | null;
+  englishName: string | null;
+  authenticatedAt: Date;
+}
+
+/** DHC 인증 결과 (rawHtml 은 includeRaw 일 때만) */
+export interface SejongDhcAuthResult extends SejongStudentInfo {
+  success: true;
+  classicReading: SejongClassicReading;
+  authenticatedAt: Date;
+  rawHtml: string | null;
+}
+
+/** SIS 인증 결과 (grade·status 는 SIS 미제공 > 빈 문자열, rawJson 은 includeRaw 일 때만) */
+export interface SejongSisAuthResult extends SejongSisUserInfo {
+  success: true;
+  grade: '';
+  status: '';
+  authenticatedAt: Date;
+  rawJson: string | null;
+}
+
+export interface RawOption {
+  includeRaw?: boolean;
+}
