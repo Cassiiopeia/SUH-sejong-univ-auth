@@ -6,9 +6,9 @@ import kr.suhsaechan.sejong.auth.client.SejongSisClient;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
 import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
-import kr.suhsaechan.sejong.auth.model.SejongClassicReading;
 import kr.suhsaechan.sejong.auth.model.SejongDhcAuthResult;
 import kr.suhsaechan.sejong.auth.model.SejongSisAuthResult;
+import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import kr.suhsaechan.sejong.auth.parser.SejongClassicReadingParser;
 import kr.suhsaechan.sejong.auth.parser.SejongSisParser;
 import kr.suhsaechan.sejong.auth.parser.SejongStudentInfoParser;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * 세종대학교 인증 서비스
  * - 포털 로그인 및 학생 정보 조회 기능 제공
  * - DHC(대양휴머니티칼리지) 및 SIS(학사정보시스템) 데이터 소스 지원
+ * - 로그에는 학번만 남김 (이름·연락처는 사용 서비스 로그에 남지 않게)
  */
 @Slf4j
 public class SuhSejongAuthEngine {
@@ -55,16 +56,10 @@ public class SuhSejongAuthEngine {
     validateCredentials(studentId, password);
     log.info("[sejong auth] integrated auth started : studentId={}", studentId);
 
-    // 1. DHC에서 정보 가져오기
-    String html = portalClient.authenticateAndFetchHtml(studentId, password);
-    String major = studentInfoParser.parseMajor(html);
-    String parsedStudentId = studentInfoParser.parseStudentId(html);
-    String name = studentInfoParser.parseName(html);
-    String grade = studentInfoParser.parseGrade(html);
-    String status = studentInfoParser.parseStatus(html);
-    SejongClassicReading classicReading = classicReadingParser.parse(html);
+    // 1. DHC에서 학생 정보·고전독서 (실패 시 예외)
+    SejongDhcAuthResult dhcResult = buildDhcResult(portalClient.authenticateAndFetchHtml(studentId, password), false);
 
-    // 2. SIS에서 연락처 정보 가져오기
+    // 2. SIS에서 연락처 3개만 (실패해도 DHC 정보만으로 결과 반환)
     String email = null;
     String phoneNumber = null;
     String englishName = null;
@@ -75,26 +70,25 @@ public class SuhSejongAuthEngine {
       englishName = sisParser.parseEnglishName(json);
     } catch (Exception e) {
       log.warn("[sejong auth] SIS contact lookup failed (ignored) : {}", e.getMessage());
-      // SIS 실패 시에도 DHC 정보만으로 결과 반환
     }
 
-    // 3. 결과 반환
-    SejongAuthResult result = SejongAuthResult.builder()
+    // 3. 결과 합치기
+    SejongAuthResult integratedResult = SejongAuthResult.builder()
         .success(true)
-        .major(major)
-        .studentId(parsedStudentId)
-        .name(name)
-        .grade(grade)
-        .status(status)
-        .classicReading(classicReading)
+        .major(dhcResult.getMajor())
+        .studentId(dhcResult.getStudentId())
+        .name(dhcResult.getName())
+        .grade(dhcResult.getGrade())
+        .status(dhcResult.getStatus())
+        .classicReading(dhcResult.getClassicReading())
         .email(email)
         .phoneNumber(phoneNumber)
         .englishName(englishName)
         .authenticatedAt(LocalDateTime.now())
         .build();
 
-    log.info("[sejong auth] integrated auth completed : studentId={}, name={}", studentId, name);
-    return result;
+    log.info("[sejong auth] integrated auth completed : studentId={}", studentId);
+    return integratedResult;
   }
 
   /**
@@ -108,36 +102,7 @@ public class SuhSejongAuthEngine {
    * @throws SejongAuthException 인증 실패 시
    */
   public SejongDhcAuthResult authenticateWithDHC(String studentId, String password) {
-    validateCredentials(studentId, password);
-    log.info("[sejong auth] DHC auth started : studentId={}", studentId);
-
-    // 1. 포털 로그인 및 HTML 가져오기
-    String html = portalClient.authenticateAndFetchHtml(studentId, password);
-
-    // 2. 학생 기본정보 파싱
-    String major = studentInfoParser.parseMajor(html);
-    String parsedStudentId = studentInfoParser.parseStudentId(html);
-    String name = studentInfoParser.parseName(html);
-    String grade = studentInfoParser.parseGrade(html);
-    String status = studentInfoParser.parseStatus(html);
-
-    // 3. 고전독서 정보 파싱
-    SejongClassicReading classicReading = classicReadingParser.parse(html);
-
-    // 4. 결과 반환
-    SejongDhcAuthResult result = SejongDhcAuthResult.builder()
-        .success(true)
-        .major(major)
-        .studentId(parsedStudentId)
-        .name(name)
-        .grade(grade)
-        .status(status)
-        .classicReading(classicReading)
-        .authenticatedAt(LocalDateTime.now())
-        .build();
-
-    log.info("[sejong auth] DHC auth completed : studentId={}, name={}", studentId, name);
-    return result;
+    return authenticateDhc(studentId, password, false);
   }
 
   /**
@@ -151,38 +116,7 @@ public class SuhSejongAuthEngine {
    * @throws SejongAuthException 인증 실패 시
    */
   public SejongSisAuthResult authenticateWithSIS(String studentId, String password) {
-    validateCredentials(studentId, password);
-    log.info("[sejong auth] SIS auth started : studentId={}", studentId);
-
-    // 1. SIS 로그인 및 JSON 가져오기
-    String json = sisClient.authenticateAndFetchJson(studentId, password);
-
-    // 2. 학생 기본정보 파싱
-    String major = sisParser.parseMajor(json);
-    String parsedStudentId = sisParser.parseStudentId(json);
-    String name = sisParser.parseName(json);
-
-    // 3. 연락처 정보 파싱
-    String email = sisParser.parseEmail(json);
-    String phoneNumber = sisParser.parsePhoneNumber(json);
-    String englishName = sisParser.parseEnglishName(json);
-
-    // 4. 결과 반환
-    SejongSisAuthResult result = SejongSisAuthResult.builder()
-        .success(true)
-        .major(major)
-        .studentId(parsedStudentId)
-        .name(name)
-        .grade("")  // SIS에서는 제공하지 않음
-        .status("") // SIS에서는 제공하지 않음
-        .email(email)
-        .phoneNumber(phoneNumber)
-        .englishName(englishName)
-        .authenticatedAt(LocalDateTime.now())
-        .build();
-
-    log.info("[sejong auth] SIS auth completed : studentId={}, name={}", studentId, name);
-    return result;
+    return authenticateSis(studentId, password, false);
   }
 
   /**
@@ -195,37 +129,7 @@ public class SuhSejongAuthEngine {
    * @throws SejongAuthException 인증 실패 시
    */
   public SejongDhcAuthResult authenticateWithDHCRaw(String studentId, String password) {
-    validateCredentials(studentId, password);
-    log.info("[sejong auth] DHC auth started (with raw HTML) : studentId={}", studentId);
-
-    // 1. 포털 로그인 및 HTML 가져오기
-    String html = portalClient.authenticateAndFetchHtml(studentId, password);
-
-    // 2. 학생 기본정보 파싱
-    String major = studentInfoParser.parseMajor(html);
-    String parsedStudentId = studentInfoParser.parseStudentId(html);
-    String name = studentInfoParser.parseName(html);
-    String grade = studentInfoParser.parseGrade(html);
-    String status = studentInfoParser.parseStatus(html);
-
-    // 3. 고전독서 정보 파싱
-    SejongClassicReading classicReading = classicReadingParser.parse(html);
-
-    // 4. 결과 반환 (원본 HTML 포함)
-    SejongDhcAuthResult result = SejongDhcAuthResult.builder()
-        .success(true)
-        .major(major)
-        .studentId(parsedStudentId)
-        .name(name)
-        .grade(grade)
-        .status(status)
-        .classicReading(classicReading)
-        .authenticatedAt(LocalDateTime.now())
-        .rawHtml(html)
-        .build();
-
-    log.info("[sejong auth] DHC auth completed (with raw HTML) : studentId={}, name={}", studentId, name);
-    return result;
+    return authenticateDhc(studentId, password, true);
   }
 
   /**
@@ -238,39 +142,70 @@ public class SuhSejongAuthEngine {
    * @throws SejongAuthException 인증 실패 시
    */
   public SejongSisAuthResult authenticateWithSISRaw(String studentId, String password) {
+    return authenticateSis(studentId, password, true);
+  }
+
+  /**
+   * DHC 인증: 입력 검증 > 포털 로그인·페이지 조회 > 결과 조립
+   */
+  private SejongDhcAuthResult authenticateDhc(String studentId, String password, boolean shouldIncludeRawHtml) {
     validateCredentials(studentId, password);
-    log.info("[sejong auth] SIS auth started (with raw JSON) : studentId={}", studentId);
+    log.info("[sejong auth] DHC auth started : studentId={}, raw={}", studentId, shouldIncludeRawHtml);
 
-    // 1. SIS 로그인 및 JSON 가져오기
-    String json = sisClient.authenticateAndFetchJson(studentId, password);
+    SejongDhcAuthResult dhcResult = buildDhcResult(portalClient.authenticateAndFetchHtml(studentId, password), shouldIncludeRawHtml);
 
-    // 2. 학생 기본정보 파싱
-    String major = sisParser.parseMajor(json);
-    String parsedStudentId = sisParser.parseStudentId(json);
-    String name = sisParser.parseName(json);
+    log.info("[sejong auth] DHC auth completed : studentId={}", studentId);
+    return dhcResult;
+  }
 
-    // 3. 연락처 정보 파싱
-    String email = sisParser.parseEmail(json);
-    String phoneNumber = sisParser.parsePhoneNumber(json);
-    String englishName = sisParser.parseEnglishName(json);
+  /**
+   * SIS 인증: 입력 검증 > 포털 로그인·API 조회 > 결과 조립
+   */
+  private SejongSisAuthResult authenticateSis(String studentId, String password, boolean shouldIncludeRawJson) {
+    validateCredentials(studentId, password);
+    log.info("[sejong auth] SIS auth started : studentId={}, raw={}", studentId, shouldIncludeRawJson);
 
-    // 4. 결과 반환 (원본 JSON 포함)
-    SejongSisAuthResult result = SejongSisAuthResult.builder()
+    SejongSisAuthResult sisResult = buildSisResult(sisClient.authenticateAndFetchJson(studentId, password), shouldIncludeRawJson);
+
+    log.info("[sejong auth] SIS auth completed : studentId={}", studentId);
+    return sisResult;
+  }
+
+  /**
+   * 고전독서인증현황 HTML > DHC 결과 (학생 정보 표 1회 파싱 + 고전독서)
+   */
+  private SejongDhcAuthResult buildDhcResult(String html, boolean shouldIncludeRawHtml) {
+    SejongStudentInfo studentInfo = studentInfoParser.parseStudentInfo(html);
+    return SejongDhcAuthResult.builder()
         .success(true)
-        .major(major)
-        .studentId(parsedStudentId)
-        .name(name)
-        .grade("")  // SIS에서는 제공하지 않음
-        .status("") // SIS에서는 제공하지 않음
-        .email(email)
-        .phoneNumber(phoneNumber)
-        .englishName(englishName)
+        .major(studentInfo.major())
+        .studentId(studentInfo.studentId())
+        .name(studentInfo.name())
+        .grade(studentInfo.grade())
+        .status(studentInfo.status())
+        .classicReading(classicReadingParser.parse(html))
         .authenticatedAt(LocalDateTime.now())
-        .rawJson(json)
+        .rawHtml(shouldIncludeRawHtml ? html : null)
         .build();
+  }
 
-    log.info("[sejong auth] SIS auth completed (with raw JSON) : studentId={}, name={}", studentId, name);
-    return result;
+  /**
+   * initUserInfo JSON > SIS 결과 (학년·상태는 SIS 미제공 > 빈 문자열)
+   */
+  private SejongSisAuthResult buildSisResult(String json, boolean shouldIncludeRawJson) {
+    return SejongSisAuthResult.builder()
+        .success(true)
+        .major(sisParser.parseMajor(json))
+        .studentId(sisParser.parseStudentId(json))
+        .name(sisParser.parseName(json))
+        .grade("")
+        .status("")
+        .email(sisParser.parseEmail(json))
+        .phoneNumber(sisParser.parsePhoneNumber(json))
+        .englishName(sisParser.parseEnglishName(json))
+        .authenticatedAt(LocalDateTime.now())
+        .rawJson(shouldIncludeRawJson ? json : null)
+        .build();
   }
 
   /**

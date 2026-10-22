@@ -186,7 +186,7 @@ try {
 | `authenticatedAt` | LocalDateTime | 인증 시각 |
 
 - `SejongDhcAuthResult`: 연락처 필드 없음, Raw 메서드 사용 시 `rawHtml` 포함
-- `SejongSisAuthResult`: 고전독서 필드 없음, `grade`·`status`는 null, Raw 메서드 사용 시 `rawJson` 포함
+- `SejongSisAuthResult`: 고전독서 필드 없음, `grade`·`status`는 빈 문자열, Raw 메서드 사용 시 `rawJson` 포함
 
 ## 에러 코드
 
@@ -214,6 +214,8 @@ sejong:
 ```
 
 요구 사항: **Java 17+**, **Spring Boot 3.x**
+
+> **TLS 안내**: 세종 포털은 최신 JDK가 막아 둔 레거시 cipher(`TLS_RSA_WITH_AES_256_CBC_SHA`)만 제공합니다. 라이브러리는 처음 쓸 때 `jdk.tls.disabledAlgorithms`에서 `TLS_RSA_*`를 빼는데, 이 설정은 이 라이브러리만이 아니라 **JVM 전체**에 적용됩니다. 서비스에서 이를 허용할 수 없다면 인증을 별도 프로세스로 분리하세요.
 
 내부 동작이 궁금하면 [DHC 로그인 플로우](docs/DHC_LOGIN_FLOW.ko.md), [SIS 로그인 플로우](docs/SIS_LOGIN_FLOW.ko.md)를 보세요.
 

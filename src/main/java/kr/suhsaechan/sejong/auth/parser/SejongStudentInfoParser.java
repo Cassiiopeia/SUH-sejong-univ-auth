@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
+import kr.suhsaechan.sejong.auth.model.SejongStudentInfo;
 import kr.suhsaechan.sejong.auth.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -19,6 +20,30 @@ public class SejongStudentInfoParser {
   private static final String USER_INFO_SELECTOR =
       ".b-con-box:has(h4.b-h4-tit01:contains(사용자 정보)) table.b-board-table tbody tr";
 
+  // 사용자 정보 표 라벨 (포털 화면 문구 그대로, 바꾸면 파싱 실패)
+  private static final String LABEL_MAJOR = "학과명";
+  private static final String LABEL_STUDENT_ID = "학번";
+  private static final String LABEL_NAME = "이름";
+  private static final String LABEL_GRADE = "학년";
+  private static final String LABEL_STATUS = "사용자 상태";
+
+  /**
+   * 사용자 정보 표 1회 파싱 > 학과, 학번, 이름, 학년, 상태
+   *
+   * @param html 고전독서인증현황 페이지 HTML
+   * @return 학생 기본 정보 (없는 값은 빈 문자열)
+   * @throws SejongAuthException 표를 찾지 못하거나 파싱 실패 시
+   */
+  public SejongStudentInfo parseStudentInfo(String html) {
+    Map<String, String> valueByLabel = parseTableData(html);
+    return new SejongStudentInfo(
+        findLabelValue(valueByLabel, LABEL_MAJOR),
+        findLabelValue(valueByLabel, LABEL_STUDENT_ID),
+        findLabelValue(valueByLabel, LABEL_NAME),
+        findLabelValue(valueByLabel, LABEL_GRADE),
+        findLabelValue(valueByLabel, LABEL_STATUS));
+  }
+
   /**
    * HTML에서 학과명 파싱
    *
@@ -27,8 +52,7 @@ public class SejongStudentInfoParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseMajor(String html) {
-    Map<String, String> data = parseTableData(html);
-    return CommonUtil.defaultIfBlank(data.get("학과명"), "");
+    return findLabelValue(parseTableData(html), LABEL_MAJOR);
   }
 
   /**
@@ -39,8 +63,7 @@ public class SejongStudentInfoParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseStudentId(String html) {
-    Map<String, String> data = parseTableData(html);
-    return CommonUtil.defaultIfBlank(data.get("학번"), "");
+    return findLabelValue(parseTableData(html), LABEL_STUDENT_ID);
   }
 
   /**
@@ -51,8 +74,7 @@ public class SejongStudentInfoParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseName(String html) {
-    Map<String, String> data = parseTableData(html);
-    return CommonUtil.defaultIfBlank(data.get("이름"), "");
+    return findLabelValue(parseTableData(html), LABEL_NAME);
   }
 
   /**
@@ -63,8 +85,7 @@ public class SejongStudentInfoParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseGrade(String html) {
-    Map<String, String> data = parseTableData(html);
-    return CommonUtil.defaultIfBlank(data.get("학년"), "");
+    return findLabelValue(parseTableData(html), LABEL_GRADE);
   }
 
   /**
@@ -75,8 +96,7 @@ public class SejongStudentInfoParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseStatus(String html) {
-    Map<String, String> data = parseTableData(html);
-    return CommonUtil.defaultIfBlank(data.get("사용자 상태"), "");
+    return findLabelValue(parseTableData(html), LABEL_STATUS);
   }
 
   /**
@@ -103,6 +123,10 @@ public class SejongStudentInfoParser {
   /**
    * 테이블에서 라벨-값 쌍 추출
    */
+  private String findLabelValue(Map<String, String> valueByLabel, String label) {
+    return CommonUtil.defaultIfBlank(valueByLabel.get(label), "");
+  }
+
   private Map<String, String> extractTableData(Document doc) {
     Map<String, String> data = new HashMap<>();
 

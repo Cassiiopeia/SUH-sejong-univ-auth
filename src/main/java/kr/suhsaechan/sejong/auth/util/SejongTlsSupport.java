@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public final class SejongTlsSupport {
 
   private static final String DISABLED_ALGORITHMS_KEY = "jdk.tls.disabledAlgorithms";
-  private static final boolean APPLIED = removeLegacyRsaFromDisabledAlgorithms();
+  private static final boolean IS_LEGACY_CIPHER_REENABLED = removeLegacyRsaFromDisabledAlgorithms();
 
   private SejongTlsSupport() {
   }
@@ -37,8 +37,8 @@ public final class SejongTlsSupport {
    * 소켓 생성 이전으로 앞당기기 위한 트리거다.
    */
   public static void ensureLegacyCipherEnabled() {
-    // static 초기화(APPLIED) 실행을 보장하기 위한 no-op 트리거
-    if (!APPLIED) {
+    // static 초기화(IS_LEGACY_CIPHER_REENABLED) 실행을 보장하기 위한 no-op 트리거
+    if (!IS_LEGACY_CIPHER_REENABLED) {
       log.debug("[sejong tls] legacy cipher re-enable already applied or not needed");
     }
   }

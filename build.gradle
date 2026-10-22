@@ -51,7 +51,11 @@ tasks.named('test') {
 }
 
 bootJar { enabled = false }
-jar { enabled = true }
+// Boot 플러그인 기본 classifier(plain) 제거 > Maven 사용자가 받는 기본 jar 이름(sejong-univ-auth-{버전}.jar)
+jar {
+	enabled = true
+	archiveClassifier = ''
+}
 
 publishing {
 	publications {
@@ -60,8 +64,18 @@ publishing {
 
 			pom {
 				name = 'sejong-univ-auth'
-				description = '세종대학교 인증 라이브러리'
+				description = 'Sejong University portal authentication for Spring Boot'
 				url = 'https://github.com/Cassiiopeia/SUH-sejong-univ-auth/'
+				licenses {
+					license {
+						name = 'MIT License'
+						url = 'https://opensource.org/licenses/MIT'
+					}
+				}
+				scm {
+					url = 'https://github.com/Cassiiopeia/SUH-sejong-univ-auth'
+					connection = 'scm:git:https://github.com/Cassiiopeia/SUH-sejong-univ-auth.git'
+				}
 			}
 		}
 	}
@@ -74,7 +88,6 @@ publishing {
 							? "https://nexus.suhsaechan.kr/repository/maven-snapshots/"
 							: "https://nexus.suhsaechan.kr/repository/maven-releases/"
 			)
-			allowInsecureProtocol = true
 			credentials {
 				username = project.findProperty('nexusUsername')
 				password = project.findProperty('nexusPassword')

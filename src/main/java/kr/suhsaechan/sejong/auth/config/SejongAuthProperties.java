@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * application.yml 예시:
  * sejong:
  *   auth:
- *     ssl-verification: false
+ *     ssl-verification: true
  *     timeout-seconds: 10
  *     max-retry: 3
  */
@@ -36,27 +36,4 @@ public class SejongAuthProperties {
 
   /** 고전독서인증현황 페이지 URL */
   private String classicStatusUrl = "https://classic.sejong.ac.kr/classic/reading/status.do";
-
-  /** 테스트용 설정 (dev 프로파일에서만 사용) */
-  private TestConfig test = new TestConfig();
-
-  /**
-   * 테스트용 설정 내부 클래스
-   *
-   * application-dev.yml 예시:
-   * sejong:
-   *   auth:
-   *     test:
-   *       student-id: "학번"
-   *       password: "비밀번호"
-   */
-  @Getter
-  @Setter
-  public static class TestConfig {
-    /** 테스트용 학번 */
-    private String studentId;
-
-    /** 테스트용 비밀번호 */
-    private String password;
-  }
 }

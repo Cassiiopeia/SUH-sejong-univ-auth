@@ -24,19 +24,15 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseMajor(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
-      JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+    JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
 
-      String major = getTextValue(dmUserInfoGam, "DEPT_NM");
-      if (CommonUtil.isBlank(major)) {
-        major = getTextValue(dmUserInfoSch, "DEPT_NM");
-      }
-      return CommonUtil.defaultIfBlank(major, "");
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    String major = getTextValue(dmUserInfoGam, "DEPT_NM");
+    if (CommonUtil.isBlank(major)) {
+      major = getTextValue(dmUserInfoSch, "DEPT_NM");
     }
+    return CommonUtil.defaultIfBlank(major, "");
   }
 
   /**
@@ -47,22 +43,16 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseStudentId(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfo = root.path("dm_UserInfo");
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfo = root.path("dm_UserInfo");
 
-      if (dmUserInfo.isMissingNode()) {
-        throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
-            "dm_UserInfo field not found");
-      }
-
-      String studentId = getTextValue(dmUserInfo, "INTG_USR_NO");
-      return CommonUtil.defaultIfBlank(studentId, "");
-    } catch (SejongAuthException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    if (dmUserInfo.isMissingNode()) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR,
+          "dm_UserInfo field not found");
     }
+
+    String studentId = getTextValue(dmUserInfo, "INTG_USR_NO");
+    return CommonUtil.defaultIfBlank(studentId, "");
   }
 
   /**
@@ -73,15 +63,11 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseName(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfo = root.path("dm_UserInfo");
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfo = root.path("dm_UserInfo");
 
-      String name = getTextValue(dmUserInfo, "INTG_USR_NM");
-      return CommonUtil.defaultIfBlank(name, "");
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
-    }
+    String name = getTextValue(dmUserInfo, "INTG_USR_NM");
+    return CommonUtil.defaultIfBlank(name, "");
   }
 
   /**
@@ -92,14 +78,10 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseEmail(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
-      String email = getTextValue(dmUserInfoGam, "USER_EMAIL");
-      return CommonUtil.defaultIfBlank(email, "");
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
-    }
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+    String email = getTextValue(dmUserInfoGam, "USER_EMAIL");
+    return CommonUtil.defaultIfBlank(email, "");
   }
 
   /**
@@ -110,14 +92,10 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parsePhoneNumber(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
-      String phoneNumber = buildPhoneNumber(dmUserInfoGam);
-      return CommonUtil.defaultIfBlank(phoneNumber, "");
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
-    }
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfoGam = root.path("dm_UserInfoGam");
+    String phoneNumber = buildPhoneNumber(dmUserInfoGam);
+    return CommonUtil.defaultIfBlank(phoneNumber, "");
   }
 
   /**
@@ -128,24 +106,31 @@ public class SejongSisParser {
    * @throws SejongAuthException 파싱 실패 시
    */
   public String parseEnglishName(String json) {
-    try {
-      JsonNode root = objectMapper.readTree(json);
-      JsonNode dmUserInfo = root.path("dm_UserInfo");
-      JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
+    JsonNode root = readRoot(json);
+    JsonNode dmUserInfo = root.path("dm_UserInfo");
+    JsonNode dmUserInfoSch = root.path("dm_UserInfoSch");
 
-      String englishName = getTextValue(dmUserInfo, "INTG_ENG_NM");
-      if (CommonUtil.isBlank(englishName)) {
-        englishName = getTextValue(dmUserInfoSch, "NM_ENG");
-      }
-      return CommonUtil.defaultIfBlank(englishName, "");
-    } catch (Exception e) {
-      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    String englishName = getTextValue(dmUserInfo, "INTG_ENG_NM");
+    if (CommonUtil.isBlank(englishName)) {
+      englishName = getTextValue(dmUserInfoSch, "NM_ENG");
     }
+    return CommonUtil.defaultIfBlank(englishName, "");
   }
 
   /**
    * JsonNode에서 텍스트 값 추출
    */
+  /**
+   * JSON 문자열 > 루트 노드 (형식 오류는 PARSE_ERROR)
+   */
+  private JsonNode readRoot(String json) {
+    try {
+      return objectMapper.readTree(json);
+    } catch (Exception e) {
+      throw new SejongAuthException(SejongAuthErrorCode.PARSE_ERROR, e);
+    }
+  }
+
   private String getTextValue(JsonNode node, String fieldName) {
     if (node == null || node.isMissingNode()) {
       return "";

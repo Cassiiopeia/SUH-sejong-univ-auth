@@ -1,7 +1,7 @@
 package kr.suhsaechan.sejong.auth.service;
 
 import kr.suhsaechan.sejong.auth.TestApplication;
-import kr.suhsaechan.sejong.auth.config.SejongAuthProperties;
+import kr.suhsaechan.sejong.auth.support.SejongTestAccountProperties;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
 import kr.suhsaechan.sejong.auth.model.SejongAuthResult;
@@ -31,7 +31,7 @@ class SuhSejongAuthEngineTest {
   SuhSejongAuthEngine suhSejongAuthEngine;
 
   @Autowired
-  SejongAuthProperties sejongAuthProperties;
+  SejongTestAccountProperties testAccountProperties;
 
   @Test
   public void mainTest() {
@@ -90,8 +90,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_전체정보() {
     log.info("============ 실제 포털 인증 테스트 - 전체 정보 ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
@@ -123,7 +123,7 @@ class SuhSejongAuthEngineTest {
   void 실제인증_잘못된비밀번호() {
     log.info("============ 실제 포털 인증 테스트 - 잘못된 비밀번호 ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
+    String testStudentId = testAccountProperties.getStudentId();
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertFalse(testStudentId.isEmpty(), "테스트용 학번이 설정되지 않았습니다.");
 
@@ -195,8 +195,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_DHC_고전독서정보() {
     log.info("============ 실제 포털 인증 테스트 - DHC (고전독서 정보) ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
@@ -224,8 +224,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_SIS_연락처정보() {
     log.info("============ 실제 포털 인증 테스트 - SIS (연락처 정보) ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
@@ -252,8 +252,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_통합_전체정보() {
     log.info("============ 실제 포털 인증 테스트 - 통합 (전체 정보) ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
@@ -285,8 +285,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_DHC_원본HTML포함() {
     log.info("============ 실제 포털 인증 테스트 - DHC 원본 HTML 포함 ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");
@@ -306,8 +306,8 @@ class SuhSejongAuthEngineTest {
   void 실제인증_SIS_원본JSON포함() {
     log.info("============ 실제 포털 인증 테스트 - SIS 원본 JSON 포함 ============");
 
-    String testStudentId = sejongAuthProperties.getTest().getStudentId();
-    String testPassword = sejongAuthProperties.getTest().getPassword();
+    String testStudentId = testAccountProperties.getStudentId();
+    String testPassword = testAccountProperties.getPassword();
 
     assertNotNull(testStudentId, "테스트용 학번이 설정되지 않았습니다.");
     assertNotNull(testPassword, "테스트용 비밀번호가 설정되지 않았습니다.");

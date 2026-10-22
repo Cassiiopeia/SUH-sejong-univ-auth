@@ -190,7 +190,7 @@ Fields of the integrated result `SejongAuthResult`. Text values come from the po
 | `authenticatedAt` | LocalDateTime | Authentication time |
 
 - `SejongDhcAuthResult`: no contact fields; includes `rawHtml` with the Raw method
-- `SejongSisAuthResult`: no classic-reading field, `grade` and `status` are null; includes `rawJson` with the Raw method
+- `SejongSisAuthResult`: no classic-reading field, `grade` and `status` are empty strings; includes `rawJson` with the Raw method
 
 ## Error codes
 
@@ -218,6 +218,8 @@ sejong:
 ```
 
 Requirements: **Java 17+**, **Spring Boot 3.x**
+
+> **TLS note**: the Sejong portal only offers the legacy `TLS_RSA_WITH_AES_256_CBC_SHA` cipher, which recent JDKs disable. On first use the library removes `TLS_RSA_*` from `jdk.tls.disabledAlgorithms`, which affects **the whole JVM**, not just this library. If your service cannot accept that, run the authentication in a separate process.
 
 For internals, see the [DHC login flow](docs/DHC_LOGIN_FLOW.md) and [SIS login flow](docs/SIS_LOGIN_FLOW.md).
 

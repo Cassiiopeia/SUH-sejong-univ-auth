@@ -15,6 +15,8 @@ public enum SejongAuthErrorCode {
   CONNECTION_TIMEOUT("SEJONG_AUTH_002", "Connection to the Sejong University portal timed out."),
 
   // 인증 관련
+  /** 미사용: 비밀번호 불일치는 AUTHENTICATION_FAILED 로 던짐. 기존 사용처 호환용으로만 유지 */
+  @Deprecated
   INVALID_CREDENTIALS("SEJONG_AUTH_003", "Invalid student ID or password."),
   AUTHENTICATION_FAILED("SEJONG_AUTH_009", "Sejong University portal authentication failed. Check the student ID and password."),
   SESSION_ERROR("SEJONG_AUTH_004", "An error occurred while handling the portal session."),
