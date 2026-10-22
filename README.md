@@ -9,7 +9,7 @@
 English | [한국어](README.ko.md)
 
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
-## Latest Version : v1.2.7 (2026-07-09)
+## Latest Version : v1.2.11 (2026-10-22)
 
 [![Nexus](https://img.shields.io/nexus/r/kr.suhsaechan/sejong-univ-auth?server=https%3A%2F%2Fnexus.suhsaechan.kr&label=Nexus&color=C20F2F)](https://nexus.suhsaechan.kr/#browse/browse:maven-releases:kr%2Fsuhsaechan%2Fsejong-univ-auth)
 [![Java](https://img.shields.io/badge/Java-17+-324D60)](https://openjdk.org/)
