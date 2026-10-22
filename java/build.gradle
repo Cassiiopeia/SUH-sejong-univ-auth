@@ -2,7 +2,8 @@ plugins {
 	id 'java-library'
 	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'maven-publish'
+	// Maven Central 배포 (0.36+ 는 Gradle 9 필요 > wrapper 8.14 에 맞춰 0.35.0)
+	id 'com.vanniktech.maven.publish' version '0.35.0'
 }
 
 // group, version: 루트 build.gradle (세 언어 공통 버전, projectops 가 갱신)
@@ -12,7 +13,6 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
-	withSourcesJar()
 }
 
 repositories {
@@ -56,35 +56,56 @@ jar {
 	archiveClassifier = ''
 }
 
-publishing {
-	publications {
-		// 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출
-		maven(MavenPublication) {
-			from components.java
+// javadoc: 한국어 주석의 '>' 흐름 표기 등을 doclint 오류로 막지 않음
+tasks.withType(Javadoc).configureEach {
+	options.encoding = 'UTF-8'
+	options.addBooleanOption('Xdoclint:none', true)
+}
 
-			pom {
-				name = 'sejong-univ-auth'
-				description = 'Sejong University portal authentication for Spring Boot'
-				url = 'https://github.com/Cassiiopeia/pro-sejong-auth/'
-				licenses {
-					license {
-						name = 'MIT License'
-						url = 'https://opensource.org/licenses/MIT'
-					}
-				}
-				scm {
-					url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
-					connection = 'scm:git:https://github.com/Cassiiopeia/pro-sejong-auth.git'
-				}
+// 배포 (publication 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출)
+mavenPublishing {
+	// Maven Central: GRADLE_PROPERTIES Secret 에 자격증명이 있을 때만, Release 마다 자동 게시
+	if (project.findProperty('mavenCentralUsername')) {
+		publishToMavenCentral(true)
+	}
+	if (project.findProperty('signingInMemoryKey')) {
+		signAllPublications()
+	}
+	coordinates(project.group.toString(), project.name, project.version.toString())
+	pom {
+		name = 'sejong-univ-auth'
+		description = 'Sejong University login API for Java and Spring Boot (세종대 로그인 API)'
+		url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+		inceptionYear = '2025'
+		licenses {
+			license {
+				name = 'MIT License'
+				url = 'https://opensource.org/licenses/MIT'
+				distribution = 'repo'
 			}
 		}
+		developers {
+			developer {
+				id = 'Cassiiopeia'
+				name = 'SUH SAECHAN'
+				url = 'https://github.com/Cassiiopeia'
+			}
+		}
+		scm {
+			url = 'https://github.com/Cassiiopeia/pro-sejong-auth'
+			connection = 'scm:git:https://github.com/Cassiiopeia/pro-sejong-auth.git'
+			developerConnection = 'scm:git:ssh://git@github.com/Cassiiopeia/pro-sejong-auth.git'
+		}
 	}
+}
+
+publishing {
 	repositories {
-		mavenLocal()
+		// SUH Nexus: 기존 사용자(lab 서버 등) 호환용으로 유지
 		maven {
 			name = 'nexus'
 			url = uri(
-					version.endsWith('SNAPSHOT')
+					version.toString().endsWith('SNAPSHOT')
 							? "https://nexus.suhsaechan.kr/repository/maven-snapshots/"
 							: "https://nexus.suhsaechan.kr/repository/maven-releases/"
 			)
@@ -106,4 +127,3 @@ publishing {
 		}
 	}
 }
-
