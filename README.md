@@ -11,7 +11,7 @@
 English | [한국어](README.ko.md)
 
 <!-- AUTO-VERSION-SECTION: DO NOT EDIT MANUALLY -->
-## Latest Version : v1.2.12 (2026-10-22)
+## Latest Version : v1.2.15 (2026-10-22)
 
 [![Maven Central](https://img.shields.io/maven-central/v/kr.suhsaechan/sejong-univ-auth?label=Maven%20Central&color=C20F2F)](https://central.sonatype.com/artifact/kr.suhsaechan/sejong-univ-auth)
 [![PyPI](https://img.shields.io/pypi/v/pro-sejong-auth?label=PyPI&color=324D60)](https://pypi.org/project/pro-sejong-auth/)
