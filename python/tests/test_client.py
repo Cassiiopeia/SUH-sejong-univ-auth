@@ -1,0 +1,123 @@
+"""클라이언트 흐름: 입력 검증, 401, SIS 실패 무시, 타임아웃, 재시도 (네트워크 없음)"""
+
+import pytest
+from conftest import FakeSession, ok, status
+
+from sejong_auth import ErrorCode, SejongAuthClient, SejongAuthError
+
+LOGIN = "https://portal.sejong.ac.kr/jsp/login/login_action.jsp"
+CLASSIC_SSO = "https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp"
+CLASSIC_STATUS = "https://classic.sejong.ac.kr/classic/reading/status.do"
+SIS_SSO = "https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do"
+SIS_USER_INFO = "https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do"
+
+
+def client_with(responses_by_url_prefix, **options):
+    sessions = []
+
+    def session_factory():
+        session = FakeSession(responses_by_url_prefix)
+        sessions.append(session)
+        return session
+
+    return SejongAuthClient(_session_factory=session_factory, **options), sessions
+
+
+@pytest.mark.parametrize("student_id,password", [("", "pw"), ("21011234", ""), ("   ", "pw"), (None, "pw")])
+def test_empty_input_raises_invalid_input_without_network(student_id, password):
+    client, sessions = client_with({})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate(student_id, password)
+
+    assert error.value.code == ErrorCode.INVALID_INPUT
+    assert sessions == []
+
+
+def test_wrong_password_401_raises_authentication_failed():
+    client, _ = client_with({LOGIN: [ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [status(401)]})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_dhc("21011234", "wrong")
+
+    assert error.value.code == ErrorCode.AUTHENTICATION_FAILED
+
+
+def test_integrated_sis_failure_returns_dhc_with_null_contacts(dhc_html):
+    client, _ = client_with({
+        LOGIN: [ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [ok(dhc_html)],
+        SIS_SSO: [ok()], SIS_USER_INFO: [status(500)],
+    })
+
+    result = client.authenticate("21011234", "pw")
+
+    assert result.success is True
+    assert result.name == "홍길동"
+    assert result.major == "컴퓨터공학과"
+    assert (result.email, result.phone_number, result.english_name) == (None, None, None)
+
+
+def test_integrated_success_merges_dhc_and_sis(dhc_html, sis_json):
+    client, _ = client_with({
+        LOGIN: [ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [ok(dhc_html)],
+        SIS_SSO: [ok()], SIS_USER_INFO: [ok(sis_json)],
+    })
+
+    result = client.authenticate("21011234", "pw")
+
+    assert result.grade == "3"
+    assert result.classic_reading.certifications[2].area == "동·서양의 문학 (3권)"
+    assert result.phone_number == "010-1234-5678"
+    assert result.english_name == "Hong Gildong"
+
+
+def test_timeout_raises_connection_timeout():
+    client, _ = client_with({LOGIN: [TimeoutError("timed out")]}, max_retry=3)
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_dhc("21011234", "pw")
+
+    assert error.value.code == ErrorCode.CONNECTION_TIMEOUT
+
+
+def test_retry_exhausted_raises_connection_failed():
+    client, sessions = client_with({LOGIN: [status(500)]}, max_retry=3)
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_dhc("21011234", "pw")
+
+    assert error.value.code == ErrorCode.CONNECTION_FAILED
+    assert sessions[0].requested_urls.count(LOGIN) == 3
+
+
+def test_retry_then_success(dhc_html):
+    client, _ = client_with({LOGIN: [status(503), ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [ok(dhc_html)]})
+
+    assert client.authenticate_dhc("21011234", "pw").student_id == "21011234"
+
+
+def test_sis_result_has_empty_grade_and_status_and_raw_json(sis_json):
+    client, _ = client_with({LOGIN: [ok()], SIS_SSO: [ok()], SIS_USER_INFO: [ok(sis_json)]})
+
+    result = client.authenticate_sis("21011234", "pw", include_raw=True)
+
+    assert (result.grade, result.status) == ("", "")
+    assert result.email == "student@example.com"
+    assert result.raw_json == sis_json
+
+
+def test_dhc_raw_html_only_when_requested(dhc_html):
+    client, _ = client_with({LOGIN: [ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [ok(dhc_html)]})
+
+    assert client.authenticate_dhc("21011234", "pw").raw_html is None
+    assert client.authenticate_dhc("21011234", "pw", include_raw=True).raw_html == dhc_html
+
+
+def test_error_message_never_contains_password():
+    client, _ = client_with({LOGIN: [OSError("connection reset")]})
+
+    with pytest.raises(SejongAuthError) as error:
+        client.authenticate_dhc("21011234", "secret-password-value")
+
+    assert error.value.code == ErrorCode.CONNECTION_FAILED
+    assert "secret-password-value" not in str(error.value)

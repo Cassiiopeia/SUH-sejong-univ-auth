@@ -69,3 +69,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Python
+python/.venv/
+python/dist/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node/node_modules/
+node/dist/
+*.tgz
+
+# SDD workspace
+.superpowers/
