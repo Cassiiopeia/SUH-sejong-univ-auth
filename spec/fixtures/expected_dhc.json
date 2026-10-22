@@ -1,0 +1,88 @@
+{
+  "studentInfo": {
+    "major": "컴퓨터공학과",
+    "studentId": "21011234",
+    "name": "홍길동",
+    "grade": "3",
+    "status": "재학"
+  },
+  "classicReading": {
+    "certifications": [
+      {
+        "area": "서양의 역사와 사상 (4권)",
+        "requiredCount": "0권",
+        "certifiedCount": "0권"
+      },
+      {
+        "area": "동양의 역사와 사상 (2권)",
+        "requiredCount": "2권",
+        "certifiedCount": "2권"
+      },
+      {
+        "area": "동·서양의 문학 (3권)",
+        "requiredCount": "2권",
+        "certifiedCount": "2권"
+      },
+      {
+        "area": "과학 사상 (1권)",
+        "requiredCount": "1권",
+        "certifiedCount": "1권"
+      },
+      {
+        "area": "합계",
+        "requiredCount": "0권",
+        "certifiedCount": "5권"
+      }
+    ],
+    "examRecords": [
+      {
+        "semester": "2024년도 1학기",
+        "area": "동서양의 문학",
+        "bookTitle": "파우스트",
+        "examDate": "20240611",
+        "score": "80",
+        "passStatus": "합격"
+      },
+      {
+        "semester": "2024년도 1학기",
+        "area": "동양의 역사와 사상",
+        "bookTitle": "간디 자서전",
+        "examDate": "20240604",
+        "score": "95",
+        "passStatus": "합격"
+      },
+      {
+        "semester": "2024년도 1학기",
+        "area": "동서양의 문학",
+        "bookTitle": "걸리버여행기",
+        "examDate": "20240528",
+        "score": "85",
+        "passStatus": "합격"
+      },
+      {
+        "semester": "2023년도 2학기",
+        "area": "동서양의 문학",
+        "bookTitle": "걸리버여행기",
+        "examDate": "20231212",
+        "score": "50",
+        "passStatus": "불합격"
+      }
+    ],
+    "subjectSubstitutions": [],
+    "contestRecords": [
+      {
+        "semester": "2023년도 2학기",
+        "contestName": "제2회 집현전고전특강",
+        "area": "과학 사상",
+        "bookTitle": "코스모스"
+      },
+      {
+        "semester": "2023년도 1학기",
+        "contestName": "제4회 2018 고전PT대회",
+        "area": "동양의 역사와 사상",
+        "bookTitle": "북학의"
+      }
+    ],
+    "curriculumRecords": []
+  }
+}
