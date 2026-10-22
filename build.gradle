@@ -59,7 +59,8 @@ jar {
 
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
+		// 이름 maven: GitHub Packages 워크플로우가 publishMavenPublicationToGitHubPackagesRepository 호출
+		maven(MavenPublication) {
 			from components.java
 
 			pom {
@@ -91,6 +92,17 @@ publishing {
 			credentials {
 				username = project.findProperty('nexusUsername')
 				password = project.findProperty('nexusPassword')
+			}
+		}
+		// GitHub Packages: GITHUB_TOKEN 있는 워크플로우에서만 등록 (Nexus 배포의 publish 에 섞이지 않게)
+		if (System.getenv('GITHUB_TOKEN')) {
+			maven {
+				name = 'GitHubPackages'
+				url = uri("https://maven.pkg.github.com/${System.getenv('GITHUB_REPOSITORY')}")
+				credentials {
+					username = System.getenv('GITHUB_ACTOR')
+					password = System.getenv('GITHUB_TOKEN')
+				}
 			}
 		}
 	}
