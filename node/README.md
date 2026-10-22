@@ -17,6 +17,8 @@ try {
 } catch (error) {
   if (error instanceof SejongAuthError && error.code === ErrorCode.AUTHENTICATION_FAILED) {
     console.log('Wrong student ID or password');
+  } else if (error instanceof SejongAuthError && error.code === ErrorCode.ACCOUNT_LOCKED) {
+    console.log('Portal account locked: reset the password on the portal');
   }
 }
 ```
@@ -28,6 +30,10 @@ try {
 | `authenticateSis(id, pw, { includeRaw })` | student info + email, phone, English name |
 
 Settings: `new SejongAuthClient({ timeoutSeconds: 10, maxRetry: 3, sslVerification: true })`. Server-side only (Node 18+), not for browsers.
+
+Error codes (`error.code`): `AUTHENTICATION_FAILED`, `ACCOUNT_LOCKED`, `ACCOUNT_UNAVAILABLE`, `INVALID_INPUT`, `CONNECTION_FAILED`, `CONNECTION_TIMEOUT`, `SESSION_ERROR`, `DATA_FETCH_FAILED`, `PARSE_ERROR`, `SSL_CONFIGURATION_ERROR`. Branch on the code, not the message.
+
+> **Account lock.** The Sejong portal locks an account after repeated wrong passwords (about 5). Only a password reset at <https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp> unlocks it. The library never retries a rejected login. If anyone can type a student ID into your service, limit failed attempts per student ID.
 
 Not an official Sejong University product.
 

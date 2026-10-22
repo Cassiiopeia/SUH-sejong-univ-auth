@@ -6,7 +6,7 @@ This library handles Sejong University portal passwords, so security reports are
 
 ## Supported versions
 
-Only the latest released version (see the Nexus badge in the [README](README.md)) receives security fixes.
+Only the latest released version (see the Maven Central, PyPI and npm badges in the [README](README.md)) receives security fixes.
 
 ## Reporting a vulnerability
 
