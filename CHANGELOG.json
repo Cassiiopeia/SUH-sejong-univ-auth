@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "lastUpdated": "2026-10-22T05:27:39Z",
-    "currentVersion": "1.2.17",
+    "lastUpdated": "2026-10-24T11:39:54Z",
+    "currentVersion": "1.2.21",
     "projectType": "spring",
-    "totalReleases": 14,
+    "totalReleases": 15,
     "projectTypes": [
       "spring",
       "python",
@@ -11,6 +11,51 @@
     ]
   },
   "releases": [
+    {
+      "version": "1.2.21",
+      "project_type": "spring",
+      "project_types": [
+        "spring",
+        "python",
+        "node"
+      ],
+      "date": "2026-10-24",
+      "pr_number": 33,
+      "raw_summary": "## Summary by CodeRabbit\n\n## 릴리스 노트\n\n* **새 기능**\n  * 통합 인증이 포털에 한 번만 로그인\n  * Java를 Spring 없이 쓸 때 Spring Boot를 받지 않음\n  * 실제 포털 정기 점검과 실패 시 이슈 자동 생성\n\n* **버그 수정**\n  * Java: 앱이 먼저 HTTPS를 쓰면 인증 실패하던 문제\n  * TLS 연결 실패 시 원인과 해결 방법 안내\n\n* **개선**\n  * Java: 연결 재사용으로 인증마다 새 연결 풀 생성 안 함\n  * 세 언어 공통 값을 한 곳에서 관리하고 테스트로 확인\n\n* **문서**\n  * README에 실측 응답 시간과 정기 점검 배지 추가\n  * Spring 없이 쓰는 Java 예시와 TLS 안내 보강\n  * PyPI·npm 페이지에 라이브 데모 링크 추가",
+      "parsed_changes": {
+        "새_기능": {
+          "title": "새 기능",
+          "items": [
+            "통합 인증이 포털에 한 번만 로그인",
+            "Java를 Spring 없이 쓸 때 Spring Boot를 받지 않음",
+            "실제 포털 정기 점검과 실패 시 이슈 자동 생성"
+          ]
+        },
+        "버그_수정": {
+          "title": "버그 수정",
+          "items": [
+            "Java: 앱이 먼저 HTTPS를 쓰면 인증 실패하던 문제",
+            "TLS 연결 실패 시 원인과 해결 방법 안내"
+          ]
+        },
+        "개선": {
+          "title": "개선",
+          "items": [
+            "Java: 연결 재사용으로 인증마다 새 연결 풀 생성 안 함",
+            "세 언어 공통 값을 한 곳에서 관리하고 테스트로 확인"
+          ]
+        },
+        "문서": {
+          "title": "문서",
+          "items": [
+            "README에 실측 응답 시간과 정기 점검 배지 추가",
+            "Spring 없이 쓰는 Java 예시와 TLS 안내 보강",
+            "PyPI·npm 페이지에 라이브 데모 링크 추가"
+          ]
+        }
+      },
+      "parse_method": "markdown"
+    },
     {
       "version": "1.2.17",
       "project_type": "spring",
