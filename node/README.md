@@ -4,6 +4,8 @@
 
 Verify a Sejong University student with a student ID and password through the portal SSO, and get their major, year, classic-reading certification and contact info. Zero runtime dependencies, TypeScript types included, ESM and CommonJS.
 
+**[▶ Try the live demo](https://cassiiopeia.github.io/pro-sejong-auth/#demo)** · one portal login per call (about 0.7 s) · same results as the Java and Python packages · stops at the first wrong password · checked against the live portal every day
+
 ```bash
 npm install pro-sejong-auth
 ```

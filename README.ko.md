@@ -12,6 +12,7 @@
 [![PyPI](https://img.shields.io/pypi/v/pro-sejong-auth?label=PyPI&color=324D60)](https://pypi.org/project/pro-sejong-auth/)
 [![npm](https://img.shields.io/npm/v/pro-sejong-auth?label=npm&color=324D60)](https://www.npmjs.com/package/pro-sejong-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
+[![Live portal check](https://github.com/Cassiiopeia/pro-sejong-auth/actions/workflows/PROJECT-SEJONG-LIVE-CHECK.yml/badge.svg)](https://github.com/Cassiiopeia/pro-sejong-auth/actions/workflows/PROJECT-SEJONG-LIVE-CHECK.yml)
 
 ### [▶ 브라우저에서 바로 체험하기](https://cassiiopeia.github.io/pro-sejong-auth/#demo)
 
@@ -25,6 +26,8 @@
 | Java / Spring Boot | Python | Node.js |
 |---|---|---|
 | `implementation "kr.suhsaechan:sejong-univ-auth:<버전>"` | `pip install pro-sejong-auth` | `npm install pro-sejong-auth` |
+
+**호출 한 번, 포털 로그인 한 번** (약 0.6~0.8초) · **세 언어 모두 같은 결과 객체** · Python·Node는 **외부 의존성 0개** · **비밀번호가 틀리면 바로 멈춰** 계정 잠금을 막음 · **매일 실제 포털로 점검**
 
 <p align="center">
   <a href="https://cassiiopeia.github.io/pro-sejong-auth/#demo">
@@ -43,7 +46,9 @@
 | 포털의 오래된 암호화 방식과 방화벽을 직접 통과 | 언어별로 처리됨 ([spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md)) |
 | HTML 표(DHC)와 JSON API(SIS)를 직접 파싱 | 정리된 결과 객체 |
 | 200 응답 속 포털 판정(비밀번호 오류, 계정 잠금)을 직접 판별 | `AUTHENTICATION_FAILED` / `ACCOUNT_LOCKED`로 즉시 실패 |
-| 포털이 바뀔 때마다 다시 수정 | 여기서 유지보수, 세 언어 모두 실제 포털로 검증 |
+| 학생 정보 따로, 연락처 따로 두 번 로그인 | 호출 한 번에 포털 로그인 한 번 |
+| 포털이 바뀐 걸 사용자 불만으로 알게 됨 | 매일 워크플로우가 세 언어로 실제 포털에 로그인하고, 실패하면 이슈를 엶 |
+| 세 언어 구현을 손으로 맞춤 | 공통 값은 [spec/contract.json](spec/contract.json) 한 곳, 어긋나면 언어별 테스트가 실패 |
 
 ## 목차
 
@@ -286,6 +291,8 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 
 버그 제보, 포털 변경 대응, 문서 개선 모두 환영합니다. 포털이 바뀌면 세 언어를 한 PR에서 같이 고칩니다. [CONTRIBUTING.ko.md](CONTRIBUTING.ko.md)를 보세요.
 보안 문제는 [SECURITY.md](SECURITY.md)의 비공개 신고를 이용해 주세요.
+
+이 라이브러리로 시간을 아꼈다면 ⭐ 하나가 다른 세종대 개발자들이 찾는 데 도움이 됩니다.
 
 ## 라이선스
 

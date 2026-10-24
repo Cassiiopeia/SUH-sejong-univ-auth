@@ -17,6 +17,7 @@ English | [한국어](README.ko.md)
 [![PyPI](https://img.shields.io/pypi/v/pro-sejong-auth?label=PyPI&color=324D60)](https://pypi.org/project/pro-sejong-auth/)
 [![npm](https://img.shields.io/npm/v/pro-sejong-auth?label=npm&color=324D60)](https://www.npmjs.com/package/pro-sejong-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-324D60)](LICENSE)
+[![Live portal check](https://github.com/Cassiiopeia/pro-sejong-auth/actions/workflows/PROJECT-SEJONG-LIVE-CHECK.yml/badge.svg)](https://github.com/Cassiiopeia/pro-sejong-auth/actions/workflows/PROJECT-SEJONG-LIVE-CHECK.yml)
 
 ### [▶ Try it live in your browser](https://cassiiopeia.github.io/pro-sejong-auth/#demo)
 
@@ -31,6 +32,8 @@ session cookies, legacy TLS and HTML/JSON parsing. Same features, same results i
 | Java / Spring Boot | Python | Node.js |
 |---|---|---|
 | `implementation "kr.suhsaechan:sejong-univ-auth:<version>"` | `pip install pro-sejong-auth` | `npm install pro-sejong-auth` |
+
+**One call, one portal login** (about 0.6 to 0.8 s) · **same typed result in all three languages** · **zero runtime dependencies** for Python and Node · **stops at the first wrong password** so accounts don't get locked · **checked against the live portal every day**
 
 <p align="center">
   <a href="https://cassiiopeia.github.io/pro-sejong-auth/#demo">
@@ -49,7 +52,9 @@ session cookies, legacy TLS and HTML/JSON parsing. Same features, same results i
 | Get past the portal's legacy TLS cipher and firewall | Handled per language (see [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md)) |
 | Parse HTML tables (DHC) and a JSON API (SIS) | Typed results |
 | Read the portal's verdict from a 200 response (wrong password, locked account) | Fails fast with `AUTHENTICATION_FAILED` / `ACCOUNT_LOCKED` |
-| Fix it again when the portal changes | Maintained here, all three languages verified against the live portal |
+| Log in once for student info, again for contacts | One portal login per call for both |
+| Find out the portal changed when your users complain | A daily workflow signs in to the live portal in all three languages and opens an issue when it fails |
+| Keep three implementations in sync | Shared values live in [spec/contract.json](spec/contract.json); each language's tests fail if they drift |
 
 ## Contents
 
@@ -294,6 +299,8 @@ Older Java versions were published to `https://nexus.suhsaechan.kr/repository/ma
 
 Bug reports, portal-change fixes and docs improvements are all welcome. A portal change is fixed in all three languages in one PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 Report security issues privately as described in [SECURITY.md](SECURITY.md).
+
+If this library saved you time, a ⭐ helps other Sejong developers find it.
 
 ## License
 

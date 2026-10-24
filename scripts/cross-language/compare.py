@@ -4,10 +4,13 @@
   요약 폴더: {java,python,node}.json, --wrong-password 면 {언어}-wrong.json·{언어}-sis-wrong.json 도 확인
 """
 
+import hashlib
 import json
 import sys
 
 LANGUAGES = ("java", "python", "node")
+# 값이 null 인 필드의 해시 (세 언어 공통: 정렬 JSON "null" > SHA-256 앞 16자)
+NULL_FIELD_HASH = hashlib.sha256(b"null").hexdigest()[:16]
 
 
 def load_summary(summary_directory: str, name: str) -> dict:
@@ -16,7 +19,7 @@ def load_summary(summary_directory: str, name: str) -> dict:
 
 
 def has_success_mismatch(summary_directory: str) -> bool:
-    """정상 인증: 세 언어 모두 성공 + 필드별 해시 일치"""
+    """정상 인증: 세 언어 모두 성공 + 필드 있음 + null 필드 없음(SIS 실패 감지) + 필드별 해시 일치"""
     results = {language: load_summary(summary_directory, language) for language in LANGUAGES}
     is_failed = False
     for language, summary in results.items():
@@ -25,9 +28,15 @@ def has_success_mismatch(summary_directory: str) -> bool:
             is_failed = True
     if is_failed:
         return True
+    if not results["java"].get("fields"):
+        print("java: empty result")
+        return True
     for field in results["java"]["fields"]:
         hashes = {language: results[language]["fields"].get(field) for language in LANGUAGES}
-        status = "same" if len(set(hashes.values())) == 1 else "DIFFERENT"
+        if NULL_FIELD_HASH in hashes.values():
+            status = "NULL"
+        else:
+            status = "same" if len(set(hashes.values())) == 1 else "DIFFERENT"
         print(f"{field:15} {status}")
         is_failed |= status != "same"
     return is_failed
