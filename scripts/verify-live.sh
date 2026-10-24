@@ -2,6 +2,7 @@
 # 세 언어(Java, Python, Node) 실제 포털 통합 인증 결과 교차 검증
 #   필드별 해시만 비교 (개인정보 출력 없음), 틀린 비밀번호는 세 언어 모두 AUTHENTICATION_FAILED 여야 함
 #   사용: SEJONG_TEST_STUDENT_ID=... SEJONG_TEST_PASSWORD=... scripts/verify-live.sh
+#   틀린 비밀번호 없이 정상 인증만: scripts/live-check.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -9,7 +10,7 @@ cd "$(dirname "$0")/.."
 : "${SEJONG_TEST_PASSWORD:?SEJONG_TEST_PASSWORD not set}"
 
 # 1. 언어별 결과 수집
-./gradlew -q :sejong-univ-auth:test --tests '*CrossLanguageSummaryTest' --rerun-tasks
+SEJONG_TEST_INCLUDE_WRONG_PASSWORD=true ./gradlew -q :sejong-univ-auth:test --tests '*CrossLanguageSummaryTest' --rerun-tasks
 (cd node && npm run --silent build)
 OUT=java/build/cross-language
 # 언어마다 정상 > 틀림 > SIS 틀림 순서 (포털 잠금 방지: 연속 실패 최대 2회, 정상 로그인이 사이에 끼도록)
@@ -25,27 +26,5 @@ try { await authenticateSis(process.env.SEJONG_TEST_STUDENT_ID, process.env.SEJO
 catch (error) { console.log(JSON.stringify({ error: error.code })); }" > "$OUT/node-sis-wrong.json"
 
 # 2. 비교 (다르면 다른 필드 이름만 출력 후 exit 1)
-python3 - "$OUT" <<'PY'
-import json, sys
-out = sys.argv[1]
-load = lambda name: json.load(open(f"{out}/{name}.json"))
-results = {language: load(language) for language in ("java", "python", "node")}
-wrong = {language: load(f"{language}-wrong") for language in ("java", "python", "node")}
-wrong.update({f"{language} sis": load(f"{language}-sis-wrong") for language in ("java", "python", "node")})
-is_failed = False
-for language, summary in results.items():
-    if "error" in summary:
-        print(f"{language}: authentication error {summary['error']}"); is_failed = True
-if not is_failed:
-    for field in results["java"]["fields"]:
-        hashes = {language: results[language]["fields"].get(field) for language in results}
-        status = "same" if len(set(hashes.values())) == 1 else "DIFFERENT"
-        print(f"{field:15} {status}")
-        is_failed |= status != "same"
-for language, summary in wrong.items():
-    is_expected = summary.get("error") == "AUTHENTICATION_FAILED"
-    print(f"wrong password {language:10} {'AUTHENTICATION_FAILED' if is_expected else summary}")
-    is_failed |= not is_expected
-sys.exit(1 if is_failed else 0)
-PY
+python3 scripts/cross-language/compare.py "$OUT" --wrong-password
 echo "cross-language verification passed"

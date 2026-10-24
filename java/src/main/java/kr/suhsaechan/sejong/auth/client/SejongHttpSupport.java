@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import kr.suhsaechan.sejong.auth.config.SejongAuthProperties;
@@ -26,7 +27,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * 세종 포털 HTTP 공통: 클라이언트 생성, 포털 로그인, 재시도 실행
+ * 세종 포털 HTTP 공통: 공용 클라이언트 생성, 세션 생성, 포털 로그인, 재시도 실행, 연결 오류 변환
  * DHC·SIS 클라이언트가 공유 (로그인 폼·쿠키·TLS 설정 단일 원본)
  */
 @Slf4j
@@ -36,12 +37,12 @@ final class SejongHttpSupport {
   private static final String PORTAL_HOST = "portal.sejong.ac.kr";
   static final String PORTAL_REFERER = "https://portal.sejong.ac.kr";
   // 포털이 요구하는 초기 쿠키 (없으면 로그인 폼 거부)
-  private static final String DEFAULT_COOKIE = "chknos=false";
+  static final String PORTAL_DEFAULT_COOKIE = "chknos=false";
 
   // 포털 로그인 판정값: login_action.jsp 응답의 var result = '...' (포털 화면 분기와 같은 대응)
   private static final Pattern PORTAL_LOGIN_RESULT = Pattern.compile("var\\s+result\\s*=\\s*'([^']*)'");
-  private static final String PORTAL_LOGIN_ACCEPTED = "OK";
-  private static final Map<String, SejongAuthErrorCode> PORTAL_LOGIN_ERROR_CODE_BY_RESULT = Map.of(
+  static final String PORTAL_LOGIN_ACCEPTED = "OK";
+  static final Map<String, SejongAuthErrorCode> PORTAL_LOGIN_ERROR_CODE_BY_RESULT = Map.of(
       "erridpwd", SejongAuthErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
       "Error", SejongAuthErrorCode.AUTHENTICATION_FAILED, // 아이디·비밀번호 불일치
       "pwdNeedChg", SejongAuthErrorCode.ACCOUNT_LOCKED, // 반복 실패로 잠김, 비밀번호 재설정 필요
@@ -49,26 +50,29 @@ final class SejongHttpSupport {
       "invalid", SejongAuthErrorCode.ACCOUNT_UNAVAILABLE); // 관리자 요청으로 로그인 불가
   private static final int RESULT_LOG_MAX_LENGTH = 20;
 
+  // TLS_RSA_* 재허용이 JSSE 초기화보다 늦었을 때 안내 (SejongTlsSupport)
+  private static final String LATE_TLS_ADJUSTMENT_HINT = "TLS handshake with the portal failed. "
+      + "This JVM started TLS before TLS_RSA_* was re-enabled: call SejongTlsSupport.ensureLegacyCipherEnabled() "
+      + "at startup before any HTTPS call (Spring Boot does this automatically)";
+
   private SejongHttpSupport() {
   }
 
   /**
-   * OkHttpClient 생성: 레거시 cipher 보장 > 타임아웃 > 쿠키 저장 > (설정 시) SSL 검증 해제
+   * 공용 OkHttpClient 생성 (연결 풀 공유): 레거시 cipher 보장 > 타임아웃 > (설정 시) SSL 검증 해제
    */
-  static OkHttpClient buildClient(SejongAuthProperties properties) {
+  static OkHttpClient buildBaseClient(SejongAuthProperties properties) {
     try {
-      // 세종포털은 레거시 cipher(TLS_RSA_WITH_AES_256_CBC_SHA)만 지원 → JSSE 초기화 전에 재허용 보장
       SejongTlsSupport.ensureLegacyCipherEnabled();
+      if (SejongTlsSupport.hasAdjustedDisabledAlgorithms()) {
+        log.debug("[sejong tls] TLS_RSA_* removed from jdk.tls.disabledAlgorithms for the Sejong portal");
+      }
 
       int timeoutSeconds = properties.getTimeoutSeconds();
-      CookieManager cookieManager = new CookieManager();
-      cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-
       OkHttpClient.Builder builder = new OkHttpClient.Builder()
           .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
           .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
-          .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
-          .cookieJar(new JavaNetCookieJar(cookieManager));
+          .writeTimeout(timeoutSeconds, TimeUnit.SECONDS);
 
       if (!properties.isSslVerification()) {
         X509TrustManager trustAllManager = createTrustAllManager();
@@ -82,6 +86,35 @@ final class SejongHttpSupport {
       return builder.build();
     } catch (Exception e) {
       throw new SejongAuthException(SejongAuthErrorCode.SSL_CONFIGURATION_ERROR, e);
+    }
+  }
+
+  /**
+   * 인증 1건용 세션 클라이언트: 공용 클라이언트 + 새 쿠키 저장소
+   */
+  static OkHttpClient newSessionClient(OkHttpClient baseClient) {
+    CookieManager cookieManager = new CookieManager();
+    cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+    return baseClient.newBuilder().cookieJar(new JavaNetCookieJar(cookieManager)).build();
+  }
+
+  /**
+   * 포털 단계 실행: 연결 오류 > SejongAuthException (TLS 실패는 원인 안내, 그 외 CONNECTION_FAILED)
+   */
+  static <T> T runPortalStep(String stepName, PortalStep<T> step) {
+    try {
+      return step.run();
+    } catch (SejongAuthException e) {
+      throw e;
+    } catch (SSLHandshakeException e) {
+      log.error("[sejong auth] {} TLS handshake failed : {}", stepName, e.getMessage());
+      if (SejongTlsSupport.hasAdjustedDisabledAlgorithms()) {
+        throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, LATE_TLS_ADJUSTMENT_HINT);
+      }
+      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
+    } catch (Exception e) {
+      log.error("[sejong auth] {} failed : {}", stepName, e.getMessage());
+      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     }
   }
 
@@ -103,7 +136,7 @@ final class SejongHttpSupport {
         .post(formBody)
         .header("Host", PORTAL_HOST)
         .header("Referer", PORTAL_REFERER)
-        .header("Cookie", DEFAULT_COOKIE)
+        .header("Cookie", PORTAL_DEFAULT_COOKIE)
         .build();
 
     log.debug("[sejong auth] portal login request : rtUrl={}, studentId={}", returnUrl, studentId);
@@ -171,5 +204,13 @@ final class SejongHttpSupport {
         return new X509Certificate[0];
       }
     };
+  }
+
+  /**
+   * IOException 을 던질 수 있는 포털 단계
+   */
+  @FunctionalInterface
+  interface PortalStep<T> {
+    T run() throws IOException;
   }
 }

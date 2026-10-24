@@ -16,7 +16,7 @@ export const ErrorCode = {
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 // 코드별 기본 메시지 (Java 메시지와 같은 영어 문구)
-const DEFAULT_MESSAGE_BY_CODE: Record<ErrorCode, string> = {
+export const DEFAULT_MESSAGE_BY_CODE: Record<ErrorCode, string> = {
   INVALID_INPUT: 'Invalid input.',
   AUTHENTICATION_FAILED: 'Sejong University portal authentication failed. Check the student ID and password.',
   CONNECTION_FAILED: 'Cannot connect to the Sejong University portal.',

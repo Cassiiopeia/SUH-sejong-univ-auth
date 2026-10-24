@@ -47,13 +47,15 @@ class SejongAuthClient:
         self._session_factory = _session_factory or self._create_session
 
     def authenticate(self, student_id: str, password: str) -> SejongAuthResult:
-        """통합 인증: DHC 학생 정보·고전독서 + SIS 연락처 (SIS 실패는 무시하고 None)"""
+        """통합 인증: 포털 로그인 1회 > DHC 학생 정보·고전독서 > 같은 세션으로 SIS 연락처 (SIS 실패는 무시하고 None)"""
         self._validate_credentials(student_id, password)
-        dhc_result = self._fetch_dhc(student_id, password, should_include_raw_html=False)
+        session = self._session_factory()
+        self._login(session, student_id, password, CLASSIC_RETURN_URL)
+        dhc_result = self._fetch_dhc_with_session(session, should_include_raw_html=False)
 
         email = phone_number = english_name = None
         try:
-            sis_user_info = parse_sis_user_info(self._fetch_sis_json(student_id, password))
+            sis_user_info = parse_sis_user_info(self._fetch_sis_json_with_session(session))
             email, phone_number, english_name = sis_user_info.email, sis_user_info.phone_number, sis_user_info.english_name
         except Exception:  # SIS 는 연락처 보조 조회 > 어떤 실패든 통합 결과를 막지 않음 (Java 와 동일)
             pass
@@ -82,9 +84,13 @@ class SejongAuthClient:
         )
 
     def _fetch_dhc(self, student_id: str, password: str, should_include_raw_html: bool) -> SejongDhcAuthResult:
-        """포털 로그인 > classic SSO > 고전독서 페이지 > 학생 정보·고전독서 파싱"""
+        """포털 로그인 > DHC 조회"""
         session = self._session_factory()
         self._login(session, student_id, password, CLASSIC_RETURN_URL)
+        return self._fetch_dhc_with_session(session, should_include_raw_html)
+
+    def _fetch_dhc_with_session(self, session, should_include_raw_html: bool) -> SejongDhcAuthResult:
+        """로그인된 세션 > classic SSO > 고전독서 페이지 > 학생 정보·고전독서 파싱"""
         self._expect_session_step(self._call(session, "GET", CLASSIC_SSO_URL), "SSO redirect failed")
         html = self._expect_data(self._call(session, "GET", CLASSIC_STATUS_URL), "Classic reading page request failed")
         student_info = parse_student_info(html)
@@ -95,9 +101,13 @@ class SejongAuthClient:
         )
 
     def _fetch_sis_json(self, student_id: str, password: str) -> str:
-        """포털 로그인 > sjpt SSO > initUserInfo JSON"""
+        """포털 로그인 (rtUrl sjpt) > SIS 조회"""
         session = self._session_factory()
         self._login(session, student_id, password, SIS_RETURN_URL)
+        return self._fetch_sis_json_with_session(session)
+
+    def _fetch_sis_json_with_session(self, session) -> str:
+        """로그인된 세션 > sjpt SSO > initUserInfo JSON"""
         self._expect_session_step(
             self._call(session, "GET", SIS_SSO_URL, headers={"Referer": PORTAL_REFERER}), "SIS SSO page request failed")
         response = self._call(session, "POST", f"{SIS_USER_INFO_URL}?addParam={SIS_EMPTY_ADD_PARAM}", data=b"{}", headers={

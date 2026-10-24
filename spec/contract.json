@@ -1,0 +1,42 @@
+{
+  "_comment": "Single source for values shared by Java, Python and Node. Each language has a test that compares its constants with this file. Change the value here first, then in every language.",
+  "portal": {
+    "loginUrl": "https://portal.sejong.ac.kr/jsp/login/login_action.jsp",
+    "referer": "https://portal.sejong.ac.kr",
+    "defaultCookie": "chknos=false",
+    "loginAcceptedResult": "OK",
+    "loginErrorCodeByResult": {
+      "erridpwd": "AUTHENTICATION_FAILED",
+      "Error": "AUTHENTICATION_FAILED",
+      "pwdNeedChg": "ACCOUNT_LOCKED",
+      "invalidDt": "ACCOUNT_UNAVAILABLE",
+      "invalid": "ACCOUNT_UNAVAILABLE"
+    }
+  },
+  "classic": {
+    "returnUrl": "classic.sejong.ac.kr",
+    "ssoUrl": "https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do",
+    "statusUrl": "https://classic.sejong.ac.kr/classic/reading/status.do"
+  },
+  "sis": {
+    "returnUrl": "sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=",
+    "ssoUrl": "https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=",
+    "userInfoUrl": "https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do",
+    "origin": "https://sjpt.sejong.ac.kr",
+    "submitErrorKey": "_SUBMIT_ERROR_",
+    "loggedOutErrorType": "LOGOUT"
+  },
+  "opensslCiphers": "DEFAULT:AES256-SHA:@SECLEVEL=1",
+  "errorMessageByCode": {
+    "INVALID_INPUT": "Invalid input.",
+    "AUTHENTICATION_FAILED": "Sejong University portal authentication failed. Check the student ID and password.",
+    "CONNECTION_FAILED": "Cannot connect to the Sejong University portal.",
+    "CONNECTION_TIMEOUT": "Connection to the Sejong University portal timed out.",
+    "SESSION_ERROR": "An error occurred while handling the portal session.",
+    "DATA_FETCH_FAILED": "Failed to fetch student information.",
+    "PARSE_ERROR": "Failed to parse student information.",
+    "SSL_CONFIGURATION_ERROR": "Failed to configure SSL.",
+    "ACCOUNT_LOCKED": "The portal account is locked after too many wrong passwords. Reset the password at https://portal.sejong.ac.kr/jsp/inquiry/pwinquiry.jsp",
+    "ACCOUNT_UNAVAILABLE": "The portal account cannot sign in (use period ended or blocked by the administrator)."
+  }
+}

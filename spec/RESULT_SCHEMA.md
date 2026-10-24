@@ -28,7 +28,7 @@ Input check first: blank student id or password raises `INVALID_INPUT` before an
 | englishName | english_name | string or null | same |
 | authenticatedAt | authenticated_at | datetime (local time) | |
 
-A failing DHC step fails the whole call. A failing SIS step never fails the integrated call.
+The integrated call logs in to the portal once and uses that session for DHC and SIS. A failing DHC step fails the whole call. A failing SIS step never fails the integrated call.
 
 ## DHC result
 

@@ -10,19 +10,26 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * 세종대학교 포털 HTTP 클라이언트
- * - 로그인, SSO 리다이렉트, 페이지 요청 담당
+ * 세종대학교 포털 HTTP 클라이언트: 포털 로그인(세션 생성), 고전독서 SSO, 고전독서인증현황 페이지 조회
+ * 공용 OkHttpClient 1개 (연결 풀 공유) + 인증마다 새 쿠키 저장소
  */
 @Slf4j
 public class SejongPortalClient {
 
   // 포털 로그인 후 SSO 대상: 고전독서 사이트
-  private static final String CLASSIC_RETURN_URL = "classic.sejong.ac.kr";
+  static final String CLASSIC_RETURN_URL = "classic.sejong.ac.kr";
 
   private final SejongAuthProperties properties;
+  private final OkHttpClient baseClient;
 
   public SejongPortalClient(SejongAuthProperties properties) {
+    this(properties, SejongHttpSupport.buildBaseClient(properties));
+  }
+
+  // 테스트: 가짜 응답 클라이언트 주입
+  SejongPortalClient(SejongAuthProperties properties, OkHttpClient baseClient) {
     this.properties = properties;
+    this.baseClient = baseClient;
   }
 
   /**
@@ -34,27 +41,32 @@ public class SejongPortalClient {
    * @throws SejongAuthException 인증 실패 시
    */
   public String authenticateAndFetchHtml(String studentId, String password) {
-    try {
-      OkHttpClient client = SejongHttpSupport.buildClient(properties);
+    return fetchClassicStatusHtml(openSession(studentId, password));
+  }
 
-      // 1. 포털 로그인
-      SejongHttpSupport.loginToPortal(client, properties, studentId, password, CLASSIC_RETURN_URL);
+  /**
+   * 포털 로그인 > 로그인된 세션 (rtUrl 고전독서, 같은 세션으로 학사정보시스템 SSO 도 가능)
+   *
+   * @throws SejongAuthException 틀린 비밀번호·잠금·연결 실패
+   */
+  public SejongPortalSession openSession(String studentId, String password) {
+    return SejongHttpSupport.runPortalStep("portal login", () -> {
+      OkHttpClient sessionClient = SejongHttpSupport.newSessionClient(baseClient);
+      SejongHttpSupport.loginToPortal(sessionClient, properties, studentId, password, CLASSIC_RETURN_URL);
+      return new SejongPortalSession(sessionClient);
+    });
+  }
 
-      // 2. SSO 리다이렉트
-      handleSsoRedirect(client);
-
-      // 3. 고전독서인증현황 페이지 HTML 반환
-      return fetchClassicStatusPage(client);
-
-    } catch (SejongAuthException e) {
-      throw e;
-    } catch (IOException e) {
-      log.error("[sejong auth] portal authentication IOException : {}", e.getMessage());
-      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
-    } catch (Exception e) {
-      log.error("[sejong auth] portal authentication error : {}", e.getMessage());
-      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
-    }
+  /**
+   * 로그인된 세션 > 고전독서 SSO > 고전독서인증현황 페이지 HTML
+   *
+   * @throws SejongAuthException 세션 만료(401)·조회 실패·연결 실패
+   */
+  public String fetchClassicStatusHtml(SejongPortalSession session) {
+    return SejongHttpSupport.runPortalStep("classic reading lookup", () -> {
+      handleSsoRedirect(session.sessionClient());
+      return fetchClassicStatusPage(session.sessionClient());
+    });
   }
 
   /**

@@ -43,10 +43,13 @@ test('integratedSisFailureReturnsDhcWithNullContacts', async () => {
 });
 
 test('integratedSuccessMergesDhcAndSis', async () => {
-  const { client } = clientWith({
+  const { client, sessions } = clientWith({
     [LOGIN]: [ok()], [CLASSIC_SSO]: [ok()], [CLASSIC_STATUS]: [ok(dhcHtml)], [SIS_SSO]: [ok()], [SIS_USER_INFO]: [ok(sisJson)],
   });
   const result = await client.authenticate('21011234', 'pw');
+  // 포털 로그인 1회, 세션 1개로 DHC·SIS 모두 조회
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0].requestedUrls.filter((url) => url === LOGIN).length, 1);
   assert.equal(result.grade, '3');
   assert.equal(result.classicReading.certifications[2].area, '동·서양의 문학 (3권)');
   assert.equal(result.phoneNumber, '010-1234-5678');

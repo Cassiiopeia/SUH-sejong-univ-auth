@@ -58,13 +58,16 @@ def test_integrated_sis_failure_returns_dhc_with_null_contacts(dhc_html):
 
 
 def test_integrated_success_merges_dhc_and_sis(dhc_html, sis_json):
-    client, _ = client_with({
+    client, sessions = client_with({
         LOGIN: [ok()], CLASSIC_SSO: [ok()], CLASSIC_STATUS: [ok(dhc_html)],
         SIS_SSO: [ok()], SIS_USER_INFO: [ok(sis_json)],
     })
 
     result = client.authenticate("21011234", "pw")
 
+    # 포털 로그인 1회, 세션 1개로 DHC·SIS 모두 조회
+    assert len(sessions) == 1
+    assert sessions[0].requested_urls.count(LOGIN) == 1
     assert result.grade == "3"
     assert result.classic_reading.certifications[2].area == "동·서양의 문학 (3권)"
     assert result.phone_number == "010-1234-5678"

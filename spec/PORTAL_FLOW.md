@@ -11,7 +11,7 @@ Reference implementation: `java/src/main/java/kr/suhsaechan/sejong/auth/client/`
 | TLS | TLSv1.2, cipher `AES256-SHA` (`TLS_RSA_WITH_AES_256_CBC_SHA`) must be allowed | The portal offers only this cipher. Recent JDK / OpenSSL defaults disable it |
 | Python | `ssl` context ciphers `DEFAULT:AES256-SHA:@SECLEVEL=1` | Verified with Python 3.14 / OpenSSL 3.6 |
 | Node | `https.Agent({ ciphers: 'DEFAULT:AES256-SHA:@SECLEVEL=1' })` | Verified with Node 26 / OpenSSL 3.6 (keep SECLEVEL 1: level 0 would also accept weak certificate keys) |
-| Java | remove `TLS_RSA_*` from `jdk.tls.disabledAlgorithms` (JVM-wide, see `SejongTlsSupport`) | |
+| Java | remove `TLS_RSA_*` from `jdk.tls.disabledAlgorithms` (JVM-wide, see `SejongTlsSupport`) | JSSE reads the property once, at the JVM's first TLS use: later changes have no effect. Spring Boot: `SejongTlsEnvironmentPostProcessor` at startup. Plain Java: call `SejongTlsSupport.ensureLegacyCipherEnabled()` first in `main()`. Too late: `CONNECTION_FAILED` with that hint |
 | User-Agent | Always send a non-empty, non-default User-Agent: `pro-sejong-auth-<language>/<version>` | Without it classic.sejong.ac.kr returns 404 after SSO, and sjpt.sejong.ac.kr's firewall blocks default library agents (for example `Python-urllib`) with an "Alert!!!" HTML page |
 | Cookies | One cookie jar per authentication call, honoring `Domain=.sejong.ac.kr` | `ssotoken` is set for `.sejong.ac.kr` and must reach classic / sjpt |
 | Redirects | Follow 301/302/303/307 automatically | SSO answers 303 |
@@ -33,6 +33,8 @@ mainLogin=N&rtUrl=<return url>&id=<student id>&password=<password>
 
 - DHC `rtUrl`: `classic.sejong.ac.kr`
 - SIS `rtUrl`: `sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=`
+- Integrated call: log in once with the DHC `rtUrl`, then run Step 2a and Step 2b with the same cookie jar (SIS SSO works after a DHC login, verified 2026-10-24)
+- URLs, verdict values and error messages shared by all languages: `contract.json`
 - The 200 response is a small HTML page whose script holds the verdict: `var result = '<value>'` (samples `fixtures/portal_login_ok.html`, `fixtures/portal_login_erridpwd.html`). Handle it exactly like the portal page does, and never retry a rejected login (each wrong password counts toward the lock):
 
 | `result` | Portal message | Library |

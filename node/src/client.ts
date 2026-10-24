@@ -5,20 +5,20 @@ import { ensurePortalLoginAccepted, ensureSisLoggedIn, parseClassicReading, pars
 import { NodeHttpsSession, TimeoutError, type HttpResponse, type RequestOptions, type Session } from './transport.js';
 import { VERSION } from './version.js';
 
-const PORTAL_LOGIN_URL = 'https://portal.sejong.ac.kr/jsp/login/login_action.jsp';
-const PORTAL_REFERER = 'https://portal.sejong.ac.kr';
+export const PORTAL_LOGIN_URL = 'https://portal.sejong.ac.kr/jsp/login/login_action.jsp';
+export const PORTAL_REFERER = 'https://portal.sejong.ac.kr';
 // 포털이 요구하는 초기 쿠키 (없으면 로그인 폼 거부)
-const PORTAL_DEFAULT_COOKIE = 'chknos=false';
+export const PORTAL_DEFAULT_COOKIE = 'chknos=false';
 
 // 로그인 후 SSO 대상 (rtUrl)
-const CLASSIC_RETURN_URL = 'classic.sejong.ac.kr';
-const SIS_RETURN_URL = 'sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=';
+export const CLASSIC_RETURN_URL = 'classic.sejong.ac.kr';
+export const SIS_RETURN_URL = 'sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=';
 
-const CLASSIC_SSO_URL = 'https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do';
-const CLASSIC_STATUS_URL = 'https://classic.sejong.ac.kr/classic/reading/status.do';
-const SIS_SSO_URL = 'https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=';
-const SIS_USER_INFO_URL = 'https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do';
-const SIS_ORIGIN = 'https://sjpt.sejong.ac.kr';
+export const CLASSIC_SSO_URL = 'https://classic.sejong.ac.kr/_custom/sejong/sso/sso-return.jsp?returnUrl=https://classic.sejong.ac.kr/classic/index.do';
+export const CLASSIC_STATUS_URL = 'https://classic.sejong.ac.kr/classic/reading/status.do';
+export const SIS_SSO_URL = 'https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=';
+export const SIS_USER_INFO_URL = 'https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do';
+export const SIS_ORIGIN = 'https://sjpt.sejong.ac.kr';
 // 브라우저 초기 호출과 같은 빈 addParam (JSON > URL 폼 인코딩 > Base64)
 const SIS_EMPTY_ADD_PARAM = Buffer.from(
   new URLSearchParams({ value: '{"_runIntgUsrNo":"","_runPgLoginDt":"","_runningSejong":""}' }).toString().slice('value='.length),
@@ -55,15 +55,17 @@ export class SejongAuthClient {
     this.sessionFactory = _sessionFactory ?? (() => new NodeHttpsSession(this.timeoutSeconds, this.sslVerification, USER_AGENT));
   }
 
-  /** 통합 인증: DHC 학생 정보·고전독서 + SIS 연락처 (SIS 실패는 무시하고 null) */
+  /** 통합 인증: 포털 로그인 1회 > DHC 학생 정보·고전독서 > 같은 세션으로 SIS 연락처 (SIS 실패는 무시하고 null) */
   async authenticate(studentId: string, password: string): Promise<SejongAuthResult> {
     validateCredentials(studentId, password);
-    const dhcResult = await this.fetchDhc(studentId, password, false);
+    const session = this.sessionFactory();
+    await this.login(session, studentId, password, CLASSIC_RETURN_URL);
+    const dhcResult = await this.fetchDhcWithSession(session, false);
 
     let contact: { email: string | null; phoneNumber: string | null; englishName: string | null } =
       { email: null, phoneNumber: null, englishName: null };
     try {
-      const sisUserInfo = parseSisUserInfo(await this.fetchSisJson(studentId, password));
+      const sisUserInfo = parseSisUserInfo(await this.fetchSisJsonWithSession(session));
       contact = { email: sisUserInfo.email, phoneNumber: sisUserInfo.phoneNumber, englishName: sisUserInfo.englishName };
     } catch {
       // SIS 는 연락처 보조 조회 > 어떤 실패든 통합 결과를 막지 않음 (Java 와 동일)
@@ -89,10 +91,15 @@ export class SejongAuthClient {
     };
   }
 
-  /** 포털 로그인 > classic SSO > 고전독서 페이지 > 학생 정보·고전독서 파싱 */
+  /** 포털 로그인 > DHC 조회 */
   private async fetchDhc(studentId: string, password: string, shouldIncludeRawHtml: boolean): Promise<SejongDhcAuthResult> {
     const session = this.sessionFactory();
     await this.login(session, studentId, password, CLASSIC_RETURN_URL);
+    return this.fetchDhcWithSession(session, shouldIncludeRawHtml);
+  }
+
+  /** 로그인된 세션 > classic SSO > 고전독서 페이지 > 학생 정보·고전독서 파싱 */
+  private async fetchDhcWithSession(session: Session, shouldIncludeRawHtml: boolean): Promise<SejongDhcAuthResult> {
     expectSessionStep(await call(session, 'GET', CLASSIC_SSO_URL), 'SSO redirect failed');
     const html = expectData(await call(session, 'GET', CLASSIC_STATUS_URL), 'Classic reading page request failed');
     return {
@@ -101,10 +108,15 @@ export class SejongAuthClient {
     };
   }
 
-  /** 포털 로그인 > sjpt SSO > initUserInfo JSON */
+  /** 포털 로그인 (rtUrl sjpt) > SIS 조회 */
   private async fetchSisJson(studentId: string, password: string): Promise<string> {
     const session = this.sessionFactory();
     await this.login(session, studentId, password, SIS_RETURN_URL);
+    return this.fetchSisJsonWithSession(session);
+  }
+
+  /** 로그인된 세션 > sjpt SSO > initUserInfo JSON */
+  private async fetchSisJsonWithSession(session: Session): Promise<string> {
     expectSessionStep(await call(session, 'GET', SIS_SSO_URL, { headers: { Referer: PORTAL_REFERER } }), 'SIS SSO page request failed');
     const response = await call(session, 'POST', `${SIS_USER_INFO_URL}?addParam=${SIS_EMPTY_ADD_PARAM}`, {
       body: '{}',
@@ -121,7 +133,6 @@ export class SejongAuthClient {
     return jsonText;
   }
 
-  /** 포털 로그인 (실패 응답·시간 초과 시 maxRetry 회까지, 성공 여부는 이후 401 로 판별) */
   /** 포털 로그인 (실패 응답·시간 초과 시 maxRetry 회까지) > 포털 판정값 확인 (틀린 비밀번호·잠금은 재시도 없이 즉시 실패) */
   private async login(session: Session, studentId: string, password: string, returnUrl: string): Promise<void> {
     const body = new URLSearchParams({ mainLogin: 'N', rtUrl: returnUrl, id: studentId, password }).toString();
