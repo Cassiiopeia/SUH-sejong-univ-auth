@@ -53,11 +53,13 @@ cd node && npm ci && npm test                     # Node 18+
   SEJONG_TEST_STUDENT_ID=... SEJONG_TEST_PASSWORD=... scripts/verify-live.sh
   ```
 
+- 맞는 비밀번호로만 점검 (틀린 비밀번호 시도 없음): `scripts/live-check.sh`. `PROJECT-SEJONG-LIVE-CHECK` 워크플로우가 매일 실행하고, 실패하면 이슈를 엽니다.
+
 > 비밀번호를 여러 번 틀리면 포털 계정이 잠길 수 있습니다. 실패하면 반복 실행하지 말고 원인을 먼저 확인하세요.
 
 ## 포털이 바뀌었을 때
 
-1. `spec/PORTAL_FLOW.md` 수정 (응답 모양이 바뀌었으면 `spec/fixtures/`도, 개인정보는 제거)
+1. `spec/PORTAL_FLOW.md`와 `spec/contract.json` 수정 (응답 모양이 바뀌었으면 `spec/fixtures/`도, 개인정보는 제거). 언어별 contract 테스트는 상수가 `spec/contract.json`과 같아질 때까지 실패합니다
 2. Java, Python, Node를 **한 PR에서** 같이 수정
 3. 언어별 테스트와 `scripts/verify-live.sh` 실행
 

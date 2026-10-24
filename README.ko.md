@@ -112,7 +112,10 @@ public class AuthController {
 <details>
 <summary>Spring 없이 쓰기 (일반 Java)</summary>
 
+Spring Boot는 선택 의존성이라 일반 Java 프로젝트는 받지 않습니다.
+
 ```java
+SejongTlsSupport.ensureLegacyCipherEnabled();   // main() 맨 앞, 다른 HTTPS 호출보다 먼저 (TLS 안내 참고)
 SejongAuthProperties properties = new SejongAuthProperties();
 SuhSejongAuthEngine engine = new SuhSejongAuthEngine(new SejongPortalClient(properties), new SejongStudentInfoParser(),
     new SejongClassicReadingParser(), new SejongSisClient(properties), new SejongSisParser());
@@ -174,7 +177,9 @@ try {
 | SIS: 학생 정보 + 연락처 | `authenticateWithSIS` | `authenticate_sis` | `authenticateSis` |
 | 원본 응답 포함 (디버깅) | `authenticateWithDHCRaw`, `authenticateWithSISRaw` | `include_raw=True` | `{ includeRaw: true }` |
 
-통합 인증은 SIS(연락처) 조회가 실패해도 학생 정보는 돌려주고, 연락처 칸만 null이 됩니다.
+통합 인증은 포털에 **한 번만** 로그인하고 같은 세션으로 DHC와 SIS를 조회합니다. SIS(연락처) 조회가 실패해도 학생 정보는 돌려주고, 연락처 칸만 null이 됩니다.
+
+통합 인증 실측 시간 (2026-10-24, 서울, 5회 중앙값): Java 0.57초, Python 0.76초, Node 0.69초. 대부분 포털 자체 응답 시간입니다.
 
 **고전독서 인증 확인 (Java)**
 
@@ -239,7 +244,7 @@ for (ClassicCertification certification : result.getClassicReading().getCertific
 | `sejong.auth.max-retry: 3` | `max_retry=3` | `maxRetry: 3` |
 | `sejong.auth.ssl-verification: true` | `ssl_verification=True` | `sslVerification: true` |
 
-> **Java TLS 안내**: 세종 포털은 최신 JDK가 막아 둔 레거시 cipher(`TLS_RSA_WITH_AES_256_CBC_SHA`)만 제공합니다. Java 라이브러리는 처음 쓸 때 `jdk.tls.disabledAlgorithms`에서 `TLS_RSA_*`를 빼는데, 이 설정은 **JVM 전체**에 적용됩니다. 허용할 수 없다면 인증을 별도 프로세스로 분리하세요. Python·Node는 자기 연결의 TLS 설정만 바꿉니다.
+> **Java TLS 안내**: 세종 포털은 최신 JDK가 막아 둔 레거시 cipher(`TLS_RSA_WITH_AES_256_CBC_SHA`)만 제공합니다. Java 라이브러리는 `jdk.tls.disabledAlgorithms`에서 `TLS_RSA_*`를 빼는데, 이 설정은 **JVM 전체**에 적용되고 JVM의 첫 TLS 연결 전에만 효과가 있습니다. Spring Boot는 시작할 때 자동으로 처리합니다. Spring 없이 쓰면 `main()` 맨 앞에서 `SejongTlsSupport.ensureLegacyCipherEnabled()`를 부르세요. 늦게 부르면 인증이 `CONNECTION_FAILED`와 그 원인을 알리는 메시지로 실패합니다. JVM 전체 변경을 허용할 수 없다면 인증을 별도 프로세스로 분리하세요. Python·Node는 자기 연결의 TLS 설정만 바꿉니다.
 
 포털 흐름 설명: [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md), [DHC 로그인 플로우](docs/DHC_LOGIN_FLOW.ko.md), [SIS 로그인 플로우](docs/SIS_LOGIN_FLOW.ko.md)
 

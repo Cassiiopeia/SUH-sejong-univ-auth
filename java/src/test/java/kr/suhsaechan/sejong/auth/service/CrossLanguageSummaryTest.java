@@ -25,11 +25,13 @@ import org.junit.jupiter.api.Test;
 /**
  * 세 언어 교차 검증용: Java 통합 인증 결과 > 필드별 해시 JSON 파일 (scripts/verify-live.sh 가 비교)
  * 환경변수 SEJONG_TEST_STUDENT_ID, SEJONG_TEST_PASSWORD 없으면 건너뜀
+ * 틀린 비밀번호 시도는 SEJONG_TEST_INCLUDE_WRONG_PASSWORD=true 일 때만 (포털 잠금 방지, verify-live.sh 만 켬)
  */
 class CrossLanguageSummaryTest {
 
-  // 결과 파일: java/build/cross-language/java{,-wrong}.json
+  // 결과 파일: java/build/cross-language/java{,-wrong,-sis-wrong}.json
   private static final Path OUTPUT_DIRECTORY = Path.of("build", "cross-language");
+  private static final String INCLUDE_WRONG_PASSWORD_ENV = "SEJONG_TEST_INCLUDE_WRONG_PASSWORD";
 
   // 키 정렬 JSON (Python json.dumps(sort_keys=True, separators=(",", ":")) 와 같은 모양)
   private final ObjectMapper canonicalMapper = new ObjectMapper()
@@ -44,6 +46,9 @@ class CrossLanguageSummaryTest {
 
     Files.createDirectories(OUTPUT_DIRECTORY);
     Files.writeString(OUTPUT_DIRECTORY.resolve("java.json"), summarize(studentId, password), StandardCharsets.UTF_8);
+    if (!"true".equals(System.getenv(INCLUDE_WRONG_PASSWORD_ENV))) {
+      return;
+    }
     Files.writeString(OUTPUT_DIRECTORY.resolve("java-wrong.json"), summarize(studentId, password + "-wrong"), StandardCharsets.UTF_8);
     Files.writeString(OUTPUT_DIRECTORY.resolve("java-sis-wrong.json"), summarizeSisError(studentId, password + "-wrong"), StandardCharsets.UTF_8);
   }

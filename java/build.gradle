@@ -12,6 +12,10 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+	// Spring Boot 지원을 선택 기능으로 분리 (main 소스 공유)
+	registerFeature('springBootSupport') {
+		usingSourceSet(sourceSets.main)
+	}
 }
 
 repositories {
@@ -27,9 +31,13 @@ dependencies {
 	testCompileOnly springBootBom
 	testAnnotationProcessor springBootBom
 
-	// Spring Boot
-	implementation 'org.springframework.boot:spring-boot-starter'
+	// Spring Boot: 선택 의존성 (자동 설정·TLS 초기화용, Spring 없이 쓰면 받지 않음 > POM optional)
+	springBootSupportImplementation springBootBom
+	springBootSupportImplementation 'org.springframework.boot:spring-boot-autoconfigure'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// 로깅 API (Lombok @Slf4j, 구현체는 사용하는 앱이 선택)
+	implementation 'org.slf4j:slf4j-api'
 
 	// HTTP Client (OkHttp)
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
@@ -39,7 +47,7 @@ dependencies {
 	implementation 'org.jsoup:jsoup:1.17.2'
 
 	// JSON Parser (Jackson)
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

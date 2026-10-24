@@ -53,11 +53,13 @@ Live tests log in to the real Sejong portal, so they only run when you provide a
   SEJONG_TEST_STUDENT_ID=... SEJONG_TEST_PASSWORD=... scripts/verify-live.sh
   ```
 
+- Correct password only (no wrong-password attempts): `scripts/live-check.sh`. The `PROJECT-SEJONG-LIVE-CHECK` workflow runs it daily and opens an issue when it fails.
+
 > Several wrong passwords in a row can lock the portal account. If a run fails, find the cause before running it again.
 
 ## When the portal changes
 
-1. Update `spec/PORTAL_FLOW.md` (and `spec/fixtures/` if the response shape changed, with personal data removed)
+1. Update `spec/PORTAL_FLOW.md` and `spec/contract.json` (and `spec/fixtures/` if the response shape changed, with personal data removed). Each language's contract test fails until its constants match `spec/contract.json`
 2. Fix Java, Python and Node in the **same PR**
 3. Run each language's tests and `scripts/verify-live.sh`
 

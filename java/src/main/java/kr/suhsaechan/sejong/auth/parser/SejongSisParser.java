@@ -17,8 +17,8 @@ public class SejongSisParser {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   // SIS 오류 응답: 200 + {"_SUBMIT_ERROR_": {"ERRTYPE": ...}}, 로그인 세션 없음(틀린 비밀번호) = LOGOUT
-  private static final String SUBMIT_ERROR_KEY = "_SUBMIT_ERROR_";
-  private static final String LOGGED_OUT_ERROR_TYPE = "LOGOUT";
+  static final String SUBMIT_ERROR_KEY = "_SUBMIT_ERROR_";
+  static final String LOGGED_OUT_ERROR_TYPE = "LOGOUT";
 
   /**
    * initUserInfo 오류 응답 판정: LOGOUT > AUTHENTICATION_FAILED, 그 외 오류 > DATA_FETCH_FAILED (JSON 아니면 통과)

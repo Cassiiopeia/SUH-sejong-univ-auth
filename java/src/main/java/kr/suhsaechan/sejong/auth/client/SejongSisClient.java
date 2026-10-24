@@ -15,21 +15,29 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * 세종대학교 학사정보시스템(SIS) HTTP 클라이언트
- * - sjpt.sejong.ac.kr에서 학생 연락처 정보 조회
+ * 세종대학교 학사정보시스템(SIS) HTTP 클라이언트: sjpt SSO, initUserInfo 조회 (학생 연락처)
+ * 단독 인증은 자체 로그인, 통합 인증은 포털 클라이언트가 연 세션을 이어서 사용
  */
 @Slf4j
 public class SejongSisClient {
 
   // 포털 로그인 후 SSO 대상: 학사정보시스템 SSO 진입점
-  private static final String SJPT_RETURN_URL = "sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=";
-  private static final String SJPT_SSO_URL = "https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=";
-  private static final String SJPT_INIT_USER_INFO_URL = "https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do";
+  static final String SJPT_RETURN_URL = "sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=";
+  static final String SJPT_SSO_URL = "https://sjpt.sejong.ac.kr/main/view/Login/doSsoLogin.do?p=";
+  static final String SJPT_INIT_USER_INFO_URL = "https://sjpt.sejong.ac.kr/main/sys/UserInfo/initUserInfo.do";
+  static final String SJPT_ORIGIN = "https://sjpt.sejong.ac.kr";
 
   private final SejongAuthProperties properties;
+  private final OkHttpClient baseClient;
 
   public SejongSisClient(SejongAuthProperties properties) {
+    this(properties, SejongHttpSupport.buildBaseClient(properties));
+  }
+
+  // 테스트: 가짜 응답 클라이언트 주입
+  SejongSisClient(SejongAuthProperties properties, OkHttpClient baseClient) {
     this.properties = properties;
+    this.baseClient = baseClient;
   }
 
   /**
@@ -41,27 +49,25 @@ public class SejongSisClient {
    * @throws SejongAuthException 인증 실패 시
    */
   public String authenticateAndFetchJson(String studentId, String password) {
-    try {
-      OkHttpClient client = SejongHttpSupport.buildClient(properties);
+    return SejongHttpSupport.runPortalStep("SIS authentication", () -> {
+      OkHttpClient sessionClient = SejongHttpSupport.newSessionClient(baseClient);
+      SejongHttpSupport.loginToPortal(sessionClient, properties, studentId, password, SJPT_RETURN_URL);
+      return fetchUserInfoWithSessionClient(sessionClient);
+    });
+  }
 
-      // 1. 포털 로그인 (sjpt로 리다이렉트 설정)
-      SejongHttpSupport.loginToPortal(client, properties, studentId, password, SJPT_RETURN_URL);
+  /**
+   * 로그인된 세션 > sjpt SSO > initUserInfo JSON (통합 인증: 포털 로그인 1회로 연락처 조회)
+   *
+   * @throws SejongAuthException 세션 거부(401)·조회 실패·연결 실패
+   */
+  public String fetchInitUserInfoJson(SejongPortalSession session) {
+    return SejongHttpSupport.runPortalStep("SIS lookup", () -> fetchUserInfoWithSessionClient(session.sessionClient()));
+  }
 
-      // 2. SSO 페이지 접근
-      accessSsoPage(client);
-
-      // 3. initUserInfo.do API 호출
-      return fetchInitUserInfo(client);
-
-    } catch (SejongAuthException e) {
-      throw e;
-    } catch (IOException e) {
-      log.error("[sejong auth] SIS authentication IOException : {}", e.getMessage());
-      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
-    } catch (Exception e) {
-      log.error("[sejong auth] SIS authentication error : {}", e.getMessage());
-      throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
-    }
+  private String fetchUserInfoWithSessionClient(OkHttpClient client) throws IOException {
+    accessSsoPage(client);
+    return fetchInitUserInfo(client);
   }
 
   /**
@@ -102,7 +108,7 @@ public class SejongSisClient {
         .header("Accept", "application/json")
         .header("Content-Type", "application/json; charset=UTF-8")
         .header("Referer", SJPT_SSO_URL)
-        .header("Origin", "https://sjpt.sejong.ac.kr")
+        .header("Origin", SJPT_ORIGIN)
         .build();
 
     try (Response response = client.newCall(request).execute()) {

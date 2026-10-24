@@ -118,7 +118,10 @@ public class AuthController {
 <details>
 <summary>Without Spring (plain Java)</summary>
 
+Spring Boot is an optional dependency: plain Java projects do not download it.
+
 ```java
+SejongTlsSupport.ensureLegacyCipherEnabled();   // first thing in main(), before any HTTPS call (see the TLS note)
 SejongAuthProperties properties = new SejongAuthProperties();
 SuhSejongAuthEngine engine = new SuhSejongAuthEngine(new SejongPortalClient(properties), new SejongStudentInfoParser(),
     new SejongClassicReadingParser(), new SejongSisClient(properties), new SejongSisParser());
@@ -180,7 +183,9 @@ try {
 | SIS: student info + contact | `authenticateWithSIS` | `authenticate_sis` | `authenticateSis` |
 | With raw response (debugging) | `authenticateWithDHCRaw`, `authenticateWithSISRaw` | `include_raw=True` | `{ includeRaw: true }` |
 
-The integrated call still returns student info when the SIS (contact) lookup fails; contact fields are then null.
+The integrated call logs in to the portal **once** and reads DHC and SIS with the same session. It still returns student info when the SIS (contact) lookup fails; contact fields are then null.
+
+Measured integrated call time (2026-10-24, from Seoul, median of 5 calls): Java 0.57 s, Python 0.76 s, Node 0.69 s. Most of it is the portal's own response time.
 
 **Check classic reading (Java)**
 
@@ -247,7 +252,7 @@ All optional. Defaults: 10 second timeout, 3 login retries, certificate verifica
 | `sejong.auth.max-retry: 3` | `max_retry=3` | `maxRetry: 3` |
 | `sejong.auth.ssl-verification: true` | `ssl_verification=True` | `sslVerification: true` |
 
-> **Java TLS note**: the Sejong portal only offers the legacy `TLS_RSA_WITH_AES_256_CBC_SHA` cipher, which recent JDKs disable. On first use the Java library removes `TLS_RSA_*` from `jdk.tls.disabledAlgorithms`, which affects **the whole JVM**. If your service cannot accept that, run the authentication in a separate process. Python and Node only change the TLS settings of their own connections.
+> **Java TLS note**: the Sejong portal only offers the legacy `TLS_RSA_WITH_AES_256_CBC_SHA` cipher, which recent JDKs disable. The Java library removes `TLS_RSA_*` from `jdk.tls.disabledAlgorithms`, which affects **the whole JVM** and only works before the JVM's first TLS connection. Spring Boot does this automatically at startup. Without Spring, call `SejongTlsSupport.ensureLegacyCipherEnabled()` first thing in `main()`; if it runs too late, authentication fails with `CONNECTION_FAILED` and a message saying so. If your service cannot accept the JVM-wide change, run the authentication in a separate process. Python and Node only change the TLS settings of their own connections.
 
 How the portal flow works: [spec/PORTAL_FLOW.md](spec/PORTAL_FLOW.md), [DHC login flow](docs/DHC_LOGIN_FLOW.md), [SIS login flow](docs/SIS_LOGIN_FLOW.md).
 

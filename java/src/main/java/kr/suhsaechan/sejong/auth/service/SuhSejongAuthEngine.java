@@ -2,6 +2,7 @@ package kr.suhsaechan.sejong.auth.service;
 
 import java.time.LocalDateTime;
 import kr.suhsaechan.sejong.auth.client.SejongPortalClient;
+import kr.suhsaechan.sejong.auth.client.SejongPortalSession;
 import kr.suhsaechan.sejong.auth.client.SejongSisClient;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthErrorCode;
 import kr.suhsaechan.sejong.auth.exception.SejongAuthException;
@@ -44,8 +45,7 @@ public class SuhSejongAuthEngine {
   }
 
   /**
-   * 세종대학교 통합 인증 수행
-   * - DHC(고전독서 정보) + SIS(연락처 정보) 모두 조회
+   * 세종대학교 통합 인증: 포털 로그인 1회 > DHC(학생 정보·고전독서) > 같은 세션으로 SIS(연락처)
    *
    * @param studentId 학번
    * @param password 비밀번호
@@ -56,15 +56,17 @@ public class SuhSejongAuthEngine {
     validateCredentials(studentId, password);
     log.info("[sejong auth] integrated auth started : studentId={}", studentId);
 
-    // 1. DHC에서 학생 정보·고전독서 (실패 시 예외)
-    SejongDhcAuthResult dhcResult = buildDhcResult(portalClient.authenticateAndFetchHtml(studentId, password), false);
+    // 1. 포털 로그인 1회 + DHC에서 학생 정보·고전독서 (실패 시 예외)
+    SejongPortalSession session = portalClient.openSession(studentId, password);
+    SejongDhcAuthResult dhcResult = buildDhcResult(portalClient.fetchClassicStatusHtml(session), false);
 
-    // 2. SIS에서 연락처 3개만 (실패해도 DHC 정보만으로 결과 반환)
+    // 2. 같은 세션으로 SIS 연락처 3개만 (실패해도 DHC 정보만으로 결과 반환)
     String email = null;
     String phoneNumber = null;
     String englishName = null;
     try {
-      String json = sisClient.authenticateAndFetchJson(studentId, password);
+      String json = sisClient.fetchInitUserInfoJson(session);
+      sisParser.ensureLoggedIn(json);
       email = sisParser.parseEmail(json);
       phoneNumber = sisParser.parsePhoneNumber(json);
       englishName = sisParser.parseEnglishName(json);
