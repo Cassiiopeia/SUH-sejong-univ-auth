@@ -23,6 +23,12 @@ public class SejongAuthException extends RuntimeException {
     this.detail = detail;
   }
 
+  public SejongAuthException(SejongAuthErrorCode errorCode, String detail, Throwable cause) {
+    super(errorCode.getMessage() + " - " + detail, cause);
+    this.errorCode = errorCode;
+    this.detail = detail;
+  }
+
   public SejongAuthException(SejongAuthErrorCode errorCode, Throwable cause) {
     super(errorCode.getMessage(), cause);
     this.errorCode = errorCode;

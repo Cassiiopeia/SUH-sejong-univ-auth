@@ -52,7 +52,7 @@ final class SejongHttpSupport {
 
   // TLS_RSA_* 재허용이 JSSE 초기화보다 늦었을 때 안내 (SejongTlsSupport)
   private static final String LATE_TLS_ADJUSTMENT_HINT = "TLS handshake with the portal failed. "
-      + "This JVM started TLS before TLS_RSA_* was re-enabled: call SejongTlsSupport.ensureLegacyCipherEnabled() "
+      + "If this JVM made a TLS connection before TLS_RSA_* was re-enabled, call SejongTlsSupport.ensureLegacyCipherEnabled() "
       + "at startup before any HTTPS call (Spring Boot does this automatically)";
 
   private SejongHttpSupport() {
@@ -109,7 +109,7 @@ final class SejongHttpSupport {
     } catch (SSLHandshakeException e) {
       log.error("[sejong auth] {} TLS handshake failed : {}", stepName, e.getMessage());
       if (SejongTlsSupport.hasAdjustedDisabledAlgorithms()) {
-        throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, LATE_TLS_ADJUSTMENT_HINT);
+        throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, LATE_TLS_ADJUSTMENT_HINT, e);
       }
       throw new SejongAuthException(SejongAuthErrorCode.CONNECTION_FAILED, e);
     } catch (Exception e) {

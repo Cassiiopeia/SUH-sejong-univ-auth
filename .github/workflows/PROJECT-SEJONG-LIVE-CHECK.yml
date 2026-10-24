@@ -39,7 +39,7 @@ jobs:
               core.setOutput('should_run', 'false');
               return;
             }
-            const { data: openIssues } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', per_page: 100 });
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, { ...context.repo, state: 'open', per_page: 100 });
             const openFailureIssue = openIssues.find((issue) => !issue.pull_request && issue.title === process.env.LIVE_CHECK_ISSUE_TITLE);
             const isScheduled = context.eventName === 'schedule';
             if (openFailureIssue && isScheduled) {
